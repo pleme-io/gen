@@ -400,27 +400,39 @@ fn parse_one_spec(name: &str, raw: &str) -> Result<ConstraintSpec> {
 /// stored as the integrity field.
 pub fn convert_lockfile(raw: &CargoLock, lock_path: &Path) -> Result<Lockfile> {
     let mut resolved: IndexMap<String, ResolvedPackage> = IndexMap::with_capacity(raw.packages.len());
-    // First pass: build PackageId for every entry so cross-package
-    // resolved_dependencies can be looked up by name in the second pass.
-    let mut ids: IndexMap<String, PackageId> = IndexMap::with_capacity(raw.packages.len());
+    // Build a (name, version) → PackageId index. Keying by name alone
+    // is wrong when a crate appears at multiple versions (hashbrown
+    // 0.15.5 + 0.16.1 in the same lockfile) — last write would
+    // overwrite the first and both ResolvedPackage entries would
+    // carry the same id.
+    let mut ids_by_name_version: IndexMap<(String, String), PackageId> =
+        IndexMap::with_capacity(raw.packages.len());
+    // Fallback name-only index for resolving dep refs that don't
+    // disambiguate (cargo uses `"name"` when only one version is
+    // present, `"name VERSION"` otherwise).
+    let mut ids_by_name: IndexMap<String, PackageId> = IndexMap::with_capacity(raw.packages.len());
     for p in &raw.packages {
         let version = Version::parse(&p.version).ok_or_else(|| CargoError::BadVersion {
             raw: p.version.clone(),
             context: format!("lock entry `{}`", p.name),
         })?;
-        ids.insert(
-            p.name.clone(),
-            PackageId {
-                name: p.name.clone(),
-                version,
-                registry: registry_for(p),
-            },
-        );
+        let id = PackageId {
+            name: p.name.clone(),
+            version,
+            registry: registry_for(p),
+        };
+        ids_by_name_version.insert((p.name.clone(), p.version.clone()), id.clone());
+        // Name-only index: keep the FIRST (cargo's convention is to
+        // emit `"name"` only when unambiguous, so first-wins gives
+        // stable behavior for the common case).
+        if !ids_by_name.contains_key(&p.name) {
+            ids_by_name.insert(p.name.clone(), id);
+        }
     }
 
     for p in &raw.packages {
-        let id = ids
-            .get(&p.name)
+        let id = ids_by_name_version
+            .get(&(p.name.clone(), p.version.clone()))
             .cloned()
             .ok_or(CargoError::LockfileMissingField {
                 path: lock_path.to_path_buf(),
@@ -433,8 +445,19 @@ pub fn convert_lockfile(raw: &CargoLock, lock_path: &Path) -> Result<Lockfile> {
             .dependencies
             .iter()
             .filter_map(|d| {
-                let name = d.split_whitespace().next().unwrap_or(d);
-                ids.get(name).cloned()
+                // Dep ref can be "name", "name VERSION", or
+                // "name VERSION (SOURCE)". Disambiguate when version
+                // is present.
+                let mut parts = d.split_whitespace();
+                let name = parts.next()?;
+                if let Some(version) = parts.next() {
+                    ids_by_name_version
+                        .get(&(name.to_string(), version.to_string()))
+                        .cloned()
+                        .or_else(|| ids_by_name.get(name).cloned())
+                } else {
+                    ids_by_name.get(name).cloned()
+                }
             })
             .collect();
         let key = format!("{}/{}", p.name, p.version);

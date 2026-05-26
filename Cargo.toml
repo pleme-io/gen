@@ -52,6 +52,7 @@ thiserror = "2"
 blake3 = "1"
 chrono = { version = "0.4", features = ["serde"] }
 toml = "0.8"
+cargo_metadata = "0.18"
 clap = { version = "4", features = ["derive"] }
 shikumi = { git = "https://github.com/pleme-io/shikumi.git", rev = "a497fc03885339f169aa805f706f081da2a10e7a" }
 

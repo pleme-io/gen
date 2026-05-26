@@ -11,8 +11,10 @@
 //! assert!(manifest.package_count() >= 1);
 //! ```
 
+pub mod build_spec;
 pub mod convert;
 pub mod error;
+pub mod features;
 pub mod raw;
 
 pub use error::{CargoError, Result};

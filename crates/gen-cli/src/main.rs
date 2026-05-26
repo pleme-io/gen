@@ -68,6 +68,21 @@ enum Cmd {
     Render {
         path: Option<PathBuf>,
     },
+    /// Generate Cargo.features.json sidecar (cargo-metadata-driven).
+    /// Substrate's lockfile-builder reads this at eval to activate the
+    /// right per-crate features. Tiny (~10-20% of Cargo.nix size).
+    #[command(name = "lock-features")]
+    LockFeatures {
+        path: Option<PathBuf>,
+    },
+    /// Generate the complete typed Cargo.build-spec.json.
+    /// Composes Cargo.toml + Cargo.lock + cargo metadata into ONE
+    /// typed JSON that substrate's lockfile-builder consumes directly.
+    /// Replaces both Cargo.nix AND Cargo.features.json.
+    #[command(name = "lock-build")]
+    LockBuild {
+        path: Option<PathBuf>,
+    },
     /// Probe the configured substituters for every lockfile entry in
     /// the workspace at <path>. Report hit / miss / hit-rate.
     #[command(name = "cache-probe")]
@@ -181,6 +196,18 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                     cfg.render.output_path
                 );
             }
+            Ok(())
+        }
+        Cmd::LockFeatures { path } => {
+            let root = resolve_root(path, cfg);
+            let out = gen_cargo::features::generate_and_write(&root).map_err(CliError::Cargo)?;
+            eprintln!("gen: wrote {}", out.display());
+            Ok(())
+        }
+        Cmd::LockBuild { path } => {
+            let root = resolve_root(path, cfg);
+            let out = gen_cargo::build_spec::generate_and_write(&root).map_err(CliError::Cargo)?;
+            eprintln!("gen: wrote {}", out.display());
             Ok(())
         }
         Cmd::CacheProbe { path } => {

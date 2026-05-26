@@ -52,7 +52,27 @@ pub struct CrateSpec {
     pub source: CrateSource,
     pub features: Vec<String>,
     pub proc_macro: bool,
+    /// All non-dev deps. Kept as a flat list for cross-tool consumers
+    /// that need to walk the union (e.g. SBOM emitters).
     pub dependencies: Vec<CrateDepSpec>,
+    /// Pre-split: deps with kind == "normal". The substrate consumer
+    /// passes this list straight to buildRustCrate's `dependencies`
+    /// arg — no Nix-side filtering.
+    pub runtime_dependencies: Vec<CrateDepSpec>,
+    /// Pre-split: deps with kind == "build". Threads into
+    /// buildRustCrate's `buildDependencies`.
+    pub build_dependencies: Vec<CrateDepSpec>,
+    /// Pre-shaped crateRenames table — keyed by canonical
+    /// published-name, valued as `[{ version, rename }]` records.
+    /// Threads through to buildRustCrate's `crateRenames` arg
+    /// verbatim. Nix doesn't do any synthesis here.
+    pub crate_renames: IndexMap<String, Vec<CrateRenameRecord>>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct CrateRenameRecord {
+    pub version: String,
+    pub rename: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -392,6 +412,22 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             });
         }
 
+        // Pre-split + pre-shape Nix-side data — substrate consumer
+        // receives ready-to-pass typed values, no Nix-side
+        // semantic decisions.
+        let runtime_dependencies: Vec<CrateDepSpec> = dependencies
+            .iter()
+            .filter(|d| matches!(d.kind, DepKind::Normal))
+            .cloned()
+            .collect();
+        let build_dependencies: Vec<CrateDepSpec> = dependencies
+            .iter()
+            .filter(|d| matches!(d.kind, DepKind::Build))
+            .cloned()
+            .collect();
+        let crate_renames =
+            synthesize_crate_renames(&runtime_dependencies, &build_dependencies, &by_id);
+
         crates.insert(
             key,
             CrateSpec {
@@ -402,6 +438,9 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 features,
                 proc_macro,
                 dependencies,
+                runtime_dependencies,
+                build_dependencies,
+                crate_renames,
             },
         );
     }
@@ -449,6 +488,47 @@ pub fn generate_and_write(root: &Path) -> Result<std::path::PathBuf> {
         source,
     })?;
     Ok(out)
+}
+
+/// Pre-shape crateRenames into the exact attrset shape nixpkgs's
+/// buildRustCrate expects. Keys are canonical published names; values
+/// are lists of `{ version, rename }` records, one per consumer-side
+/// rename. Nix consumes this verbatim — no further synthesis.
+fn synthesize_crate_renames(
+    runtime: &[CrateDepSpec],
+    build: &[CrateDepSpec],
+    by_id: &IndexMap<String, &cargo_metadata::Package>,
+) -> IndexMap<String, Vec<CrateRenameRecord>> {
+    let mut out: IndexMap<String, Vec<CrateRenameRecord>> = IndexMap::new();
+    for d in runtime.iter().chain(build.iter()) {
+        // Parse canonical from package_key ("<name>-<version>").
+        // We could carry the canonical name as a field too — current
+        // scheme keeps the spec compact.
+        let canonical_name = {
+            // package_key encodes "<name>-<version>"; we can't just
+            // split on '-' because crate names contain hyphens. Look
+            // up by package_key suffix-matching against by_id.
+            let pkg = by_id.values().find(|p| {
+                let k = format!("{}-{}", p.name, p.version);
+                k == d.package_key
+            });
+            match pkg {
+                Some(p) => (p.name.to_string(), p.version.to_string()),
+                None => continue,
+            }
+        };
+        let canonical = canonical_name.0;
+        let canonical_version = canonical_name.1;
+        // Only emit when the local alias differs from canonical.
+        if d.name == canonical {
+            continue;
+        }
+        out.entry(canonical).or_default().push(CrateRenameRecord {
+            version: canonical_version,
+            rename: d.name.clone(),
+        });
+    }
+    out
 }
 
 /// Compute relative path from `from` to `base`. Returns None if

@@ -1,0 +1,25 @@
+[package]
+name = "gen-npm"
+description = "gen — npm/pnpm/yarn adapter. Parses package.json + package-lock.json/pnpm-lock.yaml into gen_types::Manifest. The npm half of the universal package-manager engine; sibling of gen-cargo."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_npm"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+gen-types = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+indexmap = { workspace = true }
+thiserror = { workspace = true }

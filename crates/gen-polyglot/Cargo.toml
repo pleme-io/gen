@@ -1,0 +1,30 @@
+[package]
+name = "gen-polyglot"
+description = "gen — polyglot workspace dispatcher. Probes a directory for every configured adapter marker and emits a typed PolyglotWorkspace containing one Manifest per detected language. Engines that operate across language boundaries (caixa-author + the M5 cross-language renderer + audit reports) consume this."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_polyglot"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+gen-types = { workspace = true }
+gen-cargo = { workspace = true }
+gen-npm = { workspace = true }
+gen-bundler = { workspace = true }
+gen-config = { workspace = true }
+serde = { workspace = true }
+indexmap = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+shikumi = { workspace = true }

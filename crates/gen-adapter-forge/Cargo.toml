@@ -1,0 +1,23 @@
+[package]
+name = "gen-adapter-forge"
+description = "gen — typed (defadapter …) spec + scaffold-generator. Every new gen-X adapter is authored as one typed AdapterSpec value (or one tatara-lisp (defadapter …) form when the Lisp runtime ships); adapter-forge synthesizes the scaffold (lib.rs / error.rs / raw.rs / tests) from the spec. The shape is distilled from gen-cargo + gen-npm + gen-bundler — the next 6+ adapters land as ~50-line typed specs."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_adapter_forge"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+gen-types = { workspace = true }
+serde = { workspace = true }
+indexmap = { workspace = true }
+thiserror = { workspace = true }

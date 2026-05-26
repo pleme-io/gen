@@ -113,12 +113,12 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
     match &cli.cmd {
         Cmd::Check { path } => {
             let root = resolve_root(path, cfg);
-            let manifest = gen_cargo::parse(&root).map_err(CliError::Cargo)?;
+            let manifest = dispatch(&root, cfg)?;
             emit(&manifest, cli.format)
         }
         Cmd::Lock { path } => {
             let root = resolve_root(path, cfg);
-            let manifest = gen_cargo::parse(&root).map_err(CliError::Cargo)?;
+            let manifest = dispatch(&root, cfg)?;
             #[derive(serde::Serialize)]
             struct LockReport<'a> {
                 has_lockfile: bool,
@@ -165,7 +165,11 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
         }
         Cmd::Render { path } => {
             let root = resolve_root(path, cfg);
-            let manifest = gen_cargo::parse(&root).map_err(CliError::Cargo)?;
+            let adapter = pick_adapter(&root, cfg)?;
+            if adapter != "cargo" {
+                return Err(CliError::RenderNotImplementedForAdapter(adapter));
+            }
+            let manifest = dispatch(&root, cfg)?;
             let text = gen_nix::render_workspace_to_cargo_nix(&manifest);
             if cfg.render.output_path.is_empty() {
                 println!("{text}");
@@ -181,7 +185,7 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
         }
         Cmd::CacheProbe { path } => {
             let root = resolve_root(path, cfg);
-            let manifest = gen_cargo::parse(&root).map_err(CliError::Cargo)?;
+            let manifest = dispatch(&root, cfg)?;
             let client = gen_cache_attic::client_from_config(&cfg.cache);
             let keys: Vec<gen_cache_attic::CacheKey> = match &manifest.lockfile {
                 None => Vec::new(),
@@ -272,11 +276,55 @@ enum CliError {
     #[error(transparent)]
     Cargo(#[from] gen_cargo::CargoError),
     #[error(transparent)]
+    Npm(#[from] gen_npm::NpmError),
+    #[error(transparent)]
+    Bundler(#[from] gen_bundler::BundlerError),
+    #[error(transparent)]
     Json(#[from] serde_json::Error),
     #[error(transparent)]
     Yaml(#[from] serde_yaml::Error),
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    #[error("no adapter found for workspace at {0} — checked: {1}")]
+    NoAdapter(std::path::PathBuf, String),
+    #[error("cargo workspace at {0} renders via Nix; npm/bundler renderers ship in M0.5b")]
+    RenderNotImplementedForAdapter(String),
+}
+
+/// Adapter dispatch — selects the matching parser based on the marker
+/// file present at `root`. Honors `cfg.workspace.force_adapter` when
+/// set, otherwise probes the routing table in declaration order.
+fn dispatch(
+    root: &std::path::Path,
+    cfg: &GenConfig,
+) -> Result<gen_types::Manifest, CliError> {
+    let adapter = pick_adapter(root, cfg)?;
+    match adapter.as_str() {
+        "cargo" => Ok(gen_cargo::parse(root)?),
+        "npm" => Ok(gen_npm::parse(root)?),
+        "bundler" => Ok(gen_bundler::parse(root)?),
+        other => Err(CliError::NoAdapter(
+            root.to_path_buf(),
+            format!("force_adapter={other} — not yet implemented"),
+        )),
+    }
+}
+
+fn pick_adapter(
+    root: &std::path::Path,
+    cfg: &GenConfig,
+) -> Result<String, CliError> {
+    if let Some(force) = &cfg.workspace.force_adapter {
+        return Ok(force.clone());
+    }
+    let mut checked: Vec<String> = Vec::new();
+    for (marker, adapter) in &cfg.workspace.adapter_routing {
+        checked.push(marker.clone());
+        if root.join(marker).exists() {
+            return Ok(adapter.clone());
+        }
+    }
+    Err(CliError::NoAdapter(root.to_path_buf(), checked.join(", ")))
 }
 
 fn _resolve_root_lint_silencer(p: &Path) -> PathBuf {

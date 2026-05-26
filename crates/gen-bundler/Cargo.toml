@@ -1,0 +1,24 @@
+[package]
+name = "gen-bundler"
+description = "gen — Ruby/Bundler adapter. Parses Gemfile + Gemfile.lock into gen_types::Manifest. The bundler half of the universal package-manager engine; sibling of gen-cargo + gen-npm. Authored Gemfile parsing is line-oriented (DSL eval intentionally deferred — pleme-io's Bundler usage is declarative-shape)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_bundler"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+gen-types = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+indexmap = { workspace = true }
+thiserror = { workspace = true }

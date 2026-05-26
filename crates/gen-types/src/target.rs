@@ -28,21 +28,44 @@ pub enum TargetPredicate {
     /// `cfg(unix)` / `cfg(target_os = "linux")` / etc. — Cargo-style
     /// predicate. Stored as the raw cfg expression; the engine has
     /// a typed cfg evaluator that consumes this against a target spec.
-    CargoCfg(String),
+    CargoCfg { expr: String },
     /// `os` array (npm-style): only active on these OS names.
-    OsList(Vec<String>),
+    OsList { items: Vec<String> },
     /// `cpu` array (npm-style): only active on these CPU arches.
-    CpuList(Vec<String>),
+    CpuList { items: Vec<String> },
     /// Min engine version (npm `engines.<runtime>` / Composer
     /// `php` / etc.).
-    EngineMin {
-        engine: String,
-        min: String,
-    },
+    EngineMin { engine: String, min: String },
     /// PEP-508 environment marker (Python pip / poetry).
-    PythonMarker(String),
+    PythonMarker { marker: String },
     /// Bundler `platforms :foo, :bar` — list of platform symbols.
-    BundlerPlatforms(Vec<String>),
+    BundlerPlatforms { items: Vec<String> },
+}
+
+impl TargetPredicate {
+    /// Convenience constructors that match the old positional shapes.
+    #[must_use]
+    pub fn cargo_cfg(expr: impl Into<String>) -> Self {
+        Self::CargoCfg { expr: expr.into() }
+    }
+    #[must_use]
+    pub fn os_list(items: impl IntoIterator<Item = impl Into<String>>) -> Self {
+        Self::OsList {
+            items: items.into_iter().map(Into::into).collect(),
+        }
+    }
+    #[must_use]
+    pub fn cpu_list(items: impl IntoIterator<Item = impl Into<String>>) -> Self {
+        Self::CpuList {
+            items: items.into_iter().map(Into::into).collect(),
+        }
+    }
+    #[must_use]
+    pub fn bundler_platforms(items: impl IntoIterator<Item = impl Into<String>>) -> Self {
+        Self::BundlerPlatforms {
+            items: items.into_iter().map(Into::into).collect(),
+        }
+    }
 }
 
 /// Compound predicate combining atomic [`TargetPredicate`]s. Kept
@@ -128,16 +151,16 @@ impl TargetPredicate {
     #[must_use]
     pub fn matches(&self, target: &Target) -> bool {
         match self {
-            Self::CargoCfg(expr) => eval_cfg_expr(expr, target),
-            Self::OsList(oses) => oses.iter().any(|o| o == &target.os),
-            Self::CpuList(cpus) => cpus.iter().any(|c| c == &target.cpu),
+            Self::CargoCfg { expr } => eval_cfg_expr(expr, target),
+            Self::OsList { items } => items.iter().any(|o| o == &target.os),
+            Self::CpuList { items } => items.iter().any(|c| c == &target.cpu),
             Self::EngineMin { engine, min } => target
                 .engines
                 .get(engine)
                 .map(|v| v.as_str() >= min.as_str())
                 .unwrap_or(false),
-            Self::PythonMarker(_marker) => true, // TODO: real PEP-508 eval
-            Self::BundlerPlatforms(_plats) => true, // TODO: Bundler eval
+            Self::PythonMarker { .. } => true, // TODO: real PEP-508 eval
+            Self::BundlerPlatforms { .. } => true, // TODO: Bundler eval
         }
     }
 }
@@ -197,28 +220,28 @@ mod tests {
 
     #[test]
     fn cargo_cfg_unix_matches_linux_and_macos() {
-        let p = TargetPredicate::CargoCfg("cfg(unix)".into());
+        let p = TargetPredicate::cargo_cfg("cfg(unix)");
         assert!(p.matches(&linux_x86()));
         assert!(p.matches(&macos_arm()));
     }
 
     #[test]
     fn cargo_cfg_target_os_matches_correct_os() {
-        let p = TargetPredicate::CargoCfg("cfg(target_os = \"linux\")".into());
+        let p = TargetPredicate::cargo_cfg("cfg(target_os = \"linux\")");
         assert!(p.matches(&linux_x86()));
         assert!(!p.matches(&macos_arm()));
     }
 
     #[test]
     fn os_list_matches_when_target_in_list() {
-        let p = TargetPredicate::OsList(vec!["linux".into(), "macos".into()]);
+        let p = TargetPredicate::os_list(["linux", "macos"]);
         assert!(p.matches(&linux_x86()));
         assert!(p.matches(&macos_arm()));
     }
 
     #[test]
     fn cpu_list_matches_when_target_in_list() {
-        let p = TargetPredicate::CpuList(vec!["aarch64".into()]);
+        let p = TargetPredicate::cpu_list(["aarch64"]);
         assert!(p.matches(&macos_arm()));
         assert!(!p.matches(&linux_x86()));
     }
@@ -228,8 +251,8 @@ mod tests {
         let p = CompoundTargetPredicate {
             combinator: PredicateCombinator::All,
             atoms: vec![
-                TargetPredicate::OsList(vec!["linux".into()]),
-                TargetPredicate::CpuList(vec!["x86_64".into()]),
+                TargetPredicate::os_list(["linux"]),
+                TargetPredicate::cpu_list(["x86_64"]),
             ],
         };
         assert!(p.matches(&linux_x86()));
@@ -241,8 +264,8 @@ mod tests {
         let p = CompoundTargetPredicate {
             combinator: PredicateCombinator::Any,
             atoms: vec![
-                TargetPredicate::OsList(vec!["linux".into()]),
-                TargetPredicate::OsList(vec!["macos".into()]),
+                TargetPredicate::os_list(["linux"]),
+                TargetPredicate::os_list(["macos"]),
             ],
         };
         assert!(p.matches(&linux_x86()));
@@ -253,7 +276,7 @@ mod tests {
     fn compound_none_inverts_all() {
         let p = CompoundTargetPredicate {
             combinator: PredicateCombinator::None,
-            atoms: vec![TargetPredicate::OsList(vec!["windows".into()])],
+            atoms: vec![TargetPredicate::os_list(["windows"])],
         };
         assert!(p.matches(&linux_x86()));
     }

@@ -193,11 +193,11 @@ fn resolve_strs<'a>(
 /// TOML keys to a [`TargetPredicate`].
 fn parse_target_key(key: &str) -> TargetPredicate {
     if key.starts_with("cfg(") {
-        TargetPredicate::CargoCfg(key.to_string())
+        TargetPredicate::cargo_cfg(key)
     } else {
         // Explicit target triple; encode as cfg(target = "...") so the
         // engine sees it as a typed predicate and not a stringly key.
-        TargetPredicate::CargoCfg(format!("cfg(target = \"{key}\")"))
+        TargetPredicate::cargo_cfg(format!("cfg(target = \"{key}\")"))
     }
 }
 

@@ -290,7 +290,7 @@ winapi = "0.3"
         let p = m.find_package("p").unwrap();
         let nix = p.dependencies.iter().find(|d| d.name == "nix").unwrap();
         let pred = nix.target_predicate.as_ref().unwrap();
-        assert!(matches!(pred, gen_types::TargetPredicate::CargoCfg(s) if s.contains("unix")));
+        assert!(matches!(pred, gen_types::TargetPredicate::CargoCfg { expr } if expr.contains("unix")));
         let winapi = p.dependencies.iter().find(|d| d.name == "winapi").unwrap();
         assert!(matches!(winapi.kind, gen_types::DependencyKind::Dev));
     }

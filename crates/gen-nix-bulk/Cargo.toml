@@ -1,0 +1,23 @@
+[package]
+name = "gen-nix-bulk"
+description = "gen — per-tree (crane shape) bulk Nix renderer. Sibling of gen-nix's per-crate renderer. Produces one big derivation that builds the entire workspace in one shot — cheaper for CI's first-canary build, more expensive for incremental local dev. Operators pick the shape via shikumi config (RenderMode::PerTree)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_nix_bulk"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+gen-types = { workspace = true }
+gen-nix = { workspace = true }
+indexmap = { workspace = true }
+thiserror = { workspace = true }

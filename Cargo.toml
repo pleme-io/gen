@@ -3,8 +3,13 @@ resolver = "3"
 members = [
     "crates/gen-types",
     "crates/gen-cargo",
+    "crates/gen-npm",
+    "crates/gen-bundler",
+    "crates/gen-adapter-forge",
+    "crates/gen-polyglot",
     "crates/gen-config",
     "crates/gen-nix",
+    "crates/gen-nix-bulk",
     "crates/gen-cache-attic",
     "crates/gen-cli",
 ]
@@ -22,8 +27,13 @@ authors = ["pleme-io"]
 # Workspace crates
 gen-types = { path = "crates/gen-types", version = "0.1.0" }
 gen-cargo = { path = "crates/gen-cargo", version = "0.1.0" }
+gen-npm = { path = "crates/gen-npm", version = "0.1.0" }
+gen-bundler = { path = "crates/gen-bundler", version = "0.1.0" }
+gen-adapter-forge = { path = "crates/gen-adapter-forge", version = "0.1.0" }
+gen-polyglot = { path = "crates/gen-polyglot", version = "0.1.0" }
 gen-config = { path = "crates/gen-config", version = "0.1.0" }
 gen-nix = { path = "crates/gen-nix", version = "0.1.0" }
+gen-nix-bulk = { path = "crates/gen-nix-bulk", version = "0.1.0" }
 gen-cache-attic = { path = "crates/gen-cache-attic", version = "0.1.0" }
 gen-cli = { path = "crates/gen-cli", version = "0.1.0" }
 

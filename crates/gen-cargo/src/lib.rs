@@ -145,15 +145,31 @@ fn expand_glob(root: &Path, pattern: &str) -> Option<Vec<PathBuf>> {
     if !rest.is_empty() && rest != "/" {
         return None; // unsupported tail
     }
-    let dir = root.join(prefix.trim_end_matches('/'));
+    // Cargo glob shapes seen in the fleet:
+    //   "crates/*"        — dir-prefix glob (matches dirs under crates/)
+    //   "ratatui-*"       — file-prefix glob (matches dirs in root with this prefix)
+    // Distinguish by whether prefix ends with '/' (dir) or a name segment.
+    let (search_dir, name_prefix) =
+        if prefix.is_empty() || prefix.ends_with('/') {
+            (root.join(prefix.trim_end_matches('/')), String::new())
+        } else if let Some(slash) = prefix.rfind('/') {
+            (root.join(&prefix[..slash]), prefix[slash + 1..].to_string())
+        } else {
+            (root.to_path_buf(), prefix.to_string())
+        };
     let mut out = Vec::new();
-    let entries = std::fs::read_dir(&dir).ok()?;
+    let entries = std::fs::read_dir(&search_dir).ok()?;
     for e in entries.flatten() {
         let path = e.path();
-        if path.is_dir() && path.join("Cargo.toml").exists() {
-            if let Ok(rel) = path.strip_prefix(root) {
-                out.push(rel.to_path_buf());
-            }
+        if !path.is_dir() || !path.join("Cargo.toml").exists() {
+            continue;
+        }
+        let fname = path.file_name()?.to_string_lossy().into_owned();
+        if !name_prefix.is_empty() && !fname.starts_with(&name_prefix) {
+            continue;
+        }
+        if let Ok(rel) = path.strip_prefix(root) {
+            out.push(rel.to_path_buf());
         }
     }
     out.sort();

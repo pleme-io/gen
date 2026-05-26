@@ -50,7 +50,7 @@ pub fn convert_package(
         .as_ref()
         .and_then(|v| v.resolve(ws_version))
         .unwrap_or("0.0.0");
-    let version = Version::parse(version_raw).ok_or_else(|| CargoError::BadVersion {
+    let version = parse_cargo_version(version_raw).ok_or_else(|| CargoError::BadVersion {
         raw: version_raw.to_string(),
         context: format!("package `{name}` version"),
     })?;
@@ -339,8 +339,12 @@ pub fn parse_version_constraint(name: &str, raw: Option<&str>) -> Result<Version
 
 /// Parse a Cargo version requirement segment into a [`Version`]. Cargo
 /// accepts `"1"` / `"1.0"` / `"1.0.0"`; missing segments are zero-padded
-/// per the Cargo spec.
+/// per the Cargo spec. A trailing `.*` wildcard means "any patch" —
+/// we collapse to `.0` (caller layer keeps original raw for round-trip).
 fn parse_cargo_version(raw: &str) -> Option<Version> {
+    // Strip a trailing `.*` wildcard (NuGet/pip shape some Cargo deps
+    // accept) — treat as "any version at this prefix".
+    let raw = raw.trim_end_matches(".*");
     // Drop pre-release / build metadata before padding — they only attach
     // to the patch segment in SemVer, so we can re-attach after padding.
     let (core, suffix) = match raw.find(|c| c == '-' || c == '+') {
@@ -364,6 +368,11 @@ fn parse_one_spec(name: &str, raw: &str) -> Result<ConstraintSpec> {
             raw: ctx.to_string(),
         })
     };
+    // Strip wildcard suffix on the raw spec too so `<=0.61.*` parses as
+    // `<=0.61.0` (the `.*` semantics — "match anything at this prefix" —
+    // are preserved by the surrounding operator).
+    let raw_trimmed = raw.trim_end_matches(".*");
+    let raw = if raw_trimmed.is_empty() { raw } else { raw_trimmed };
     if let Some(rest) = raw.strip_prefix(">=") {
         Ok(ConstraintSpec::GreaterEqual(parse(rest.trim(), raw)?))
     } else if let Some(rest) = raw.strip_prefix("<=") {

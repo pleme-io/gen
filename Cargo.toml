@@ -3,6 +3,8 @@ resolver = "3"
 members = [
     "crates/gen-types",
     "crates/gen-cargo",
+    "crates/gen-config",
+    "crates/gen-cli",
 ]
 
 [workspace.package]
@@ -18,15 +20,20 @@ authors = ["pleme-io"]
 # Workspace crates
 gen-types = { path = "crates/gen-types", version = "0.1.0" }
 gen-cargo = { path = "crates/gen-cargo", version = "0.1.0" }
+gen-config = { path = "crates/gen-config", version = "0.1.0" }
+gen-cli = { path = "crates/gen-cli", version = "0.1.0" }
 
 # Third-party
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+serde_yaml = "0.9"
 indexmap = { version = "2", features = ["serde"] }
 thiserror = "2"
 blake3 = "1"
 chrono = { version = "0.4", features = ["serde"] }
 toml = "0.8"
+clap = { version = "4", features = ["derive"] }
+shikumi = { git = "https://github.com/pleme-io/shikumi.git", rev = "a497fc03885339f169aa805f706f081da2a10e7a" }
 
 [workspace.lints.clippy]
 pedantic = { level = "warn", priority = -1 }

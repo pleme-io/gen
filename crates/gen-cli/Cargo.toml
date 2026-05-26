@@ -1,0 +1,28 @@
+[package]
+name = "gen-cli"
+description = "gen — operator-facing CLI. Subcommands: check (parse + print typed manifest), lock (regenerate lockfile-derived data), config-show (dump tier), config-diff (compare tiers). Wires every adapter to the operator through one binary; new adapters land in the dispatch table, not as new tools."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "gen"
+path = "src/main.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+gen-types = { workspace = true }
+gen-cargo = { workspace = true }
+gen-config = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+clap = { workspace = true }
+shikumi = { workspace = true }
+thiserror = { workspace = true }

@@ -1,0 +1,24 @@
+[package]
+name = "gen-config"
+description = "gen — typed shikumi::TieredConfig for the universal package-manager engine. Owns the operator-facing knobs: workspace root resolution, cache substituter URLs, render policy (per-crate / per-tree), the target the engine evaluates predicates against, and the discovery rules that map a directory to an adapter."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_config"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+gen-types = { workspace = true }
+serde = { workspace = true }
+serde_yaml = { workspace = true }
+indexmap = { workspace = true }
+shikumi = { workspace = true }

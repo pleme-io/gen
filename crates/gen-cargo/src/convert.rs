@@ -440,7 +440,14 @@ pub fn convert_lockfile(raw: &CargoLock, lock_path: &Path) -> Result<Lockfile> {
                 field: "name",
             })?;
         let source = parse_lock_source(p);
-        let integrity = p.checksum.clone().map(|h| format!("sha256:{h}"));
+        // Modern v2+ lockfile: checksum inline on the package entry.
+        // Legacy v1 lockfile: checksum lives under the [metadata] table
+        // keyed by `"checksum <name> <version> (<source>)"`.
+        let integrity = p
+            .checksum
+            .clone()
+            .or_else(|| lookup_metadata_checksum(raw, p))
+            .map(|h| format!("sha256:{h}"));
         let resolved_dependencies = p
             .dependencies
             .iter()
@@ -484,6 +491,20 @@ fn compute_lockfile_hash(resolved: &IndexMap<String, ResolvedPackage>) -> Conten
     // because IndexMap preserves insertion order + serde_json is stable.
     let bytes = serde_json::to_vec(resolved).unwrap_or_default();
     ContentHash::of(&bytes)
+}
+
+/// Look up a v1-format checksum from the lockfile's `[metadata]`
+/// table. Keys look like:
+///   `"checksum serde 1.0.228 (registry+https://github.com/rust-lang/crates.io-index)"`
+/// — they encode the package's full source-qualified identity. We
+/// reconstruct that key from the package fields and look it up.
+fn lookup_metadata_checksum(raw: &CargoLock, p: &RawLockPackage) -> Option<String> {
+    if raw.metadata.is_empty() {
+        return None;
+    }
+    let source = p.source.as_deref()?;
+    let key = format!("checksum {} {} ({source})", p.name, p.version);
+    raw.metadata.get(&key).cloned()
 }
 
 fn registry_for(p: &RawLockPackage) -> Registry {

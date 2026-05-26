@@ -146,12 +146,27 @@ impl RawInheritedStringList {
 }
 
 /// Cargo.lock — `version` + `[[package]]` entries.
+///
+/// Two on-disk formats:
+///   - **v2+/v3** (modern): checksums live inline on each `[[package]]`
+///     entry as `checksum = "..."`. Default since Cargo 2019.
+///   - **v1** (legacy): checksums live in a separate `[metadata]`
+///     table at the bottom keyed by
+///     `"checksum <name> <version> (<source>)" = "..."`.
+///
+/// The deserialization captures both; [`super::convert::convert_lockfile`]
+/// merges them so consumers see one consistent shape regardless of
+/// which format the source repo uses.
 #[derive(Debug, Clone, Deserialize)]
 pub struct CargoLock {
     #[serde(default)]
     pub version: Option<u32>,
     #[serde(default, rename = "package")]
     pub packages: Vec<RawLockPackage>,
+    /// Legacy v1 metadata table — keyed by
+    /// `"checksum <name> <version> (<source>)"`. Empty for v2+ lockfiles.
+    #[serde(default)]
+    pub metadata: IndexMap<String, String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

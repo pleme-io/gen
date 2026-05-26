@@ -10,7 +10,10 @@ members = [
     "crates/gen-config",
     "crates/gen-nix",
     "crates/gen-nix-bulk",
+    "crates/gen-bazel",
+    "crates/gen-buck",
     "crates/gen-cache-attic",
+    "crates/gen-caixa-bridge",
     "crates/gen-cli",
 ]
 
@@ -34,6 +37,9 @@ gen-polyglot = { path = "crates/gen-polyglot", version = "0.1.0" }
 gen-config = { path = "crates/gen-config", version = "0.1.0" }
 gen-nix = { path = "crates/gen-nix", version = "0.1.0" }
 gen-nix-bulk = { path = "crates/gen-nix-bulk", version = "0.1.0" }
+gen-bazel = { path = "crates/gen-bazel", version = "0.1.0" }
+gen-buck = { path = "crates/gen-buck", version = "0.1.0" }
+gen-caixa-bridge = { path = "crates/gen-caixa-bridge", version = "0.1.0" }
 gen-cache-attic = { path = "crates/gen-cache-attic", version = "0.1.0" }
 gen-cli = { path = "crates/gen-cli", version = "0.1.0" }
 

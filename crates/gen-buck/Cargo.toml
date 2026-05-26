@@ -1,0 +1,23 @@
+[package]
+name = "gen-buck"
+description = "gen — Buck2 BUCK file renderer. Sibling of gen-nix / gen-nix-bulk / gen-bazel; same typed Manifest in, typed Buck Starlark out. Buck2's BUCK files are Starlark-dialect — we reuse the typed Starlark AST published by gen-bazel and emit Buck-specific rule names + attrs."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_buck"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+gen-types = { workspace = true }
+gen-bazel = { workspace = true }
+indexmap = { workspace = true }
+thiserror = { workspace = true }

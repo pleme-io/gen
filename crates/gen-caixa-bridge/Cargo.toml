@@ -1,0 +1,24 @@
+[package]
+name = "gen-caixa-bridge"
+description = "gen — typed bridge between pleme-io's caixa SDLC primitive and the gen ecosystem. (defcaixa …) blocks declare a :gen slot; this crate translates the typed CaixaToGen request into an AdapterRoute the caixa renderer can act on. The first M9 milestone; full caixa-side wiring (caixa-author skill update, feira render integration) lands when the typed surface stabilizes."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_caixa_bridge"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+gen-types = { workspace = true }
+gen-config = { workspace = true }
+serde = { workspace = true }
+indexmap = { workspace = true }
+thiserror = { workspace = true }

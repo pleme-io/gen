@@ -1,0 +1,22 @@
+[package]
+name = "gen-bazel"
+description = "gen — Bazel BUILD.bazel + MODULE.bazel renderer. Sibling of gen-nix (per-crate Nix) and gen-nix-bulk (per-tree Nix); same typed Manifest in, typed Starlark out. Operators pick the backend via shikumi config — the same source-of-truth typed Manifest renders to Nix or Bazel mechanically."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_bazel"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+gen-types = { workspace = true }
+indexmap = { workspace = true }
+thiserror = { workspace = true }

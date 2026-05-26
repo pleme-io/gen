@@ -308,6 +308,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "gen-bazel"
+version = "0.1.0"
+dependencies = [
+ "gen-types",
+ "indexmap",
+ "thiserror",
+]
+
+[[package]]
+name = "gen-buck"
+version = "0.1.0"
+dependencies = [
+ "gen-bazel",
+ "gen-types",
+ "indexmap",
+ "thiserror",
+]
+
+[[package]]
 name = "gen-bundler"
 version = "0.1.0"
 dependencies = [
@@ -320,6 +339,17 @@ dependencies = [
 
 [[package]]
 name = "gen-cache-attic"
+version = "0.1.0"
+dependencies = [
+ "gen-config",
+ "gen-types",
+ "indexmap",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "gen-caixa-bridge"
 version = "0.1.0"
 dependencies = [
  "gen-config",

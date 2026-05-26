@@ -166,8 +166,7 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
         Cmd::Render { path } => {
             let root = resolve_root(path, cfg);
             let manifest = gen_cargo::parse(&root).map_err(CliError::Cargo)?;
-            let nix = gen_nix::render_workspace(&manifest);
-            let text = nix.render_to_string();
+            let text = gen_nix::render_workspace_to_cargo_nix(&manifest);
             if cfg.render.output_path.is_empty() {
                 println!("{text}");
             } else {

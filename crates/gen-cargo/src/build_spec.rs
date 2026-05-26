@@ -98,8 +98,50 @@ pub enum DepKind {
     Dev,
 }
 
-/// Generate the complete typed BuildSpec for the workspace at `root`.
+/// Host target triple — the platform the spec targets unless the
+/// caller overrides via `generate_for_target`.
+fn host_target_triple() -> &'static str {
+    // Conservative: known fleet hosts. Full triple detection lives
+    // in shikumi config (M+1 enrichment).
+    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+    {
+        "aarch64-apple-darwin"
+    }
+    #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+    {
+        "x86_64-apple-darwin"
+    }
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+    {
+        "x86_64-unknown-linux-gnu"
+    }
+    #[cfg(all(target_os = "linux", target_arch = "aarch64"))]
+    {
+        "aarch64-unknown-linux-gnu"
+    }
+    #[cfg(not(any(
+        all(target_os = "macos", target_arch = "aarch64"),
+        all(target_os = "macos", target_arch = "x86_64"),
+        all(target_os = "linux", target_arch = "x86_64"),
+        all(target_os = "linux", target_arch = "aarch64"),
+    )))]
+    {
+        ""
+    }
+}
+
+/// Generate the complete typed BuildSpec for the workspace at `root`,
+/// targeting the host. cargo metadata is invoked with
+/// `--filter-platform=<host>` so the resolve graph contains only deps
+/// active for this target — the substrate Nix side never has to
+/// evaluate cfg() expressions itself.
 pub fn generate(root: &Path) -> Result<BuildSpec> {
+    generate_for_target(root, host_target_triple())
+}
+
+/// Generate the BuildSpec for an explicit target triple. Used by
+/// cross-build CI to produce a per-target spec.
+pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
     // Canonicalize the root path so the relative-path math against
     // cargo metadata's absolute paths produces the right answer.
     let root = std::fs::canonicalize(root).map_err(|source| CargoError::Io {
@@ -117,13 +159,17 @@ pub fn generate(root: &Path) -> Result<BuildSpec> {
             ),
         });
     }
-    let meta = MetadataCommand::new()
-        .manifest_path(&manifest_path)
-        .exec()
-        .map_err(|e| CargoError::Io {
-            path: manifest_path.clone(),
-            source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
-        })?;
+    // Filter the resolve graph to deps active for this target.
+    // cargo's resolver does the heavy lifting; we just pass --filter-platform.
+    let mut cmd = MetadataCommand::new();
+    cmd.manifest_path(&manifest_path);
+    if !target.is_empty() {
+        cmd.other_options(vec!["--filter-platform".to_string(), target.to_string()]);
+    }
+    let meta = cmd.exec().map_err(|e| CargoError::Io {
+        path: manifest_path.clone(),
+        source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+    })?;
 
     // Lockfile checksums — cargo-metadata doesn't surface them, so we
     // read Cargo.lock directly + index by (name, version). Surface any

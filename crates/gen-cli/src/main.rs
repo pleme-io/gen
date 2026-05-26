@@ -83,6 +83,18 @@ enum Cmd {
     LockBuild {
         path: Option<PathBuf>,
     },
+    /// Canonical operator entrypoint. Regenerates every build sidecar
+    /// the substrate consumer needs: Cargo.build-spec.json today,
+    /// adapter-equivalents (npm/bundler/etc.) when they ship. Run
+    /// whenever Cargo.lock or package-lock.json changes.
+    ///
+    /// One subcommand, one operation, deterministic output. The
+    /// `lock-build` / `lock-features` subcommands remain as
+    /// lower-level surfaces; `gen build` is what fleet operators
+    /// invoke.
+    Build {
+        path: Option<PathBuf>,
+    },
     /// Probe the configured substituters for every lockfile entry in
     /// the workspace at <path>. Report hit / miss / hit-rate.
     #[command(name = "cache-probe")]
@@ -208,6 +220,25 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             let root = resolve_root(path, cfg);
             let out = gen_cargo::build_spec::generate_and_write(&root).map_err(CliError::Cargo)?;
             eprintln!("gen: wrote {}", out.display());
+            Ok(())
+        }
+        Cmd::Build { path } => {
+            let root = resolve_root(path, cfg);
+            // Atomic: regenerate every sidecar the substrate consumer
+            // needs based on the adapter the workspace declares. Today
+            // that's BuildSpec for cargo workspaces; future adapters
+            // land here as they ship.
+            let adapter = pick_adapter(&root, cfg)?;
+            match adapter.as_str() {
+                "cargo" => {
+                    let out = gen_cargo::build_spec::generate_and_write(&root)
+                        .map_err(CliError::Cargo)?;
+                    eprintln!("gen build: wrote {}", out.display());
+                }
+                other => {
+                    return Err(CliError::RenderNotImplementedForAdapter(other.to_string()));
+                }
+            }
             Ok(())
         }
         Cmd::CacheProbe { path } => {

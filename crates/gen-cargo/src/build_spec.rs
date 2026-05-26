@@ -52,6 +52,19 @@ pub struct CrateSpec {
     pub source: CrateSource,
     pub features: Vec<String>,
     pub proc_macro: bool,
+    /// Path to the crate's `build.rs` relative to the unpacked
+    /// source root, when one exists. `Some("build/build.rs")` for
+    /// crates that place their build script outside the root (e.g.
+    /// rustversion); `Some("build.rs")` for the common case; `None`
+    /// when there's no build script.
+    ///
+    /// buildRustCrate auto-detects `build.rs` at the source root,
+    /// but doesn't search subdirectories — so passing this
+    /// explicitly is the only correct way to surface non-standard
+    /// layouts. Without this field, rustversion-style crates fail
+    /// at link time with "no such file" for the build-script
+    /// output.
+    pub build_script: Option<String>,
     /// All non-dev deps. Kept as a flat list for cross-tool consumers
     /// that need to walk the union (e.g. SBOM emitters).
     pub dependencies: Vec<CrateDepSpec>,
@@ -297,6 +310,20 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             .iter()
             .any(|t| t.kind.iter().any(|k| k == "proc-macro"));
 
+        // Build script path detection. A `custom-build` target's
+        // src_path is the absolute path to the build.rs file; we
+        // strip the package's manifest_dir prefix to get the
+        // relative path the substrate consumer needs.
+        let manifest_dir = pkg.manifest_path.parent().map(|p| p.to_string()).unwrap_or_default();
+        let build_script = pkg
+            .targets
+            .iter()
+            .find(|t| t.kind.iter().any(|k| k == "custom-build"))
+            .and_then(|t| {
+                let abs = t.src_path.to_string();
+                strip_dir_prefix(&abs, &manifest_dir)
+            });
+
         // Source resolution.
         let source = if is_member {
             let abs_dir = pkg.manifest_path.parent().map(|p| p.to_string()).unwrap_or_default();
@@ -437,6 +464,7 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 source,
                 features,
                 proc_macro,
+                build_script,
                 dependencies,
                 runtime_dependencies,
                 build_dependencies,
@@ -546,6 +574,15 @@ fn synthesize_crate_renames(
         });
     }
     out
+}
+
+/// Strip `dir/` prefix from `path` and return the remainder. Used to
+/// translate absolute build-script paths into relative-to-manifest
+/// paths the substrate consumer can pass to buildRustCrate.
+fn strip_dir_prefix(path: &str, dir: &str) -> Option<String> {
+    let dir_trim = dir.trim_end_matches('/');
+    let prefix = format!("{dir_trim}/");
+    path.strip_prefix(&prefix).map(String::from)
 }
 
 /// Compute relative path from `from` to `base`. Returns None if

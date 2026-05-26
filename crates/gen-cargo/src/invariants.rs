@@ -204,6 +204,7 @@ mod tests {
                 source,
                 features: vec![],
                 proc_macro: false,
+                build_script: None,
                 dependencies: vec![],
                 runtime_dependencies: vec![],
                 build_dependencies: vec![],

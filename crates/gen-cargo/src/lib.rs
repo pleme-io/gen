@@ -15,6 +15,7 @@ pub mod build_spec;
 pub mod convert;
 pub mod error;
 pub mod features;
+pub mod fleet_commit;
 pub mod fleet_sweep;
 pub mod invariants;
 pub mod raw;

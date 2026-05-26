@@ -107,6 +107,23 @@ enum Cmd {
         #[arg(long)]
         write: bool,
     },
+    /// Commit (and optionally push) Cargo.build-spec.json across the
+    /// fleet. Walks repos under <path>; for each, stages only the
+    /// sidecar (never `git add -A`) and commits with the canonical
+    /// deterministic message. Idempotent — repos already at-HEAD are
+    /// skipped.
+    #[command(name = "fleet-commit")]
+    FleetCommit {
+        path: PathBuf,
+        /// Push after each commit. Default false.
+        #[arg(long)]
+        push: bool,
+        /// `git pull --rebase` before push to absorb upstream commits
+        /// (CI auto-release lands frequently; this avoids
+        /// non-fast-forward rejections).
+        #[arg(long)]
+        rebase_first: bool,
+    },
     /// Probe the configured substituters for every lockfile entry in
     /// the workspace at <path>. Report hit / miss / hit-rate.
     #[command(name = "cache-probe")]
@@ -233,6 +250,36 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             let out = gen_cargo::build_spec::generate_and_write(&root).map_err(CliError::Cargo)?;
             eprintln!("gen: wrote {}", out.display());
             Ok(())
+        }
+        Cmd::FleetCommit {
+            path,
+            push,
+            rebase_first,
+        } => {
+            let report = gen_cargo::fleet_commit::run(path, *push, *rebase_first)
+                .map_err(CliError::Cargo)?;
+            #[derive(serde::Serialize)]
+            struct Summary {
+                root: std::path::PathBuf,
+                total: usize,
+                committed: usize,
+                pushed: usize,
+                skipped: usize,
+                failed: usize,
+                elapsed_ms: u64,
+                report: gen_cargo::fleet_commit::CommitReport,
+            }
+            let summary = Summary {
+                root: report.root.clone(),
+                total: report.total(),
+                committed: report.committed_count(),
+                pushed: report.pushed_count(),
+                skipped: report.skipped_count(),
+                failed: report.failed_count(),
+                elapsed_ms: report.total_elapsed_ms,
+                report,
+            };
+            emit(&summary, cli.format)
         }
         Cmd::FleetSweep { path, write } => {
             let report = gen_cargo::fleet_sweep::run(path, *write).map_err(CliError::Cargo)?;

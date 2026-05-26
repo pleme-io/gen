@@ -943,7 +943,7 @@
           "features": [],
           "uses_default_features": true,
           "optional": false,
-          "target": null
+          "target": "cfg(unix)"
         },
         {
           "name": "num_traits",
@@ -972,7 +972,7 @@
           "features": [],
           "uses_default_features": true,
           "optional": false,
-          "target": null
+          "target": "cfg(unix)"
         },
         {
           "name": "num_traits",
@@ -3253,15 +3253,6 @@
           "target": null
         },
         {
-          "name": "shikumi",
-          "package_key": "shikumi-0.1.0",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": null
-        },
-        {
           "name": "thiserror",
           "package_key": "thiserror-2.0.18",
           "kind": "normal",
@@ -3335,15 +3326,6 @@
           "features": [
             "derive"
           ],
-          "uses_default_features": true,
-          "optional": false,
-          "target": null
-        },
-        {
-          "name": "shikumi",
-          "package_key": "shikumi-0.1.0",
-          "kind": "normal",
-          "features": [],
           "uses_default_features": true,
           "optional": false,
           "target": null
@@ -3585,7 +3567,7 @@
           "features": [],
           "uses_default_features": true,
           "optional": false,
-          "target": null
+          "target": "cfg(target_vendor = \"apple\")"
         }
       ],
       "runtime_dependencies": [
@@ -3596,7 +3578,7 @@
           "features": [],
           "uses_default_features": true,
           "optional": false,
-          "target": null
+          "target": "cfg(target_vendor = \"apple\")"
         }
       ],
       "build_dependencies": [],
@@ -3829,7 +3811,7 @@
           "features": [],
           "uses_default_features": true,
           "optional": false,
-          "target": null
+          "target": "cfg(target_os = \"macos\")"
         },
         {
           "name": "libc",
@@ -3885,7 +3867,7 @@
           "features": [],
           "uses_default_features": true,
           "optional": false,
-          "target": null
+          "target": "cfg(target_os = \"macos\")"
         },
         {
           "name": "libc",

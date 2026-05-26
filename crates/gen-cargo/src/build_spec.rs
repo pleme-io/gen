@@ -65,6 +65,13 @@ pub struct CrateSpec {
     /// at link time with "no such file" for the build-script
     /// output.
     pub build_script: Option<String>,
+    /// Declared binary targets — empty when the crate is library-only.
+    /// Threads through to buildRustCrate's `crateBin` arg, preventing
+    /// it from auto-discovering example/test bins under src/bin/ that
+    /// don't compile in isolation (e.g. alloc-no-stdlib's heap_alloc).
+    /// Each entry: { name, path } where path is relative to the
+    /// unpacked source root.
+    pub binaries: Vec<CrateBinSpec>,
     /// All non-dev deps. Kept as a flat list for cross-tool consumers
     /// that need to walk the union (e.g. SBOM emitters).
     pub dependencies: Vec<CrateDepSpec>,
@@ -86,6 +93,14 @@ pub struct CrateSpec {
 pub struct CrateRenameRecord {
     pub version: String,
     pub rename: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct CrateBinSpec {
+    pub name: String,
+    /// Path relative to the unpacked source root (e.g. "src/main.rs"
+    /// or "src/bin/cli.rs").
+    pub path: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -324,6 +339,22 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 strip_dir_prefix(&abs, &manifest_dir)
             });
 
+        // Binary targets — only `bin` kind. Empty list (the common
+        // case for libs) prevents buildRustCrate from auto-discovering
+        // src/bin/* files that may not compile in isolation.
+        let binaries: Vec<CrateBinSpec> = pkg
+            .targets
+            .iter()
+            .filter(|t| t.kind.iter().any(|k| k == "bin"))
+            .filter_map(|t| {
+                let abs = t.src_path.to_string();
+                strip_dir_prefix(&abs, &manifest_dir).map(|path| CrateBinSpec {
+                    name: t.name.clone(),
+                    path,
+                })
+            })
+            .collect();
+
         // Source resolution.
         let source = if is_member {
             let abs_dir = pkg.manifest_path.parent().map(|p| p.to_string()).unwrap_or_default();
@@ -465,6 +496,7 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 features,
                 proc_macro,
                 build_script,
+                binaries,
                 dependencies,
                 runtime_dependencies,
                 build_dependencies,

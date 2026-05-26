@@ -257,19 +257,24 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         .map(|p| (p.id.repr.clone(), p))
         .collect();
 
-    // Build the per-package dep edges from the resolve graph (which
-    // already knows the actual resolved dep ids — no manual matching).
-    let dep_edges: IndexMap<String, Vec<(String, String)>> = meta
+    // Build the per-package dep edges from the resolve graph. Each
+    // edge carries (local-name, resolved-pkg-id, dep-kinds-from-graph).
+    // dep_kinds is the AUTHORITATIVE source for kind classification —
+    // a single declared dep may appear in multiple kinds (normal +
+    // dev), and the graph is the only place that distinguishes them
+    // unambiguously per resolved edge.
+    type DepEdge = (String, String, Vec<cargo_metadata::DepKindInfo>);
+    let dep_edges: IndexMap<String, Vec<DepEdge>> = meta
         .resolve
         .as_ref()
         .map(|r| {
             r.nodes
                 .iter()
                 .map(|n| {
-                    let edges: Vec<(String, String)> = n
+                    let edges: Vec<DepEdge> = n
                         .deps
                         .iter()
-                        .map(|d| (d.name.clone(), d.pkg.repr.clone()))
+                        .map(|d| (d.name.clone(), d.pkg.repr.clone(), d.dep_kinds.clone()))
                         .collect();
                     (n.id.repr.clone(), edges)
                 })
@@ -351,55 +356,50 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             .unwrap_or_default();
 
         // Build typed dep edges using the resolve graph (authoritative
-        // for "what is in the closure") combined with each dep's
-        // declared kind/features/optional from the Cargo.toml side.
-        let edges_for_pkg: Vec<(String, String)> = dep_edges
-            .get(&pkg.id.repr)
-            .cloned()
-            .unwrap_or_default();
+        // for both "what's in the closure" AND "what kind each edge
+        // is"). The graph's dep_kinds field carries the per-edge kind
+        // — that's the source of truth, never the Cargo.toml-side
+        // declaration. A single declared dep may register as both
+        // [dependencies] AND [dev-dependencies] in cargo's eyes;
+        // dep_kinds enumerates each one.
+        let edges_for_pkg = dep_edges.get(&pkg.id.repr).cloned().unwrap_or_default();
 
         let mut dependencies: Vec<CrateDepSpec> = Vec::new();
-        for (local_name, dep_pkg_id) in &edges_for_pkg {
+        for (local_name, dep_pkg_id, dep_kinds) in &edges_for_pkg {
             let Some(dep_pkg) = by_id.get(dep_pkg_id) else { continue; };
             let package_key = format!("{}-{}", dep_pkg.name, dep_pkg.version);
 
-            // Look up the consumer's declared dep entry to recover
-            // features + optional + kind + target. cargo metadata
-            // shows multiple entries for the same dep name when it
-            // appears in normal+build+dev — we pick the first non-dev
-            // edge that matches the canonical name.
-            let declared = pkg
-                .dependencies
+            // Pick the first non-Dev kind from the graph. If every
+            // kind is Dev, this edge is dev-only — skip entirely.
+            let chosen = dep_kinds
                 .iter()
-                .find(|d| {
-                    let consumer_name = d.rename.clone().unwrap_or_else(|| d.name.clone());
-                    &consumer_name == local_name
-                        && d.kind != cargo_metadata::DependencyKind::Development
-                });
+                .find(|k| !matches!(k.kind, cargo_metadata::DependencyKind::Development));
+            let Some(graph_kind) = chosen else { continue };
 
-            let (kind, features, uses_default_features, optional, target) =
-                if let Some(d) = declared {
-                    let k = match d.kind {
-                        cargo_metadata::DependencyKind::Normal => DepKind::Normal,
-                        cargo_metadata::DependencyKind::Build => DepKind::Build,
-                        cargo_metadata::DependencyKind::Development => DepKind::Dev,
-                        _ => DepKind::Normal,
-                    };
-                    (
-                        k,
-                        d.features.iter().map(String::from).collect(),
-                        d.uses_default_features,
-                        d.optional,
-                        d.target.as_ref().map(|p| p.to_string()),
-                    )
-                } else {
-                    (DepKind::Normal, Vec::new(), true, false, None)
-                };
+            let kind = match graph_kind.kind {
+                cargo_metadata::DependencyKind::Normal => DepKind::Normal,
+                cargo_metadata::DependencyKind::Build => DepKind::Build,
+                cargo_metadata::DependencyKind::Development => DepKind::Dev,
+                _ => DepKind::Normal,
+            };
+            let target = graph_kind.target.as_ref().map(|p| p.to_string());
 
-            // Dev deps are not part of the runtime closure; skip.
-            if matches!(kind, DepKind::Dev) {
-                continue;
-            }
+            // Look up the consumer's declared dep entry to recover
+            // features + optional + uses_default_features. Match by
+            // local name + kind to avoid mis-attributing a normal
+            // edge's features to a dev edge of the same name.
+            let declared = pkg.dependencies.iter().find(|d| {
+                let consumer_name = d.rename.clone().unwrap_or_else(|| d.name.clone());
+                &consumer_name == local_name && d.kind == graph_kind.kind
+            });
+            let (features, uses_default_features, optional) = match declared {
+                Some(d) => (
+                    d.features.iter().map(String::from).collect(),
+                    d.uses_default_features,
+                    d.optional,
+                ),
+                None => (Vec::new(), true, false),
+            };
 
             dependencies.push(CrateDepSpec {
                 name: local_name.clone(),

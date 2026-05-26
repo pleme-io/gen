@@ -417,6 +417,7 @@ dependencies = [
  "gen-nix",
  "gen-npm",
  "gen-types",
+ "indexmap",
  "serde",
  "serde_json",
  "serde_yaml",

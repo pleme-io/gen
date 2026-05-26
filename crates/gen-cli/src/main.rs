@@ -95,6 +95,18 @@ enum Cmd {
     Build {
         path: Option<PathBuf>,
     },
+    /// Run gen build across every cargo workspace under <path>.
+    /// Emits a typed sweep report (JSON|YAML). Use --write to persist
+    /// Cargo.build-spec.json into each successful repo for committing.
+    #[command(name = "fleet-sweep")]
+    FleetSweep {
+        /// Root directory containing N repo sub-directories.
+        path: PathBuf,
+        /// Persist Cargo.build-spec.json into each successful repo.
+        /// Default false — dry-run sweep for fleet-health visibility.
+        #[arg(long)]
+        write: bool,
+    },
     /// Probe the configured substituters for every lockfile entry in
     /// the workspace at <path>. Report hit / miss / hit-rate.
     #[command(name = "cache-probe")]
@@ -221,6 +233,41 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             let out = gen_cargo::build_spec::generate_and_write(&root).map_err(CliError::Cargo)?;
             eprintln!("gen: wrote {}", out.display());
             Ok(())
+        }
+        Cmd::FleetSweep { path, write } => {
+            let report = gen_cargo::fleet_sweep::run(path, *write).map_err(CliError::Cargo)?;
+            #[derive(serde::Serialize)]
+            struct Summary {
+                root: std::path::PathBuf,
+                total: usize,
+                ok: usize,
+                failed: usize,
+                skipped: usize,
+                total_spec_bytes: usize,
+                elapsed_ms: u64,
+                failures_by_category: indexmap::IndexMap<String, Vec<String>>,
+                #[serde(skip_serializing_if = "std::ops::Not::not")]
+                wrote_sidecars: bool,
+                report: gen_cargo::fleet_sweep::SweepReport,
+            }
+            let by_cat = report.failures_by_category();
+            let by_cat_str: indexmap::IndexMap<String, Vec<String>> = by_cat
+                .into_iter()
+                .map(|(k, v)| (format!("{k:?}"), v))
+                .collect();
+            let summary = Summary {
+                root: report.root.clone(),
+                total: report.total(),
+                ok: report.ok_count(),
+                failed: report.failed_count(),
+                skipped: report.skipped_count(),
+                total_spec_bytes: report.total_spec_bytes(),
+                elapsed_ms: report.total_elapsed_ms,
+                failures_by_category: by_cat_str,
+                wrote_sidecars: *write,
+                report,
+            };
+            emit(&summary, cli.format)
         }
         Cmd::Build { path } => {
             let root = resolve_root(path, cfg);

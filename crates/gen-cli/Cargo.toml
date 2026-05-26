@@ -27,6 +27,7 @@ gen-cache-attic = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 serde_yaml = { workspace = true }
+indexmap = { workspace = true }
 clap = { workspace = true }
 shikumi = { workspace = true }
 thiserror = { workspace = true }

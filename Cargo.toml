@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
     "crates/gen-types",
+    "crates/gen-cargo",
 ]
 
 [workspace.package]
@@ -16,6 +17,7 @@ authors = ["pleme-io"]
 [workspace.dependencies]
 # Workspace crates
 gen-types = { path = "crates/gen-types", version = "0.1.0" }
+gen-cargo = { path = "crates/gen-cargo", version = "0.1.0" }
 
 # Third-party
 serde = { version = "1", features = ["derive"] }
@@ -24,6 +26,7 @@ indexmap = { version = "2", features = ["serde"] }
 thiserror = "2"
 blake3 = "1"
 chrono = { version = "0.4", features = ["serde"] }
+toml = "0.8"
 
 [workspace.lints.clippy]
 pedantic = { level = "warn", priority = -1 }

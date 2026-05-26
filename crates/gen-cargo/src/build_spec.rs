@@ -478,6 +478,23 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
 
 pub fn generate_and_write(root: &Path) -> Result<std::path::PathBuf> {
     let spec = generate(root)?;
+    // Algorithmic guarantee: every emitted spec satisfies the
+    // substrate-side invariants. Violations surface as typed errors
+    // before the file lands on disk — operators never see a downstream
+    // Nix build fail from an invariant gen-cargo could have caught.
+    if let Err(violations) = crate::invariants::assert_well_formed(&spec) {
+        return Err(CargoError::Io {
+            path: root.to_path_buf(),
+            source: std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!(
+                    "gen lock-build: spec violates algorithmic invariants ({} issues):\n{}",
+                    violations.len(),
+                    serde_json::to_string_pretty(&violations).unwrap_or_default()
+                ),
+            ),
+        });
+    }
     let out = root.join("Cargo.build-spec.json");
     let body = serde_json::to_string_pretty(&spec).map_err(|e| CargoError::Io {
         path: out.clone(),

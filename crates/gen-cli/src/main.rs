@@ -68,6 +68,12 @@ enum Cmd {
     Render {
         path: Option<PathBuf>,
     },
+    /// Probe the configured substituters for every lockfile entry in
+    /// the workspace at <path>. Report hit / miss / hit-rate.
+    #[command(name = "cache-probe")]
+    CacheProbe {
+        path: Option<PathBuf>,
+    },
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -173,6 +179,55 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                 );
             }
             Ok(())
+        }
+        Cmd::CacheProbe { path } => {
+            let root = resolve_root(path, cfg);
+            let manifest = gen_cargo::parse(&root).map_err(CliError::Cargo)?;
+            let client = gen_cache_attic::client_from_config(&cfg.cache);
+            let keys: Vec<gen_cache_attic::CacheKey> = match &manifest.lockfile {
+                None => Vec::new(),
+                Some(l) => l
+                    .resolved
+                    .values()
+                    .filter(|r| r.source.is_content_addressed())
+                    .map(|r| {
+                        gen_cache_attic::CacheKey::new(
+                            // Use the integrity hash bytes when available;
+                            // fall back to BLAKE3 of the dotted-id so every
+                            // entry gets a stable typed key.
+                            r.integrity
+                                .as_deref()
+                                .and_then(|i| {
+                                    let hex = i.strip_prefix("sha256:").unwrap_or(i);
+                                    gen_types::ContentHash::from_hex_padded(hex)
+                                })
+                                .unwrap_or_else(|| {
+                                    gen_types::ContentHash::of(r.id.dotted().as_bytes())
+                                }),
+                            r.id.dotted(),
+                        )
+                    })
+                    .collect(),
+            };
+            let report = client.probe_batch(&keys);
+            #[derive(serde::Serialize)]
+            struct Summary {
+                substituters: Vec<String>,
+                probed: usize,
+                hits: usize,
+                misses: usize,
+                hit_rate: f64,
+                report: gen_cache_attic::CacheReport,
+            }
+            let summary = Summary {
+                substituters: cfg.cache.substituters.clone(),
+                probed: report.outcomes.len(),
+                hits: report.hit_count(),
+                misses: report.miss_count(),
+                hit_rate: report.hit_rate(),
+                report,
+            };
+            emit(&summary, cli.format)
         }
         Cmd::Adapters => {
             #[derive(serde::Serialize)]

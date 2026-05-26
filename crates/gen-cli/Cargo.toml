@@ -21,6 +21,7 @@ gen-types = { workspace = true }
 gen-cargo = { workspace = true }
 gen-config = { workspace = true }
 gen-nix = { workspace = true }
+gen-cache-attic = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 serde_yaml = { workspace = true }

@@ -298,6 +298,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "gen-cache-attic"
+version = "0.1.0"
+dependencies = [
+ "gen-config",
+ "gen-types",
+ "indexmap",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "gen-cargo"
 version = "0.1.0"
 dependencies = [
@@ -315,6 +326,7 @@ name = "gen-cli"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "gen-cache-attic",
  "gen-cargo",
  "gen-config",
  "gen-nix",

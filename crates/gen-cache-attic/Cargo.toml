@@ -1,0 +1,24 @@
+[package]
+name = "gen-cache-attic"
+description = "gen — typed cache client (CacheClient trait + AtticClient HEAD-probe impl + NoCacheClient default). Engines consult the trait before triggering builds; substituter hits short-circuit the rebuild. The trait is the swap-in seam for any future binary cache (cachix, S3, R2). Today attic is offline → NoCacheClient is the default; AtticClient activates when the substituter is reachable."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_cache_attic"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+gen-types = { workspace = true }
+gen-config = { workspace = true }
+serde = { workspace = true }
+indexmap = { workspace = true }
+thiserror = { workspace = true }

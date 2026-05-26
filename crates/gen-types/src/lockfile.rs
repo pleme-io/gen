@@ -40,6 +40,34 @@ impl ContentHash {
         }
         s
     }
+
+    /// Parse a 64-char hex string. Returns `None` for any other length
+    /// or non-hex content.
+    #[must_use]
+    pub fn from_hex(s: &str) -> Option<Self> {
+        if s.len() != 64 {
+            return None;
+        }
+        let mut out = [0u8; 32];
+        for (i, chunk) in s.as_bytes().chunks(2).enumerate() {
+            let hex_str = std::str::from_utf8(chunk).ok()?;
+            out[i] = u8::from_str_radix(hex_str, 16).ok()?;
+        }
+        Some(Self(out))
+    }
+
+    /// Parse a hex string of any length: 64 chars → BLAKE3-32, otherwise
+    /// re-hash the raw string. Useful for ingesting heterogeneous
+    /// integrity hashes (sha256:hex / sha512:hex / etc.) into the
+    /// typed [`ContentHash`] cache-key space without losing identity.
+    #[must_use]
+    pub fn from_hex_padded(s: &str) -> Option<Self> {
+        if s.len() == 64 {
+            Self::from_hex(s)
+        } else {
+            Some(Self::of(s.as_bytes()))
+        }
+    }
 }
 
 impl fmt::Debug for ContentHash {

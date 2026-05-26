@@ -1,0 +1,22 @@
+[package]
+name = "gen-nix"
+description = "gen — typed Nix AST + pretty-printer + per-crate (crate2nix shape) derivation renderer. Implements theory/NIX-AST.md: every Nix construct the substrate emits is a typed `NixValue` rendered through one canonical pretty-printer. `format!()` of nix syntax is forbidden in this crate's downstream consumers."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_nix"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+gen-types = { workspace = true }
+indexmap = { workspace = true }
+thiserror = { workspace = true }

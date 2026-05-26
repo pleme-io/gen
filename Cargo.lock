@@ -317,6 +317,7 @@ dependencies = [
  "clap",
  "gen-cargo",
  "gen-config",
+ "gen-nix",
  "gen-types",
  "serde",
  "serde_json",
@@ -334,6 +335,15 @@ dependencies = [
  "serde",
  "serde_yaml",
  "shikumi",
+]
+
+[[package]]
+name = "gen-nix"
+version = "0.1.0"
+dependencies = [
+ "gen-types",
+ "indexmap",
+ "thiserror",
 ]
 
 [[package]]

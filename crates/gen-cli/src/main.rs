@@ -63,6 +63,11 @@ enum Cmd {
     },
     /// List the adapter routing table (filename → adapter name).
     Adapters,
+    /// Render the workspace at <path> to Nix source (crate2nix shape).
+    /// Output goes to `cfg.render.output_path` or stdout.
+    Render {
+        path: Option<PathBuf>,
+    },
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -152,6 +157,23 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             println!("{}", diff.render_unified());
             Ok(())
         }
+        Cmd::Render { path } => {
+            let root = resolve_root(path, cfg);
+            let manifest = gen_cargo::parse(&root).map_err(CliError::Cargo)?;
+            let nix = gen_nix::render_workspace(&manifest);
+            let text = nix.render_to_string();
+            if cfg.render.output_path.is_empty() {
+                println!("{text}");
+            } else {
+                std::fs::write(&cfg.render.output_path, &text).map_err(CliError::Io)?;
+                eprintln!(
+                    "gen: wrote {} bytes to {}",
+                    text.len(),
+                    cfg.render.output_path
+                );
+            }
+            Ok(())
+        }
         Cmd::Adapters => {
             #[derive(serde::Serialize)]
             struct AdapterRow<'a> {
@@ -199,6 +221,8 @@ enum CliError {
     Json(#[from] serde_json::Error),
     #[error(transparent)]
     Yaml(#[from] serde_yaml::Error),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 }
 
 fn _resolve_root_lint_silencer(p: &Path) -> PathBuf {

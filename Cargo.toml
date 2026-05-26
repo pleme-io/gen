@@ -4,6 +4,7 @@ members = [
     "crates/gen-types",
     "crates/gen-cargo",
     "crates/gen-config",
+    "crates/gen-nix",
     "crates/gen-cli",
 ]
 
@@ -21,6 +22,7 @@ authors = ["pleme-io"]
 gen-types = { path = "crates/gen-types", version = "0.1.0" }
 gen-cargo = { path = "crates/gen-cargo", version = "0.1.0" }
 gen-config = { path = "crates/gen-config", version = "0.1.0" }
+gen-nix = { path = "crates/gen-nix", version = "0.1.0" }
 gen-cli = { path = "crates/gen-cli", version = "0.1.0" }
 
 # Third-party

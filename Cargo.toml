@@ -1,0 +1,38 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/gen-types",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89.0"
+license = "MIT"
+homepage = "https://github.com/pleme-io/gen"
+repository = "https://github.com/pleme-io/gen"
+authors = ["pleme-io"]
+
+[workspace.dependencies]
+# Workspace crates
+gen-types = { path = "crates/gen-types", version = "0.1.0" }
+
+# Third-party
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+indexmap = { version = "2", features = ["serde"] }
+thiserror = "2"
+blake3 = "1"
+chrono = { version = "0.4", features = ["serde"] }
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "z"
+strip = true

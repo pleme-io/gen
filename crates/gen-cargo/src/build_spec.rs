@@ -579,6 +579,27 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         let crate_renames =
             synthesize_crate_renames(&runtime_dependencies, &build_dependencies, &by_id);
 
+        // Cargo's resolver may produce multiple distinct nodes that share
+        // the same `name-version` key but resolve from different sources
+        // (e.g. a git crate with `?branch=main` vs a plain git URL each
+        // yield separate resolve nodes for the same crate). The spec keys
+        // by name-version, so collapse them by UNIONing each per-node
+        // feature set. Without the merge, the later iteration silently
+        // overwrites the first one's features — tear's `shikumi` losing
+        // its `cli` feature is the canonical failure mode.
+        let merged_features = match crates.get(&key) {
+            Some(prev) => {
+                let mut acc: Vec<String> = prev.features.clone();
+                for f in &features {
+                    if !acc.contains(f) {
+                        acc.push(f.clone());
+                    }
+                }
+                acc
+            }
+            None => features,
+        };
+
         crates.insert(
             key,
             CrateSpec {
@@ -586,7 +607,7 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 version: pkg.version.to_string(),
                 edition,
                 source,
-                features,
+                features: merged_features,
                 proc_macro,
                 build_script,
                 binaries,

@@ -213,6 +213,7 @@ mod tests {
                 proc_macro: false,
                 build_script: None,
                 links: None,
+                build_rust_crate_args: Default::default(),
                 binaries: vec![],
                 lib_target: None,
                 dependencies: vec![],

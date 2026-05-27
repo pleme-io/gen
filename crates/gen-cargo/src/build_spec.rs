@@ -121,6 +121,74 @@ pub struct CrateSpec {
     /// Threads through to buildRustCrate's `crateRenames` arg
     /// verbatim. Nix doesn't do any synthesis here.
     pub crate_renames: IndexMap<String, Vec<CrateRenameRecord>>,
+    /// Pre-computed kwarg attrset for nixpkgs `buildRustCrate`.
+    /// Field names match buildRustCrate's exact arg names so that the
+    /// substrate consumer is a pure spread — no per-field
+    /// `if-then-else` shape-mapping in Nix. Absent fields are skipped
+    /// at serialization time so the consumer sees the same "field
+    /// missing ⇒ default" semantics it would on a hand-built attrset.
+    /// Fields populated here: procMacro, build, links, libName, libPath,
+    /// crateName, version, edition, features, crateRenames, release.
+    /// Fields NOT populated (the substrate fills these in because they
+    /// reference other built derivations or src-path resolution):
+    /// `src`, `dependencies`, `buildDependencies`, `crateBin`.
+    #[serde(default, skip_serializing_if = "BuildRustCrateArgs::is_empty")]
+    pub build_rust_crate_args: BuildRustCrateArgs,
+}
+
+/// Pre-shaped attrset that the substrate consumer spreads directly
+/// into `buildRustCrate { … }`. Field names match buildRustCrate's
+/// `mkArgs` signature verbatim (camelCase). Optional fields are
+/// emitted-iff-present so consumers see absence as "use default."
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct BuildRustCrateArgs {
+    #[serde(rename = "crateName", skip_serializing_if = "Option::is_none")]
+    pub crate_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub edition: Option<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub features: Vec<String>,
+    #[serde(rename = "crateRenames", skip_serializing_if = "IndexMap::is_empty")]
+    pub crate_renames: IndexMap<String, Vec<CrateRenameRecord>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub release: Option<bool>,
+    #[serde(rename = "procMacro", skip_serializing_if = "Option::is_none")]
+    pub proc_macro: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub build: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub links: Option<String>,
+    #[serde(rename = "libName", skip_serializing_if = "Option::is_none")]
+    pub lib_name: Option<String>,
+    #[serde(rename = "libPath", skip_serializing_if = "Option::is_none")]
+    pub lib_path: Option<String>,
+    /// Pre-rustc shell snippet. Set for EVERY crate to export
+    /// `CARGO_CRATE_NAME` (cargo's standard env, which buildRustCrate
+    /// otherwise omits — rmcp's `env!("CARGO_CRATE_NAME")` and any
+    /// future crate that reads the same env now Just Works without a
+    /// per-crate override). Caller overrides should APPEND to this
+    /// (not replace) to preserve the export.
+    #[serde(rename = "preBuild", skip_serializing_if = "Option::is_none")]
+    pub pre_build: Option<String>,
+}
+
+impl BuildRustCrateArgs {
+    fn is_empty(&self) -> bool {
+        self.crate_name.is_none()
+            && self.version.is_none()
+            && self.edition.is_none()
+            && self.features.is_empty()
+            && self.crate_renames.is_empty()
+            && self.release.is_none()
+            && self.proc_macro.is_none()
+            && self.build.is_none()
+            && self.links.is_none()
+            && self.lib_name.is_none()
+            && self.lib_path.is_none()
+            && self.pre_build.is_none()
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -607,6 +675,36 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         // first one's features AND its deps — tear's `shikumi` losing
         // both its `cli` feature and its `clap` dep is the canonical
         // failure mode.
+        // Pre-shape buildRustCrate kwargs in Rust — substrate's
+        // lockfile-builder spreads this verbatim. No Nix-side
+        // `if-then-else` for every conditional field.
+        // rustc crate-name = package name with `-` → `_` (or explicit
+        // `[lib].name` override). Setting CARGO_CRATE_NAME universally
+        // means every crate that reads `env!("CARGO_CRATE_NAME")` at
+        // proc-macro expansion (rmcp 0.15's `src/model.rs:860`,
+        // future crates of the same class) Just Works — no per-crate
+        // override.
+        let rustc_crate_name = lib_target
+            .as_ref()
+            .map(|t| t.name.clone())
+            .unwrap_or_else(|| pkg.name.replace('-', "_"));
+        let pre_build = format!("export CARGO_CRATE_NAME={};", rustc_crate_name);
+
+        let build_rust_crate_args = BuildRustCrateArgs {
+            crate_name: Some(pkg.name.to_string()),
+            version: Some(pkg.version.to_string()),
+            edition: Some(edition.clone()),
+            features: features.clone(),
+            crate_renames: crate_renames.clone(),
+            release: Some(true),
+            proc_macro: if proc_macro { Some(true) } else { None },
+            build: build_script.clone(),
+            links: links.clone(),
+            lib_name: lib_target.as_ref().map(|t| t.name.clone()),
+            lib_path: lib_target.as_ref().map(|t| t.path.clone()),
+            pre_build: Some(pre_build),
+        };
+
         let new_entry = CrateSpec {
             name: pkg.name.to_string(),
             version: pkg.version.to_string(),
@@ -622,6 +720,7 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             runtime_dependencies,
             build_dependencies,
             crate_renames,
+            build_rust_crate_args,
         };
         match crates.get(&key) {
             Some(prev) if prev.features.len() > new_entry.features.len() => {

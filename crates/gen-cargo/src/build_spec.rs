@@ -398,6 +398,17 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         // non-custom-build one — cargo only allows one library per
         // crate. `target.name` already has the rustc-friendly form
         // (underscores). `src_path` honors `[lib].path` overrides.
+        //
+        // Suppress lib_target emission when:
+        // - the crate is a proc-macro (buildRustCrate's proc-macro
+        //   build path expects to find the lib via auto-discovery; an
+        //   explicit libName + libPath forces a proc-macro-only compile
+        //   that rejects non-proc-macro `fn` items co-located with the
+        //   macros, e.g. tatara-lisp-derive's typed helpers);
+        // - the lib is at the default `src/lib.rs` with the default name
+        //   (cargo's `<pkg-name>` with `-` → `_`) — buildRustCrate's
+        //   auto-discovery handles this case identically, and emitting
+        //   the redundant fields just inflates spec size.
         let lib_target = pkg
             .targets
             .iter()
@@ -410,8 +421,17 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 })
             })
             .and_then(|t| {
+                if proc_macro {
+                    return None;
+                }
                 let abs = t.src_path.to_string();
-                strip_dir_prefix(&abs, &manifest_dir).map(|path| LibTargetSpec {
+                let path = strip_dir_prefix(&abs, &manifest_dir)?;
+                let default_name = pkg.name.as_str().replace('-', "_");
+                let default_path = "src/lib.rs";
+                if t.name == default_name && path == default_path {
+                    return None;
+                }
+                Some(LibTargetSpec {
                     name: t.name.clone(),
                     path,
                 })

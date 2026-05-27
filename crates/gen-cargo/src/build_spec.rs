@@ -399,16 +399,16 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         // crate. `target.name` already has the rustc-friendly form
         // (underscores). `src_path` honors `[lib].path` overrides.
         //
-        // Suppress lib_target emission when:
-        // - the crate is a proc-macro (buildRustCrate's proc-macro
-        //   build path expects to find the lib via auto-discovery; an
-        //   explicit libName + libPath forces a proc-macro-only compile
-        //   that rejects non-proc-macro `fn` items co-located with the
-        //   macros, e.g. tatara-lisp-derive's typed helpers);
-        // - the lib is at the default `src/lib.rs` with the default name
-        //   (cargo's `<pkg-name>` with `-` → `_`) — buildRustCrate's
-        //   auto-discovery handles this case identically, and emitting
-        //   the redundant fields just inflates spec size.
+        // Suppress lib_target emission ONLY when the lib is at the
+        // default `src/lib.rs` with the default rustc name (cargo's
+        // `<pkg-name>` with `-` → `_`). buildRustCrate's auto-discovery
+        // handles that case identically — including the proc-macro
+        // `crate-type = ["proc-macro", "rlib"]` dual that lets crates
+        // like tatara-lisp-derive co-locate non-proc-macro fn items
+        // with their macros. Emit lib_target whenever the crate
+        // actually overrides path or name (fnv, bzip2-sys,
+        // document-features, …) — there the auto-discover fails
+        // because src/lib.rs doesn't exist or the rustc name differs.
         let lib_target = pkg
             .targets
             .iter()
@@ -421,9 +421,6 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 })
             })
             .and_then(|t| {
-                if proc_macro {
-                    return None;
-                }
                 let abs = t.src_path.to_string();
                 let path = strip_dir_prefix(&abs, &manifest_dir)?;
                 let default_name = pkg.name.as_str().replace('-', "_");

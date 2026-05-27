@@ -92,6 +92,13 @@ pub struct CrateSpec {
     /// Each entry: { name, path } where path is relative to the
     /// unpacked source root.
     pub binaries: Vec<CrateBinSpec>,
+    /// Library target when the crate exposes one. None for bin-only or
+    /// build-script-only crates. Carries the crate-name override (e.g.
+    /// `bzip2_sys` for bzip2-sys) AND the lib path override (e.g.
+    /// `lib.rs` instead of the default `src/lib.rs`). Without this,
+    /// buildRustCrate's auto-discovery misses crates that put their
+    /// library at the root or rename it.
+    pub lib_target: Option<LibTargetSpec>,
     /// All non-dev deps. Kept as a flat list for cross-tool consumers
     /// that need to walk the union (e.g. SBOM emitters).
     pub dependencies: Vec<CrateDepSpec>,
@@ -120,6 +127,17 @@ pub struct CrateBinSpec {
     pub name: String,
     /// Path relative to the unpacked source root (e.g. "src/main.rs"
     /// or "src/bin/cli.rs").
+    pub path: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct LibTargetSpec {
+    /// rustc crate name — `bzip2_sys` for bzip2-sys (cargo replaces `-`
+    /// with `_` and honors explicit `[lib].name`).
+    pub name: String,
+    /// Path to the library's root module relative to the unpacked
+    /// source root. `src/lib.rs` for most crates; `lib.rs`, `src/foo.rs`,
+    /// etc. when `[lib].path` is set.
     pub path: String,
 }
 
@@ -375,6 +393,30 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             })
             .collect();
 
+        // Library target. cargo represents libs as kind ∈ {lib, rlib,
+        // staticlib, cdylib, dylib, proc-macro}. Pick the first
+        // non-custom-build one — cargo only allows one library per
+        // crate. `target.name` already has the rustc-friendly form
+        // (underscores). `src_path` honors `[lib].path` overrides.
+        let lib_target = pkg
+            .targets
+            .iter()
+            .find(|t| {
+                t.kind.iter().any(|k| {
+                    matches!(
+                        k.as_str(),
+                        "lib" | "rlib" | "staticlib" | "cdylib" | "dylib" | "proc-macro"
+                    )
+                })
+            })
+            .and_then(|t| {
+                let abs = t.src_path.to_string();
+                strip_dir_prefix(&abs, &manifest_dir).map(|path| LibTargetSpec {
+                    name: t.name.clone(),
+                    path,
+                })
+            });
+
         // Source resolution.
         let source = if is_member {
             let abs_dir = pkg.manifest_path.parent().map(|p| p.to_string()).unwrap_or_default();
@@ -522,6 +564,7 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 proc_macro,
                 build_script,
                 binaries,
+                lib_target,
                 dependencies,
                 runtime_dependencies,
                 build_dependencies,

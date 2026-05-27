@@ -213,6 +213,7 @@ mod tests {
                 proc_macro: false,
                 build_script: None,
                 binaries: vec![],
+                lib_target: None,
                 dependencies: vec![],
                 runtime_dependencies: vec![],
                 build_dependencies: vec![],

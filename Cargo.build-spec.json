@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "workspace": {
     "root": "/Users/drzzln/code/github/pleme-io/gen",
     "members": [
@@ -5131,7 +5131,7 @@
       "edition": "2024",
       "source": {
         "kind": "git",
-        "url": "https://github.com/pleme-io/shikumi.git?rev=a497fc03885339f169aa805f706f081da2a10e7a",
+        "url": "https://github.com/pleme-io/shikumi.git",
         "rev": "a497fc03885339f169aa805f706f081da2a10e7a",
         "sha256": "1ik6s9qmm4jz19m6jjpbdpvzkj62hfjmmgdik078q84bg28dr92s"
       },
@@ -6564,5 +6564,63 @@
     "gen-cache-attic-0.1.0",
     "gen-caixa-bridge-0.1.0",
     "gen-cli-0.1.0"
-  ]
+  ],
+  "flake_metadata": {
+    "gen-types": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-cargo": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-npm": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-bundler": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-adapter-forge": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-polyglot": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-config": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-nix": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-nix-bulk": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-bazel": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-buck": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-cache-attic": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-caixa-bridge": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-cli": {
+      "default_bin": "gen",
+      "repo": "pleme-io/gen"
+    }
+  }
 }

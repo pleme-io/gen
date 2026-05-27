@@ -13,13 +13,9 @@
     };
   };
 
-  outputs = inputs @ { self, nixpkgs, crate2nix, flake-utils, substrate, ... }:
-    (import "${substrate}/lib/rust-tool-release-flake.nix" {
-      inherit nixpkgs crate2nix flake-utils;
-    }) {
-      toolName = "gen";
-      packageName = "gen-cli";
-      src = self;
-      repo = "pleme-io/gen";
-    };
+  outputs = inputs: inputs.substrate.mkRustToolFlake {
+    inherit inputs;
+    src = inputs.self;
+    packageName = "gen-cli";
+  };
 }

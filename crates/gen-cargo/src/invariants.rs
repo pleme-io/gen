@@ -107,10 +107,16 @@ fn check_workspace_members(spec: &BuildSpec, out: &mut Vec<Violation>) {
 }
 
 fn check_root_crate(spec: &BuildSpec, out: &mut Vec<Violation>) {
-    if let Some(root) = &spec.root_crate {
-        if !spec.crates.contains_key(root) {
-            out.push(Violation::RootCrateNotInCrates { key: root.clone() });
-        }
+    // Empty root_crate is only valid when the spec carries no crates
+    // (e.g. the test-empty spec). A populated spec must point root_crate
+    // at a real key.
+    if spec.root_crate.is_empty() {
+        return;
+    }
+    if !spec.crates.contains_key(&spec.root_crate) {
+        out.push(Violation::RootCrateNotInCrates {
+            key: spec.root_crate.clone(),
+        });
     }
 }
 
@@ -183,14 +189,16 @@ mod tests {
 
     fn empty_spec() -> BuildSpec {
         BuildSpec {
-            version: 1,
+            version: 2,
             workspace: WorkspaceSpec {
                 root: "/x".into(),
                 members: vec![],
             },
             crates: IndexMap::new(),
-            root_crate: None,
+            root_crate: String::new(),
             workspace_members: vec![],
+            flake_metadata: IndexMap::new(),
+            crate_overrides: IndexMap::new(),
         }
     }
 
@@ -205,6 +213,7 @@ mod tests {
                 features: vec![],
                 proc_macro: false,
                 build_script: None,
+                binaries: vec![],
                 dependencies: vec![],
                 runtime_dependencies: vec![],
                 build_dependencies: vec![],
@@ -297,7 +306,7 @@ mod tests {
     #[test]
     fn root_crate_not_in_crates_is_caught() {
         let mut s = empty_spec();
-        s.root_crate = Some("ghost-0.0.0".into());
+        s.root_crate = "ghost-0.0.0".into();
         let v = check(&s);
         assert!(matches!(
             v.first(),

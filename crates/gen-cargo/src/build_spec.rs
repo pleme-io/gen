@@ -20,15 +20,50 @@ use serde::{Deserialize, Serialize};
 use crate::error::{CargoError, Result};
 
 /// Schema version — bump on breaking changes.
-const SCHEMA_VERSION: u32 = 1;
+/// v2: + `flake_metadata`, + `crate_overrides`, `root_crate` is non-optional.
+const SCHEMA_VERSION: u32 = 2;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BuildSpec {
     pub version: u32,
     pub workspace: WorkspaceSpec,
     pub crates: IndexMap<String, CrateSpec>,
-    pub root_crate: Option<String>,
+    /// The workspace's primary buildable crate's key in `crates`. Always
+    /// populated — either a single-crate workspace's only member or the
+    /// first workspace member by declaration order.
+    pub root_crate: String,
     pub workspace_members: Vec<String>,
+    /// Per-workspace-member metadata the Nix flake builder needs
+    /// (toolName, repo, bin targets) — keyed by package name. Mirrors
+    /// `cargo metadata`'s package.repository + targets without forcing
+    /// Nix to re-parse Cargo.toml.
+    pub flake_metadata: IndexMap<String, MemberFlakeMetadata>,
+    /// Optional per-crate-name overrides Nix injects into
+    /// `defaultCrateOverrides`. Carries crate-specific quirks (e.g. rmcp
+    /// needs `CARGO_CRATE_NAME` exported) as data, not as Nix literals.
+    #[serde(default, skip_serializing_if = "IndexMap::is_empty")]
+    pub crate_overrides: IndexMap<String, CrateOverrideSpec>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct MemberFlakeMetadata {
+    /// Default binary name — first `[[bin]]`'s name or, if no explicit
+    /// bin section, the package name (cargo's default-bin rule).
+    pub default_bin: Option<String>,
+    /// `owner/name` parsed from `[package].repository`. None when the
+    /// member doesn't declare a repository — consumer must override.
+    pub repo: Option<String>,
+}
+
+/// Pre-shaped crate override the Nix consumer applies verbatim through
+/// `defaultCrateOverrides.<name>`. Only fields populated by gen are
+/// emitted; consumers compose with their own per-call overrides.
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct CrateOverrideSpec {
+    /// Shell prelude prepended to the build phase (e.g. environment
+    /// variable exports). Maps to buildRustCrate's `preBuild`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pre_build: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -386,10 +421,15 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 }
             } else if src_str.starts_with("git+") {
                 let trimmed = src_str.trim_start_matches("git+");
-                let (url, rev) = trimmed
+                let (raw_url, rev) = trimmed
                     .rsplit_once('#')
                     .map(|(u, f)| (u.to_string(), f.to_string()))
                     .unwrap_or_else(|| (trimmed.to_string(), String::new()));
+                // Cargo encodes the requested ref as `?branch=...` /
+                // `?tag=...` / `?rev=...` on the URL. Strip it here so
+                // the Nix consumer doesn't need to know about it — pure
+                // dispatch on a clean URL.
+                let url = raw_url.split('?').next().unwrap_or(&raw_url).to_string();
                 CrateSource::Git {
                     url,
                     rev,
@@ -505,17 +545,6 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         );
     }
 
-    let root_crate = meta
-        .root_package()
-        .map(|p| format!("{}-{}", p.name, p.version))
-        .or_else(|| workspace_members.first().map(|m| {
-            let pkg = meta.packages.iter().find(|p| p.name.as_str() == m.name);
-            match pkg {
-                Some(p) => format!("{}-{}", p.name, p.version),
-                None => String::new(),
-            }
-        }));
-
     let workspace_member_keys: Vec<String> = workspace_members
         .iter()
         .filter_map(|m| {
@@ -523,6 +552,60 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             Some(format!("{}-{}", pkg.name, pkg.version))
         })
         .collect();
+
+    // root_crate: cargo's reported root_package when set (single-crate
+    // workspaces), else first declared workspace member. Always
+    // populated — the Nix consumer treats it as authoritative without a
+    // fallback dance.
+    let root_crate: String = match meta.root_package() {
+        Some(p) => format!("{}-{}", p.name, p.version),
+        None => workspace_member_keys
+            .first()
+            .cloned()
+            .ok_or_else(|| CargoError::Io {
+                path: manifest_path.clone(),
+                source: std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    "workspace has no members; gen needs at least one buildable crate",
+                ),
+            })?,
+    };
+
+    // Per-workspace-member flake metadata: tool_name + repo derived
+    // here so the Nix consumer doesn't re-parse Cargo.toml. cargo
+    // resolves [workspace.package] inheritance into package.repository
+    // already; we read the resolved value.
+    let mut flake_metadata: IndexMap<String, MemberFlakeMetadata> = IndexMap::new();
+    for m in &workspace_members {
+        let Some(pkg) = meta.packages.iter().find(|p| p.name.as_str() == m.name) else {
+            continue;
+        };
+        let key = format!("{}-{}", pkg.name, pkg.version);
+        let Some(c) = crates.get(&key) else { continue };
+        let default_bin = c.binaries.first().map(|b| b.name.clone());
+        // Parse owner/name from canonical GitHub-style URLs only. Anything
+        // else stays None and forces the consumer to override explicitly.
+        let repo = pkg.repository.as_deref().and_then(parse_owner_repo);
+        flake_metadata.insert(
+            pkg.name.to_string(),
+            MemberFlakeMetadata { default_bin, repo },
+        );
+    }
+
+    // Fleet-known crate quirks emitted as typed overrides. Today: rmcp
+    // needs CARGO_CRATE_NAME exported because its src/model.rs:860 reads
+    // env!("CARGO_CRATE_NAME") at compile time and buildRustCrate
+    // doesn't set it. Add new entries here when a second crate needs
+    // bespoke build-phase glue.
+    let mut crate_overrides: IndexMap<String, CrateOverrideSpec> = IndexMap::new();
+    if crates.values().any(|c| c.name == "rmcp") {
+        crate_overrides.insert(
+            "rmcp".to_string(),
+            CrateOverrideSpec {
+                pre_build: Some("export CARGO_CRATE_NAME=rmcp".to_string()),
+            },
+        );
+    }
 
     // Prefetch sha256 for every Git source so substrate's
     // lockfile-builder can dispatch pkgs.fetchgit with a fixed hash
@@ -553,7 +636,29 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         crates,
         root_crate,
         workspace_members: workspace_member_keys,
+        flake_metadata,
+        crate_overrides,
     })
+}
+
+/// Parse `owner/repo` out of a GitHub-style URL. Accepts both `.git`
+/// and bare forms. Returns None for non-canonical URLs so the consumer
+/// must override explicitly rather than silently emit a wrong slug.
+fn parse_owner_repo(url: &str) -> Option<String> {
+    let stripped = url.trim_end_matches(".git");
+    // Accept https://github.com/owner/name, git@github.com:owner/name,
+    // ssh://git@github.com/owner/name. Reject anything else.
+    let body = stripped
+        .strip_prefix("https://github.com/")
+        .or_else(|| stripped.strip_prefix("git@github.com:"))
+        .or_else(|| stripped.strip_prefix("ssh://git@github.com/"))?;
+    let mut parts = body.split('/');
+    let owner = parts.next()?;
+    let name = parts.next()?;
+    if owner.is_empty() || name.is_empty() {
+        return None;
+    }
+    Some(format!("{owner}/{name}"))
 }
 
 /// Run `nix-prefetch-git --url URL --rev REV --quiet` and parse the

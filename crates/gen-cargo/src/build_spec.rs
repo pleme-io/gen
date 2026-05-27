@@ -524,6 +524,26 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         })
         .collect();
 
+    // Prefetch sha256 for every Git source so substrate's
+    // lockfile-builder can dispatch pkgs.fetchgit with a fixed hash
+    // (no IFD, no impure builtins.fetchGit). Sequential — could be
+    // parallelized but git deps are typically few.
+    for crate_spec in crates.values_mut() {
+        if let CrateSource::Git { url, rev, sha256, .. } = &mut crate_spec.source {
+            if sha256.is_none() && !url.is_empty() && !rev.is_empty() {
+                match prefetch_git_sha256(url, rev) {
+                    Ok(hash) => *sha256 = Some(hash),
+                    Err(e) => {
+                        eprintln!(
+                            "gen lock-build: warn — failed to prefetch sha256 for {}#{}: {}",
+                            url, rev, e
+                        );
+                    }
+                }
+            }
+        }
+    }
+
     Ok(BuildSpec {
         version: SCHEMA_VERSION,
         workspace: WorkspaceSpec {
@@ -534,6 +554,48 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         root_crate,
         workspace_members: workspace_member_keys,
     })
+}
+
+/// Run `nix-prefetch-git --url URL --rev REV --quiet` and parse the
+/// resulting JSON for the `sha256` field. Spawns a sub-process; needs
+/// nix-prefetch-git on PATH (nix-shell -p nix-prefetch-git satisfies).
+fn prefetch_git_sha256(url: &str, rev: &str) -> std::io::Result<String> {
+    use std::process::Command;
+    // Strip cargo's `?branch=...` / `?tag=...` / `?rev=...` query
+    // suffix — nix-prefetch-git treats the URL literally and the `?`
+    // form isn't a valid git URL.
+    let clean_url = url.split('?').next().unwrap_or(url);
+    // First try direct invocation; fall back to nix-shell wrapper.
+    let direct = Command::new("nix-prefetch-git")
+        .args(["--url", clean_url, "--rev", rev, "--quiet"])
+        .output();
+    let output = match direct {
+        Ok(o) if o.status.success() => o,
+        _ => Command::new("nix-shell")
+            .args([
+                "-p",
+                "nix-prefetch-git",
+                "--run",
+                &format!("nix-prefetch-git --url {clean_url} --rev {rev} --quiet"),
+            ])
+            .output()?,
+    };
+    if !output.status.success() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            format!(
+                "nix-prefetch-git failed: {}",
+                String::from_utf8_lossy(&output.stderr).trim()
+            ),
+        ));
+    }
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let v: serde_json::Value = serde_json::from_str(&stdout)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, format!("parse: {e}")))?;
+    v["sha256"]
+        .as_str()
+        .map(String::from)
+        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::Other, "no sha256 field in output"))
 }
 
 pub fn generate_and_write(root: &Path) -> Result<std::path::PathBuf> {

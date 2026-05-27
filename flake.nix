@@ -16,6 +16,6 @@
   outputs = inputs: inputs.substrate.mkRustToolFlake {
     inherit inputs;
     src = ./.;
-    packageName = "gen-cli";
+    member = "gen-cli";
   };
 }

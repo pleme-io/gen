@@ -1,7 +1,7 @@
 {
   "version": 2,
   "workspace": {
-    "root": "/Users/drzzln/code/github/pleme-io/gen",
+    "root": "/Users/luis.d/code/github/pleme-io/gen",
     "members": [
       {
         "name": "gen-types",

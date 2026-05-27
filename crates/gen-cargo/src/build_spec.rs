@@ -583,41 +583,35 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         // the same `name-version` key but resolve from different sources
         // (e.g. a git crate with `?branch=main` vs a plain git URL each
         // yield separate resolve nodes for the same crate). The spec keys
-        // by name-version, so collapse them by UNIONing each per-node
-        // feature set. Without the merge, the later iteration silently
-        // overwrites the first one's features — tear's `shikumi` losing
-        // its `cli` feature is the canonical failure mode.
-        let merged_features = match crates.get(&key) {
-            Some(prev) => {
-                let mut acc: Vec<String> = prev.features.clone();
-                for f in &features {
-                    if !acc.contains(f) {
-                        acc.push(f.clone());
-                    }
-                }
-                acc
-            }
-            None => features,
+        // by name-version, so collapse them while keeping the richer
+        // resolution (more features → more conditional deps activated).
+        // Without the merge, the later iteration silently overwrites the
+        // first one's features AND its deps — tear's `shikumi` losing
+        // both its `cli` feature and its `clap` dep is the canonical
+        // failure mode.
+        let new_entry = CrateSpec {
+            name: pkg.name.to_string(),
+            version: pkg.version.to_string(),
+            edition,
+            source,
+            features,
+            proc_macro,
+            build_script,
+            binaries,
+            lib_target,
+            dependencies,
+            runtime_dependencies,
+            build_dependencies,
+            crate_renames,
         };
-
-        crates.insert(
-            key,
-            CrateSpec {
-                name: pkg.name.to_string(),
-                version: pkg.version.to_string(),
-                edition,
-                source,
-                features: merged_features,
-                proc_macro,
-                build_script,
-                binaries,
-                lib_target,
-                dependencies,
-                runtime_dependencies,
-                build_dependencies,
-                crate_renames,
-            },
-        );
+        match crates.get(&key) {
+            Some(prev) if prev.features.len() > new_entry.features.len() => {
+                // existing is richer — keep it as-is
+            }
+            _ => {
+                crates.insert(key, new_entry);
+            }
+        }
     }
 
     let workspace_member_keys: Vec<String> = workspace_members

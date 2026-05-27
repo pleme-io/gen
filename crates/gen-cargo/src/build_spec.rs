@@ -514,47 +514,56 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             let Some(dep_pkg) = by_id.get(dep_pkg_id) else { continue; };
             let package_key = format!("{}-{}", dep_pkg.name, dep_pkg.version);
 
-            // Pick the first non-Dev kind from the graph. If every
-            // kind is Dev, this edge is dev-only — skip entirely.
-            let chosen = dep_kinds
+            // Emit ONE entry per non-Dev kind. A single declared dep can
+            // appear as BOTH Normal and Build (e.g. mime_guess uses
+            // unicase as a normal dep AND inside its `build.rs` via
+            // `extern crate unicase`). Cargo links it twice — once
+            // into the lib, once into the build script. If we emit
+            // only the first kind, buildRustCrate links it only to
+            // the lib, and the build-script compile fails with
+            // E0658 (extern crate falls through to the sysroot).
+            let kinds_to_emit: Vec<_> = dep_kinds
                 .iter()
-                .find(|k| !matches!(k.kind, cargo_metadata::DependencyKind::Development));
-            let Some(graph_kind) = chosen else { continue };
+                .filter(|k| !matches!(k.kind, cargo_metadata::DependencyKind::Development))
+                .collect();
+            if kinds_to_emit.is_empty() { continue; }
 
-            let kind = match graph_kind.kind {
-                cargo_metadata::DependencyKind::Normal => DepKind::Normal,
-                cargo_metadata::DependencyKind::Build => DepKind::Build,
-                cargo_metadata::DependencyKind::Development => DepKind::Dev,
-                _ => DepKind::Normal,
-            };
-            let target = graph_kind.target.as_ref().map(|p| p.to_string());
+            for graph_kind in &kinds_to_emit {
+                let kind = match graph_kind.kind {
+                    cargo_metadata::DependencyKind::Normal => DepKind::Normal,
+                    cargo_metadata::DependencyKind::Build => DepKind::Build,
+                    cargo_metadata::DependencyKind::Development => DepKind::Dev,
+                    _ => DepKind::Normal,
+                };
+                let target = graph_kind.target.as_ref().map(|p| p.to_string());
 
-            // Look up the consumer's declared dep entry to recover
-            // features + optional + uses_default_features. Match by
-            // local name + kind to avoid mis-attributing a normal
-            // edge's features to a dev edge of the same name.
-            let declared = pkg.dependencies.iter().find(|d| {
-                let consumer_name = d.rename.clone().unwrap_or_else(|| d.name.clone());
-                &consumer_name == local_name && d.kind == graph_kind.kind
-            });
-            let (features, uses_default_features, optional) = match declared {
-                Some(d) => (
-                    d.features.iter().map(String::from).collect(),
-                    d.uses_default_features,
-                    d.optional,
-                ),
-                None => (Vec::new(), true, false),
-            };
+                // Look up the consumer's declared dep entry to recover
+                // features + optional + uses_default_features. Match by
+                // local name + kind to avoid mis-attributing a normal
+                // edge's features to a dev edge of the same name.
+                let declared = pkg.dependencies.iter().find(|d| {
+                    let consumer_name = d.rename.clone().unwrap_or_else(|| d.name.clone());
+                    &consumer_name == local_name && d.kind == graph_kind.kind
+                });
+                let (features, uses_default_features, optional) = match declared {
+                    Some(d) => (
+                        d.features.iter().map(String::from).collect(),
+                        d.uses_default_features,
+                        d.optional,
+                    ),
+                    None => (Vec::new(), true, false),
+                };
 
-            dependencies.push(CrateDepSpec {
-                name: local_name.clone(),
-                package_key,
-                kind,
-                features,
-                uses_default_features,
-                optional,
-                target,
-            });
+                dependencies.push(CrateDepSpec {
+                    name: local_name.clone(),
+                    package_key: package_key.clone(),
+                    kind,
+                    features,
+                    uses_default_features,
+                    optional,
+                    target,
+                });
+            }
         }
 
         // Pre-split + pre-shape Nix-side data — substrate consumer

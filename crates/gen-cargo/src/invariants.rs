@@ -212,6 +212,7 @@ mod tests {
                 features: vec![],
                 proc_macro: false,
                 build_script: None,
+                links: None,
                 binaries: vec![],
                 lib_target: None,
                 dependencies: vec![],

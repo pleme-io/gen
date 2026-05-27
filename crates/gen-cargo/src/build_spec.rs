@@ -85,6 +85,13 @@ pub struct CrateSpec {
     /// at link time with "no such file" for the build-script
     /// output.
     pub build_script: Option<String>,
+    /// `[package] links = "<symbol>"` declaration. Cargo passes this
+    /// through as `CARGO_MANIFEST_LINKS` and ring's build.rs (and the
+    /// whole `*-sys` family — bzip2-sys, libsqlite3-sys, openssl-sys,
+    /// libz-sys, …) asserts on it. nixpkgs' buildRustCrate honors a
+    /// `links` arg verbatim. Emitting this from spec avoids per-crate
+    /// `links = ...` overrides in pleme-crate-overrides.nix.
+    pub links: Option<String>,
     /// Declared binary targets — empty when the crate is library-only.
     /// Threads through to buildRustCrate's `crateBin` arg, preventing
     /// it from auto-discovering example/test bins under src/bin/ that
@@ -377,6 +384,13 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 strip_dir_prefix(&abs, &manifest_dir)
             });
 
+        // `[package] links = "<symbol>"` declaration. cargo-metadata
+        // surfaces this directly on the Package — pass through verbatim
+        // for the substrate consumer to wire as buildRustCrate's `links`
+        // arg, which in turn sets `CARGO_MANIFEST_LINKS` for build.rs
+        // assertions (ring's `ring_core_<ver>_` is the canonical case).
+        let links: Option<String> = pkg.links.clone();
+
         // Binary targets — only `bin` kind. Empty list (the common
         // case for libs) prevents buildRustCrate from auto-discovering
         // src/bin/* files that may not compile in isolation.
@@ -456,9 +470,13 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                     );
                 }
                 CrateSource::Registry {
+                    // static.crates.io is the canonical immutable mirror
+                    // cargo itself fetches from. The /api/v1/.../download
+                    // endpoint is rate-limited and frequently 403's against
+                    // nix's fetchurl user-agent — use the CDN directly.
                     url: format!(
-                        "https://crates.io/api/v1/crates/{}/{}/download",
-                        pkg.name, pkg.version
+                        "https://static.crates.io/crates/{}/{}-{}.crate",
+                        pkg.name, pkg.name, pkg.version
                     ),
                     sha256: sha,
                     name_with_ext: format!("{}-{}.tar.gz", pkg.name, pkg.version),
@@ -597,6 +615,7 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             features,
             proc_macro,
             build_script,
+            links,
             binaries,
             lib_target,
             dependencies,

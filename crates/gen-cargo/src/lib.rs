@@ -11,6 +11,7 @@
 //! assert!(manifest.package_count() >= 1);
 //! ```
 
+pub mod adapter;
 pub mod build_spec;
 pub mod convert;
 pub mod error;
@@ -20,6 +21,7 @@ pub mod fleet_sweep;
 pub mod invariants;
 pub mod raw;
 
+pub use adapter::{ctx_for, CargoAdapter};
 pub use error::{CargoError, Result};
 
 use std::path::{Path, PathBuf};

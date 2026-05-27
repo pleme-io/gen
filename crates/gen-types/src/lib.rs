@@ -32,6 +32,7 @@
 
 #![allow(clippy::module_name_repetitions)]
 
+pub mod adapter;
 pub mod constraint;
 pub mod dependency;
 pub mod derivation;
@@ -45,6 +46,11 @@ pub mod target;
 pub mod version;
 pub mod workspace;
 
+pub use adapter::{
+    Adapter, AdapterCtx, AdapterError, AdapterResult, BuildSpec as AdapterBuildSpec,
+    ConfirmReport, DepChange, DepEdge, DependencyBump, DiffRef, DiffReport, InvariantBreak,
+    LockOutcome, Plan, PlanIntent, PlanWarning, PlanWarningSeverity, Sbom, SbomFormat,
+};
 pub use constraint::{Combinator, CompoundConstraint, ConstraintSpec, VersionConstraint};
 pub use dependency::{Dependency, DependencyKind};
 pub use derivation::{BuildCommand, BuildScript, BuildStep, BuildStepKind, Derivation, DerivationRef};

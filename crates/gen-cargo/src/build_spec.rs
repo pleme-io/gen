@@ -22,7 +22,7 @@ use crate::error::{CargoError, Result};
 /// Schema version — bump on breaking changes.
 /// v2: + `flake_metadata`, `root_crate` is non-optional, git URLs
 ///     normalized (no `?branch=` suffix).
-const SCHEMA_VERSION: u32 = 2;
+pub const SCHEMA_VERSION: u32 = 2;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BuildSpec {

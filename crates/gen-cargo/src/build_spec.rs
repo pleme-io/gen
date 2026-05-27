@@ -20,7 +20,8 @@ use serde::{Deserialize, Serialize};
 use crate::error::{CargoError, Result};
 
 /// Schema version — bump on breaking changes.
-/// v2: + `flake_metadata`, + `crate_overrides`, `root_crate` is non-optional.
+/// v2: + `flake_metadata`, `root_crate` is non-optional, git URLs
+///     normalized (no `?branch=` suffix).
 const SCHEMA_VERSION: u32 = 2;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -38,11 +39,6 @@ pub struct BuildSpec {
     /// `cargo metadata`'s package.repository + targets without forcing
     /// Nix to re-parse Cargo.toml.
     pub flake_metadata: IndexMap<String, MemberFlakeMetadata>,
-    /// Optional per-crate-name overrides Nix injects into
-    /// `defaultCrateOverrides`. Carries crate-specific quirks (e.g. rmcp
-    /// needs `CARGO_CRATE_NAME` exported) as data, not as Nix literals.
-    #[serde(default, skip_serializing_if = "IndexMap::is_empty")]
-    pub crate_overrides: IndexMap<String, CrateOverrideSpec>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -53,17 +49,6 @@ pub struct MemberFlakeMetadata {
     /// `owner/name` parsed from `[package].repository`. None when the
     /// member doesn't declare a repository — consumer must override.
     pub repo: Option<String>,
-}
-
-/// Pre-shaped crate override the Nix consumer applies verbatim through
-/// `defaultCrateOverrides.<name>`. Only fields populated by gen are
-/// emitted; consumers compose with their own per-call overrides.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct CrateOverrideSpec {
-    /// Shell prelude prepended to the build phase (e.g. environment
-    /// variable exports). Maps to buildRustCrate's `preBuild`.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub pre_build: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -592,20 +577,6 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         );
     }
 
-    // Fleet-known crate quirks emitted as typed overrides. Today: rmcp
-    // needs CARGO_CRATE_NAME exported because its src/model.rs:860 reads
-    // env!("CARGO_CRATE_NAME") at compile time and buildRustCrate
-    // doesn't set it. Add new entries here when a second crate needs
-    // bespoke build-phase glue.
-    let mut crate_overrides: IndexMap<String, CrateOverrideSpec> = IndexMap::new();
-    if crates.values().any(|c| c.name == "rmcp") {
-        crate_overrides.insert(
-            "rmcp".to_string(),
-            CrateOverrideSpec {
-                pre_build: Some("export CARGO_CRATE_NAME=rmcp".to_string()),
-            },
-        );
-    }
 
     // Prefetch sha256 for every Git source so substrate's
     // lockfile-builder can dispatch pkgs.fetchgit with a fixed hash
@@ -637,7 +608,6 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         root_crate,
         workspace_members: workspace_member_keys,
         flake_metadata,
-        crate_overrides,
     })
 }
 

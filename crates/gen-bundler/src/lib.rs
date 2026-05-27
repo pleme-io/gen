@@ -8,8 +8,10 @@
 //! intentionally deferred — pleme-io's Bundler usage is the typical
 //! declarative shape this parser covers.
 
+pub mod adapter;
 pub mod error;
 
+pub use adapter::{ctx_for, BundlerAdapter};
 pub use error::{BundlerError, Result};
 
 use std::path::{Path, PathBuf};

@@ -5,9 +5,11 @@
 //! [`gen_types::Manifest`]. Same shape as `gen-cargo`; sibling
 //! adapter for the npm cohort.
 
+pub mod adapter;
 pub mod error;
 pub mod raw;
 
+pub use adapter::{ctx_for, NpmAdapter};
 pub use error::{NpmError, Result};
 
 use std::path::{Path, PathBuf};

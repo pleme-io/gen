@@ -130,6 +130,44 @@ enum Cmd {
     CacheProbe {
         path: Option<PathBuf>,
     },
+    /// Emit a canonical pleme-io repository scaffold: 4-line flake.nix
+    /// against substrate.<ecosystem>.<shape>, minimal manifest +
+    /// source, gitignore, auto-release CI shim. One command → full
+    /// repo bootstrap.
+    Scaffold {
+        /// Shape: tool | workspace | library | service | binary.
+        #[arg(value_enum)]
+        shape: ScaffoldShape,
+        /// Name (used for the crate / package name + binary name).
+        name: String,
+        /// Target directory (defaults to ./<name>).
+        #[arg(long, short = 'd')]
+        dir: Option<PathBuf>,
+        /// Owner/org for github URLs (defaults to "pleme-io").
+        #[arg(long, default_value = "pleme-io")]
+        owner: String,
+    },
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum ScaffoldShape {
+    Tool,
+    Workspace,
+    Library,
+    Service,
+    Binary,
+}
+
+impl ScaffoldShape {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Tool => "tool",
+            Self::Workspace => "workspace",
+            Self::Library => "library",
+            Self::Service => "service",
+            Self::Binary => "binary",
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -401,7 +439,135 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                 .collect();
             emit(&rows, cli.format)
         }
+        Cmd::Scaffold { shape, name, dir, owner } => {
+            scaffold_repo(*shape, name, dir.as_deref(), owner)
+                .map_err(|e| CliError::Other(format!("scaffold: {e}")))
+        }
     }
+}
+
+/// Emit a canonical pleme-io repository scaffold. One command →
+/// full bootstrap: 4-line flake.nix wired to `substrate.<ecosystem>.
+/// <shape>`, minimal manifest, hello-world source, gitignore, and
+/// the 3-line auto-release CI shim. Convention-named files;
+/// operator edits start from a known-good baseline.
+fn scaffold_repo(
+    shape: ScaffoldShape,
+    name: &str,
+    dir: Option<&std::path::Path>,
+    owner: &str,
+) -> std::io::Result<()> {
+    use std::fs;
+    use std::path::PathBuf;
+
+    let target = match dir {
+        Some(p) => p.to_path_buf(),
+        None => PathBuf::from(name),
+    };
+    fs::create_dir_all(&target)?;
+    fs::create_dir_all(target.join("src"))?;
+    fs::create_dir_all(target.join(".github").join("workflows"))?;
+
+    // 4-line flake.nix.
+    let flake_nix = format!(
+        r#"{{
+  description = "{name} — pleme-io {shape}";
+  inputs.substrate.url = "github:pleme-io/substrate";
+  outputs = {{ substrate, ... }}: substrate.rust.{shape} {{ src = ./.; }};
+}}
+"#,
+        name = name,
+        shape = shape.as_str(),
+    );
+    fs::write(target.join("flake.nix"), flake_nix)?;
+
+    // Cargo.toml — shape-specific.
+    let cargo_toml = match shape {
+        ScaffoldShape::Library => format!(
+            r#"[package]
+name = "{name}"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "{name} — pleme-io library"
+repository = "https://github.com/{owner}/{name}"
+
+[lib]
+name = "{lib_name}"
+"#,
+            name = name,
+            owner = owner,
+            lib_name = name.replace('-', "_"),
+        ),
+        _ => format!(
+            r#"[package]
+name = "{name}"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "{name} — pleme-io {shape}"
+repository = "https://github.com/{owner}/{name}"
+
+[[bin]]
+name = "{name}"
+path = "src/main.rs"
+"#,
+            name = name,
+            owner = owner,
+            shape = shape.as_str(),
+        ),
+    };
+    fs::write(target.join("Cargo.toml"), cargo_toml)?;
+
+    // Source file — main.rs (tool/binary/service/workspace) or lib.rs (library).
+    let (src_path, src_body) = match shape {
+        ScaffoldShape::Library => (
+            "src/lib.rs",
+            format!(
+                "//! {name} — pleme-io library crate.\n\n#![deny(missing_docs)]\n\n/// Greeting helper.\npub fn hello() -> &'static str {{ \"hello from {name}\" }}\n",
+                name = name,
+            ),
+        ),
+        _ => (
+            "src/main.rs",
+            format!(
+                "//! {name} — pleme-io {shape}.\n\nfn main() {{\n    println!(\"hello from {name}\");\n}}\n",
+                name = name,
+                shape = shape.as_str(),
+            ),
+        ),
+    };
+    fs::write(target.join(src_path), src_body)?;
+
+    // .gitignore — Rust + Nix conventions.
+    let gitignore = "/target\n/result\n.direnv/\n.envrc.cache\n";
+    fs::write(target.join(".gitignore"), gitignore)?;
+
+    // Auto-release CI shim per the pleme-io-auto-release skill.
+    let workflow = r#"name: auto-release
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bump-type:
+        description: "patch | minor | major"
+        required: false
+        default: patch
+jobs:
+  release:
+    uses: pleme-io/substrate/.github/workflows/auto-release.yml@main
+    with:
+      bump-type: ${{ inputs.bump-type || 'patch' }}
+    secrets: inherit
+"#;
+    fs::write(
+        target.join(".github").join("workflows").join("auto-release.yml"),
+        workflow,
+    )?;
+
+    eprintln!("gen scaffold: wrote {} files under {}", 5, target.display());
+    Ok(())
 }
 
 fn resolve_root(arg: &Option<PathBuf>, cfg: &GenConfig) -> PathBuf {
@@ -441,6 +607,8 @@ enum CliError {
     NoAdapter(std::path::PathBuf, String),
     #[error("cargo workspace at {0} renders via Nix; npm/bundler renderers ship in M0.5b")]
     RenderNotImplementedForAdapter(String),
+    #[error("{0}")]
+    Other(String),
 }
 
 /// Adapter dispatch — selects the matching parser based on the marker

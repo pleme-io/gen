@@ -14,6 +14,7 @@
 pub mod adapter;
 pub mod build_spec;
 pub mod convert;
+pub mod ecosystem_impl;
 pub mod error;
 pub mod features;
 pub mod fleet_commit;

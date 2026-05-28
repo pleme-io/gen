@@ -458,6 +458,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "gen-helm"
+version = "0.1.0"
+dependencies = [
+ "gen-macros",
+ "gen-types",
+ "indexmap",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "gen-macros"
 version = "0.1.0"
 dependencies = [

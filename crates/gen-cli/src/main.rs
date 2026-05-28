@@ -177,6 +177,31 @@ enum Cmd {
         #[arg(long, default_value = "pleme-io")]
         owner: String,
     },
+    /// `gen scaffold-adapter` — stamp a new gen-<ecosystem> adapter
+    /// crate skeleton inside the gen workspace. Materializes the
+    /// seven-artifact intake pattern (theory/ECOSYSTEM-INTAKE.md):
+    /// Cargo.toml + adapter.rs + build_spec.rs + quirks.rs +
+    /// invariants.rs + error.rs + lib.rs, with the `Spec` +
+    /// `QuirkRegistry` + `Invariants` derives wired and stub
+    /// Adapter impls returning `Unsupported`. Author then fills in
+    /// `Adapter::build`, registers the crate in the workspace, and
+    /// the trait surface lights up.
+    ///
+    /// Pillar 12 (generation over composition) applied to gen itself.
+    #[command(name = "scaffold-adapter")]
+    ScaffoldAdapter {
+        /// Ecosystem name: npm | pip | gomod | helm | ansible | …
+        /// Becomes the crate dir name (`gen-<name>`) + the adapter
+        /// `name()` return value.
+        name: String,
+        /// The manifest filename the new adapter detects on
+        /// (`package.json` for npm, `pyproject.toml` for pip, etc).
+        #[arg(long)]
+        manifest: String,
+        /// Target dir for the new crate (default: `crates/gen-<name>`).
+        #[arg(long)]
+        dir: Option<PathBuf>,
+    },
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -485,6 +510,14 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             scaffold_repo(*shape, name, dir.as_deref(), owner)
                 .map_err(|e| CliError::Other(format!("scaffold: {e}")))
         }
+        Cmd::ScaffoldAdapter { name, manifest, dir } => {
+            scaffold_adapter(name, manifest, dir.as_deref())
+                .map_err(|e| CliError::Other(format!("scaffold-adapter: {e}")))?;
+            println!(
+                "✓ gen-{name} scaffolded.\n  Next: add `\"crates/gen-{name}\",` to the gen workspace members in `Cargo.toml`, fill in adapter::Adapter::build, then `cargo build -p gen-{name}`."
+            );
+            Ok(())
+        }
         Cmd::Quirks { adapter } => {
             // Operator-visible introspection of every adapter's typed
             // quirk registry. The CargoAdapter exposes the CrateQuirk
@@ -729,4 +762,281 @@ fn pick_adapter(
 
 fn _resolve_root_lint_silencer(p: &Path) -> PathBuf {
     p.to_path_buf()
+}
+
+/// Stamp a new gen-<ecosystem> adapter crate skeleton at the given
+/// path. Materializes the seven-artifact intake pattern
+/// (theory/ECOSYSTEM-INTAKE.md) — Cargo.toml + lib.rs + adapter.rs +
+/// build_spec.rs + quirks.rs + invariants.rs + error.rs, with the
+/// `Spec` + `QuirkRegistry` + `Invariants` derives pre-wired.
+///
+/// Adding the crate to the workspace `members` list + filling in
+/// `Adapter::build` is the operator's only remaining work.
+fn scaffold_adapter(
+    name: &str,
+    manifest: &str,
+    dir: Option<&Path>,
+) -> Result<(), std::io::Error> {
+    use std::fs;
+    let crate_dir = dir
+        .map(|p| p.to_path_buf())
+        .unwrap_or_else(|| Path::new("crates").join(format!("gen-{name}")));
+    fs::create_dir_all(crate_dir.join("src"))?;
+    let pascal = pascalize(name);
+    let cargo_toml = format!(
+        r#"[package]
+name = "gen-{name}"
+description = "gen — {name} adapter. Parses {manifest} + lockfile into a typed gen_types::Spec emission. One of N adapters that share the typed core via Spec/QuirkRegistry/Invariants traits."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_{snake}"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+gen-types = {{ workspace = true }}
+gen-macros = {{ path = "../gen-macros" }}
+serde = {{ workspace = true }}
+serde_json = {{ workspace = true }}
+indexmap = {{ workspace = true }}
+thiserror = {{ workspace = true }}
+"#,
+        snake = name.replace('-', "_"),
+    );
+    fs::write(crate_dir.join("Cargo.toml"), cargo_toml)?;
+    let lib_rs = format!(
+        r#"//! `gen-{name}` — {name} adapter for the gen ecosystem.
+//!
+//! Parses `{manifest}` into a typed `BuildSpec` and emits it as
+//! Cargo-equivalent typed JSON. See
+//! `theory/ECOSYSTEM-INTAKE.md` for the seven-artifact contract.
+
+pub mod adapter;
+pub mod build_spec;
+pub mod error;
+pub mod invariants;
+pub mod quirks;
+
+pub use adapter::{pascal}Adapter;
+pub use error::{{Result, {pascal}Error}};
+"#,
+    );
+    fs::write(crate_dir.join("src/lib.rs"), lib_rs)?;
+    let error_rs = format!(
+        r#"use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum {pascal}Error {{
+    #[error("manifest not found: {{0}}")]
+    ManifestNotFound(std::path::PathBuf),
+    #[error("other: {{0}}")]
+    Other(String),
+}}
+
+pub type Result<T> = std::result::Result<T, {pascal}Error>;
+"#,
+    );
+    fs::write(crate_dir.join("src/error.rs"), error_rs)?;
+    let build_spec_rs = format!(
+        r#"//! Typed build spec for {name}. Implements `gen_types::Spec`
+//! via `#[derive(SpecShape)]`.
+
+use indexmap::IndexMap;
+use serde::{{Deserialize, Serialize}};
+
+pub const SCHEMA_VERSION: u32 = 1;
+
+#[derive(Clone, Debug, Serialize, Deserialize, gen_macros::SpecShape)]
+#[spec(
+    args = "PackageArgs",
+    quirk = "crate::quirks::{pascal}Quirk",
+    args_field = "args",
+    root_field = "root_package",
+    members_field = "workspace_members",
+    crates_field = "packages"
+)]
+pub struct BuildSpec {{
+    pub version: u32,
+    pub packages: IndexMap<String, PackageSpec>,
+    pub root_package: String,
+    pub workspace_members: Vec<String>,
+}}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PackageSpec {{
+    pub name: String,
+    pub version: String,
+    pub args: PackageArgs,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub quirks: Vec<crate::quirks::{pascal}Quirk>,
+}}
+
+/// Pre-shaped builder args for one package. Substrate spreads this
+/// verbatim into the ecosystem's nixpkgs builder. Adapter authors
+/// fill in fields matching `buildXxxPackage`'s mkArgs signature.
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct PackageArgs {{
+    // TODO: add ecosystem-specific fields here.
+}}
+"#,
+    );
+    fs::write(crate_dir.join("src/build_spec.rs"), build_spec_rs)?;
+    let quirks_rs = format!(
+        r#"//! Typed quirk registry for {name}. Implements
+//! `gen_types::QuirkRegistry` via `#[derive(QuirkRegistry)]`.
+//!
+//! Each registered entry names an upstream {name} package that needs
+//! a known-good build-time workaround. The substrate consumer's
+//! `{name}-quirk-apply.nix` dispatches mechanically on the variant
+//! tags. Adding a new entry: append to `registry()` below.
+
+use serde::{{Deserialize, Serialize}};
+
+/// Typed quirks for known third-party upstream {name} packages.
+/// Add variants as needed; remember to mirror with a Nix dispatch
+/// arm in `substrate/lib/build/{name}/quirk-apply.nix`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "kebab-case")]
+pub enum {pascal}Quirk {{
+    // TODO: add ecosystem-specific quirk variants. Example shape:
+    // ForceFlag {{ flag: String }},
+}}
+
+pub fn registry() -> Vec<(&'static str, Vec<{pascal}Quirk>)> {{
+    // Hand-curated list of upstream-package quirks. Empty by
+    // default; populate as the adapter encounters real bugs.
+    Vec::new()
+}}
+
+#[derive(gen_macros::QuirkRegistry)]
+#[quirks(enum_name = "{pascal}Quirk", registry_fn = "crate::quirks::registry")]
+pub struct {pascal}Quirks;
+"#,
+    );
+    fs::write(crate_dir.join("src/quirks.rs"), quirks_rs)?;
+    let invariants_rs = format!(
+        r#"//! Invariants over the {name} `BuildSpec`. Implements
+//! `gen_types::Invariants` so cse-lint + gen confirm can call into
+//! the adapter uniformly.
+
+use serde::{{Deserialize, Serialize}};
+
+use crate::build_spec::BuildSpec;
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "rule", rename_all = "kebab-case")]
+pub enum Violation {{
+    StaleSchemaVersion {{ found: u32, expected: u32 }},
+    // TODO: ecosystem-specific violations.
+}}
+
+pub fn check(spec: &BuildSpec) -> Vec<Violation> {{
+    let mut out = Vec::new();
+    if spec.version < crate::build_spec::SCHEMA_VERSION {{
+        out.push(Violation::StaleSchemaVersion {{
+            found: spec.version,
+            expected: crate::build_spec::SCHEMA_VERSION,
+        }});
+    }}
+    out
+}}
+
+pub struct {pascal}Invariants;
+
+impl gen_types::Invariants for {pascal}Invariants {{
+    type Spec = BuildSpec;
+    type Violation = Violation;
+    fn check(spec: &Self::Spec) -> Vec<Self::Violation> {{
+        check(spec)
+    }}
+}}
+"#,
+    );
+    fs::write(crate_dir.join("src/invariants.rs"), invariants_rs)?;
+    let adapter_rs = format!(
+        r#"//! `{pascal}Adapter` — gen-{name}'s implementation of the canonical
+//! `gen_types::Adapter` trait. Stub-level today; every verb
+//! returns `Unsupported` until the {name}-side parser lands.
+
+use std::path::PathBuf;
+
+use gen_types::{{
+    Adapter, AdapterCtx, AdapterError, AdapterResult, ConfirmReport, DiffRef, DiffReport,
+    LockOutcome, Plan, PlanIntent, Sbom, SbomFormat,
+}};
+
+pub struct {pascal}Adapter;
+
+impl Adapter for {pascal}Adapter {{
+    fn name(&self) -> &'static str {{ "{name}" }}
+    fn manifest_files(&self) -> &'static [&'static str] {{ &["{manifest}"] }}
+
+    fn lock(&self, _ctx: &AdapterCtx) -> AdapterResult<LockOutcome> {{
+        Err(AdapterError::Unsupported("{name} lock not implemented".into()))
+    }}
+
+    fn build(&self, _ctx: &AdapterCtx) -> AdapterResult<gen_types::AdapterBuildSpec> {{
+        Err(AdapterError::Unsupported("{name} build not implemented".into()))
+    }}
+
+    fn plan(&self, _ctx: &AdapterCtx, _intent: &PlanIntent) -> AdapterResult<Plan> {{
+        Err(AdapterError::Unsupported("{name} plan not implemented".into()))
+    }}
+
+    fn confirm(&self, _ctx: &AdapterCtx) -> AdapterResult<ConfirmReport> {{
+        Err(AdapterError::Unsupported("{name} confirm not implemented".into()))
+    }}
+
+    fn diff(&self, _ctx: &AdapterCtx, _against: &DiffRef) -> AdapterResult<DiffReport> {{
+        Err(AdapterError::Unsupported("{name} diff not implemented".into()))
+    }}
+
+    fn sbom(&self, _ctx: &AdapterCtx, _format: SbomFormat) -> AdapterResult<Sbom> {{
+        Err(AdapterError::Unsupported("{name} sbom not implemented".into()))
+    }}
+
+    fn quirks_registry(&self) -> Vec<gen_types::AdapterQuirkEntry> {{
+        use gen_types::QuirkRegistry;
+        <crate::quirks::{pascal}Quirks as QuirkRegistry>::registry()
+            .into_iter()
+            .map(|(p, qs)| gen_types::AdapterQuirkEntry {{
+                package: p.to_string(),
+                quirks: qs.into_iter().filter_map(|q| serde_json::to_value(&q).ok()).collect(),
+            }})
+            .collect()
+    }}
+}}
+
+pub fn ctx_for(workspace_root: PathBuf) -> AdapterCtx {{
+    AdapterCtx {{ workspace_root, target: None }}
+}}
+"#,
+    );
+    fs::write(crate_dir.join("src/adapter.rs"), adapter_rs)?;
+    Ok(())
+}
+
+fn pascalize(s: &str) -> String {
+    let mut out = String::new();
+    let mut upper_next = true;
+    for c in s.chars() {
+        if c == '-' || c == '_' {
+            upper_next = true;
+        } else if upper_next {
+            out.push(c.to_ascii_uppercase());
+            upper_next = false;
+        } else {
+            out.push(c);
+        }
+    }
+    out
 }

@@ -4,6 +4,7 @@ members = [
     "crates/gen-types",
     "crates/gen-macros",
     "crates/gen-cargo",
+    "crates/gen-helm",
     "crates/gen-npm",
     "crates/gen-bundler",
     "crates/gen-adapter-forge",

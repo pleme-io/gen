@@ -1,0 +1,27 @@
+[package]
+name = "gen-platform"
+description = "gen-platform — Rust-first canonical handle for the typed-dispatcher (typed-tagged-union catamorphism) substrate primitive. Re-exports TypedDispatcher + #[derive(TypedDispatcher)], ships a runtime Dispatcher<T> applicator for Rust consumers (controllers, daemons, reactive routers), and surfaces the typed catalog reflection so any pleme-io crate can stand up a typed dispatch surface against any closed variant universe. The 'common language' substrate primitive — see theory/QUIRK-APPLIER.md."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_platform"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+gen-types = { workspace = true }
+gen-macros = { path = "../gen-macros" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+gen-cargo = { workspace = true }

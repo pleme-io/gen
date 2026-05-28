@@ -3,6 +3,7 @@ resolver = "3"
 members = [
     "crates/gen-types",
     "crates/gen-macros",
+    "crates/gen-platform",
     "crates/gen-cargo",
     "crates/gen-helm",
     "crates/gen-pip",
@@ -36,6 +37,7 @@ authors = ["pleme-io"]
 [workspace.dependencies]
 # Workspace crates
 gen-types = { path = "crates/gen-types", version = "0.1.0" }
+gen-platform = { path = "crates/gen-platform", version = "0.1.0" }
 gen-cargo = { path = "crates/gen-cargo", version = "0.1.0" }
 gen-npm = { path = "crates/gen-npm", version = "0.1.0" }
 gen-bundler = { path = "crates/gen-bundler", version = "0.1.0" }

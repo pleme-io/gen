@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 /// Typed quirks for known third-party upstream npm packages whose
 /// install/build phase fails inside the nixpkgs sandbox without a
 /// known-good workaround.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, gen_macros::TypedDispatcher)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, gen_macros::TypedDispatcher, gen_macros::Discriminant, gen_macros::IsVariant)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum NpmQuirk {
     /// Append a CLI flag to the `npm install` invocation. Most common

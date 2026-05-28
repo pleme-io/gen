@@ -688,6 +688,166 @@ pub fn derive_is_variant(input: TokenStream) -> TokenStream {
     expanded.into()
 }
 
+/// `#[derive(BackendError)]` — auto-implement a trait with the
+/// shape:
+///
+/// ```ignore
+/// pub trait BackendError {
+///     fn is_retryable(&self) -> bool;
+///     fn is_auth_failure(&self) -> bool { false }
+///     fn kind(&self) -> &'static str;
+/// }
+/// ```
+///
+/// The derive emits:
+///   - `is_retryable`  — `true` for variants tagged `#[backend_error(transient)]`
+///   - `is_auth_failure` — `true` for variants tagged `#[backend_error(auth)]`
+///   - `kind` — delegates to `self.discriminant()` (requires
+///     `#[derive(Discriminant)]` to be on the same enum with method
+///     `discriminant` OR the consumer overrides via `kind_method`)
+///
+/// # Attributes
+///
+/// - `#[backend_error(trait_path = "::path::to::BackendError")]` —
+///   fully-qualified trait path. Defaults to unqualified
+///   `BackendError` — consumer must `use the_trait::BackendError` in
+///   scope.
+/// - `#[backend_error(kind_method = "kind")]` — name of the
+///   `&'static str`-returning method to delegate `kind()` to (default
+///   `"discriminant"` — matches the default Discriminant method name).
+/// - Per-variant `#[backend_error(transient)]` — variant is transient
+///   (caller should retry).
+/// - Per-variant `#[backend_error(auth)]` — variant is an auth
+///   failure (HTTP 401/403 maps).
+/// - Per-variant `#[backend_error(permanent)]` — variant is permanent
+///   (caller must not retry). Default for unattributed variants.
+///
+/// # Round-trip with Discriminant
+///
+/// Pairs with Discriminant to deliver the BackendError contract in
+/// two derives:
+///
+/// ```ignore
+/// use magma_converge::BackendError;  // trait in scope
+///
+/// #[derive(Debug, thiserror::Error, gen_platform::Discriminant, gen_platform::BackendError)]
+/// #[discriminant(method = "discriminant", case = "snake")]
+/// enum BlobStoreError {
+///     #[error("not found at {path:?}")]
+///     NotFound { path: String },
+///
+///     #[error("permission denied at {path:?}")]
+///     #[backend_error(auth)]
+///     PermissionDenied { path: String },
+///
+///     #[error("transient at {path:?}")]
+///     #[backend_error(transient)]
+///     Transient { path: String },
+///
+///     #[error("permanent at {path:?}")]
+///     Permanent { path: String },
+/// }
+///
+/// // Auto-generated:
+/// //   impl BackendError for BlobStoreError {
+/// //       fn is_retryable(&self) -> bool { matches!(self, Self::Transient { .. }) }
+/// //       fn is_auth_failure(&self) -> bool { matches!(self, Self::PermissionDenied { .. }) }
+/// //       fn kind(&self) -> &'static str { self.discriminant() }
+/// //   }
+/// ```
+#[proc_macro_derive(BackendError, attributes(backend_error))]
+pub fn derive_backend_error(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let enum_name = input.ident.clone();
+
+    let Data::Enum(de) = input.data.clone() else {
+        return syn::Error::new_spanned(
+            &enum_name,
+            "#[derive(BackendError)] is only valid on enums",
+        )
+        .to_compile_error()
+        .into();
+    };
+
+    let mut trait_path: syn::Path = syn::parse_quote!(BackendError);
+    let mut kind_method = "discriminant".to_string();
+    for attr in &input.attrs {
+        if !attr.path().is_ident("backend_error") {
+            continue;
+        }
+        let _ = attr.parse_nested_meta(|meta| {
+            if meta.path.is_ident("trait_path") {
+                let value = meta.value()?;
+                let s: syn::LitStr = value.parse()?;
+                if let Ok(p) = syn::parse_str::<syn::Path>(&s.value()) {
+                    trait_path = p;
+                }
+            } else if meta.path.is_ident("kind_method") {
+                let value = meta.value()?;
+                let s: syn::LitStr = value.parse()?;
+                kind_method = s.value();
+            }
+            Ok(())
+        });
+    }
+    let kind_method_ident = syn::Ident::new(&kind_method, proc_macro2::Span::call_site());
+
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+
+    let mut transient_patterns: Vec<proc_macro2::TokenStream> = Vec::new();
+    let mut auth_patterns: Vec<proc_macro2::TokenStream> = Vec::new();
+    for v in &de.variants {
+        let mut tags: std::collections::HashSet<String> = std::collections::HashSet::new();
+        for attr in &v.attrs {
+            if !attr.path().is_ident("backend_error") {
+                continue;
+            }
+            let _ = attr.parse_nested_meta(|meta| {
+                if let Some(ident) = meta.path.get_ident() {
+                    tags.insert(ident.to_string());
+                }
+                Ok(())
+            });
+        }
+        let pattern = discriminant_variant_pattern(v);
+        if tags.contains("transient") {
+            transient_patterns.push(pattern.clone());
+        }
+        if tags.contains("auth") {
+            auth_patterns.push(pattern.clone());
+        }
+    }
+
+    let is_retryable_body = if transient_patterns.is_empty() {
+        quote! { false }
+    } else {
+        quote! { matches!(self, #(#transient_patterns)|*) }
+    };
+    let is_auth_failure_body = if auth_patterns.is_empty() {
+        quote! { false }
+    } else {
+        quote! { matches!(self, #(#auth_patterns)|*) }
+    };
+
+    let expanded = quote! {
+        impl #impl_generics #trait_path for #enum_name #ty_generics #where_clause {
+            fn is_retryable(&self) -> bool {
+                #is_retryable_body
+            }
+
+            fn is_auth_failure(&self) -> bool {
+                #is_auth_failure_body
+            }
+
+            fn kind(&self) -> &'static str {
+                self.#kind_method_ident()
+            }
+        }
+    };
+
+    expanded.into()
+}
+
 /// Convert PascalCase variant identifiers to kebab-case serde tags.
 /// Mirrors `#[serde(rename_all = "kebab-case")]` semantics via
 /// heck-style word boundaries: lower→upper and digit→upper both

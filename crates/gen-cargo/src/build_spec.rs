@@ -468,6 +468,55 @@ pub fn generate_multi_target(root: &Path) -> Result<BuildSpec> {
         }
     }
 
+    // Union per-target crate_renames into the base CrateSpec's
+    // crate_renames map. Cargo's per-target resolver may rename a
+    // dep on one target that's absent from the host target — e.g.
+    // winit on linux has `smithay-client-toolkit -> sctk`; on macos
+    // the dep isn't pulled in so the host-only spec's renames are
+    // missing that entry. Without the union, substrate's
+    // buildRustCrate would compile winit on linux without `--extern
+    // sctk=...`, failing with E0433 'unresolved module sctk'.
+    //
+    // The merge is per-crate, per-canonical-name: deduplicate
+    // {version, rename} records so cross-target re-emits aren't
+    // counted twice. Each base.crates entry's crate_renames field
+    // gets the union of every per-target spec's renames for that
+    // same crate.
+    for spec in per_target.values() {
+        for (key, src) in &spec.crates {
+            let Some(dst) = base.crates.get_mut(key) else {
+                continue;
+            };
+            for (canonical, records) in &src.crate_renames {
+                let entry = dst.crate_renames.entry(canonical.clone()).or_default();
+                for record in records {
+                    if !entry.iter().any(|r| {
+                        r.version == record.version && r.rename == record.rename
+                    }) {
+                        entry.push(record.clone());
+                    }
+                }
+            }
+            // Mirror the same union into build_rust_crate_args.crate_renames
+            // (the pre-shaped buildRustCrate kwargs the substrate consumer
+            // spreads verbatim).
+            for (canonical, records) in &src.build_rust_crate_args.crate_renames {
+                let entry = dst
+                    .build_rust_crate_args
+                    .crate_renames
+                    .entry(canonical.clone())
+                    .or_default();
+                for record in records {
+                    if !entry.iter().any(|r| {
+                        r.version == record.version && r.rename == record.rename
+                    }) {
+                        entry.push(record.clone());
+                    }
+                }
+            }
+        }
+    }
+
     // Populate target_resolves with each target's per-crate edges
     // AND per-target features (cargo's resolver computes features
     // differently per target due to cfg-conditional feature

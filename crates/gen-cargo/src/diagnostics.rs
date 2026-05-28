@@ -178,6 +178,7 @@ mod tests {
             workspace_members: vec![],
             flake_metadata: IndexMap::new(),
             target_resolves: None,
+            cargo_lock_hash: None,
         }
     }
 

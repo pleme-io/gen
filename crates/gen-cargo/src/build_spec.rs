@@ -56,6 +56,22 @@ pub struct BuildSpec {
     /// falls back when target_resolves is None.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub target_resolves: Option<IndexMap<String, TargetResolve>>,
+    /// BLAKE3 hex (64 chars) of the workspace's Cargo.lock content at
+    /// emit time. Drives the idempotence fast-path: when `gen build`
+    /// runs and the current Cargo.lock's hash matches this value,
+    /// the spec is byte-equal to what would be re-emitted and the
+    /// write is skipped entirely (fleet-wide sweep cost becomes O(N)
+    /// hash-checks rather than O(N) full regens).
+    ///
+    /// Missing on schema < 6 specs; `gen build` treats absent hash as
+    /// "always re-emit" for backward compat. `gen check` uses the
+    /// hash to compute typed `Freshness` per repo without writing.
+    ///
+    /// Schema bumped to 6 when this lands; substrate's
+    /// lockfile-builder treats v5 and v6 identically (the field is
+    /// purely a producer-side cache key).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cargo_lock_hash: Option<String>,
 }
 
 /// Per-target resolved dep edges for every crate in the workspace's
@@ -726,20 +742,35 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         // (underscores). `src_path` honors `[lib].path` overrides.
         //
         // Lib-target emission rules:
-        // - Workspace members (path sources): ALWAYS emit. lockfile-builder
-        //   uses src = workspaceSrc and prefixes lib_target.path with the
-        //   member's relative_path. Without lib_target, the default
-        //   `src/lib.rs` auto-discovery resolves against the workspace root
-        //   instead of the member subdir.
-        // - Non-path crates (registry/git) at default `src/lib.rs` with
-        //   default rustc name: suppress emission. buildRustCrate's
-        //   auto-discovery is identical to explicit args here — including
-        //   the proc-macro `crate-type = ["proc-macro", "rlib"]` dual that
-        //   lets crates like tatara-lisp-derive co-locate non-proc-macro
-        //   fn items with their macros (explicit libName + libPath would
-        //   force a proc-macro-only compile that rejects them).
-        // - Non-path crates with overridden path/name (fnv, bzip2-sys,
+        // - Path-deps (workspace members + external path-deps like
+        //   `gen-platform = { path = "../gen/crates/gen-platform" }`):
+        //   ALWAYS emit. lockfile-builder's per-tree builder uses
+        //   src = workspaceSrc and prefixes lib_target.path with the
+        //   path-dep's relative_path. Without lib_target, buildRustCrate's
+        //   default `src/lib.rs` auto-discovery resolves against the
+        //   workspace root instead of the actual member/path-dep subdir,
+        //   producing a drv with NO compiled rlib output (silent failure
+        //   that surfaces as "extern location for X does not exist" at
+        //   the consumer's rustc invocation).
+        // - Registry/git crates at default `src/lib.rs` with default
+        //   rustc name: suppress emission. buildRustCrate's auto-discovery
+        //   is identical to explicit args here — including the proc-macro
+        //   `crate-type = ["proc-macro", "rlib"]` dual that lets crates
+        //   like tatara-lisp-derive co-locate non-proc-macro fn items
+        //   with their macros (explicit libName + libPath would force a
+        //   proc-macro-only compile that rejects them).
+        // - Registry/git crates with overridden path/name (fnv, bzip2-sys,
         //   document-features, …): emit so buildRustCrate finds the lib.
+        //
+        // The critical distinction: workspace membership is NOT the right
+        // discriminator — `is_member` is true only for crates listed in
+        // the current workspace's `[workspace] members`. External path-deps
+        // (cargo's `path = "../foo"` form) have `pkg.source = None` like
+        // members do, but ARE NOT members; they were previously suppressed
+        // by `!is_member`, causing them to produce empty drvs. The fix:
+        // use `pkg.source.is_none()` as the path-dep predicate, which is
+        // true for both members and external path-deps.
+        let is_path_dep = pkg.source.is_none();
         let lib_target = pkg
             .targets
             .iter()
@@ -757,7 +788,7 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 let default_name = pkg.name.as_str().replace('-', "_");
                 let default_path = "src/lib.rs";
                 let is_default = t.name == default_name && path == default_path;
-                if is_default && !is_member {
+                if is_default && !is_path_dep {
                     return None;
                 }
                 Some(LibTargetSpec {
@@ -767,9 +798,23 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             });
 
         // Source resolution.
-        let source = if is_member {
+        // Path-deps (members + external) get `Path { relative_path }`.
+        // For members, relative_path is the subdir under the workspace
+        // root. For external path-deps (e.g.
+        // `gen-platform = { path = "../gen/crates/gen-platform" }`),
+        // it's the workspace-relative path that escapes via `..`. The
+        // consuming substrate (lockfile-builder) uses this to locate
+        // the source dir when src = workspaceSrc; without an accurate
+        // relative_path, buildRustCrate looks for `src/lib.rs` at the
+        // workspace root and finds nothing.
+        let source = if is_path_dep {
             let abs_dir = pkg.manifest_path.parent().map(|p| p.to_string()).unwrap_or_default();
+            // For external path-deps that live OUTSIDE the workspace,
+            // pathdiff_relative returns None (the prefix-strip fails).
+            // We fall back to a `..`-relative path computed manually so
+            // the consumer can find the source.
             let rel = pathdiff_relative(&abs_dir, &workspace_root_str)
+                .or_else(|| relative_path_escaping(&abs_dir, &workspace_root_str))
                 .unwrap_or_else(|| abs_dir.clone());
             CrateSource::Path {
                 relative_path: if rel.is_empty() { ".".to_string() } else { rel },
@@ -1089,7 +1134,20 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         // generate_multi_target populates it; this single-target path
         // leaves it absent so substrate falls back to per-crate edges.
         target_resolves: None,
+        cargo_lock_hash: hash_cargo_lock(root),
     })
+}
+
+/// Compute the BLAKE3 hex digest of the workspace's Cargo.lock.
+/// Returns `None` when the lockfile doesn't exist (rare — `cargo
+/// metadata` would have already failed) or can't be read. Embedded
+/// in the spec as a content-addressed cache key: `gen build`
+/// re-emits only when this hash differs from the spec's stored
+/// value; `gen check` returns a typed `Freshness` based on it.
+fn hash_cargo_lock(root: &Path) -> Option<String> {
+    let lock_path = root.join("Cargo.lock");
+    let bytes = std::fs::read(&lock_path).ok()?;
+    Some(blake3::hash(&bytes).to_hex().to_string())
 }
 
 /// Parse `owner/repo` out of a GitHub-style URL. Accepts both `.git`
@@ -1273,6 +1331,39 @@ fn strip_dir_prefix(path: &str, dir: &str) -> Option<String> {
     path.strip_prefix(&prefix).map(String::from)
 }
 
+/// Compute relative path FROM `from` TO `base`, returning a
+/// possibly-`..`-escaping form. Used when the source path lives
+/// OUTSIDE the workspace root — e.g., a path-dep declared as
+/// `gen-platform = { path = "../gen/crates/gen-platform" }` from
+/// `kura/`. Walks up `base` until `from` becomes prefixable, then
+/// returns `(.. * N)/<remainder>`. Returns None if the two paths
+/// have no common ancestor (e.g., different drives on Windows;
+/// not a case the substrate cares about). Both inputs are display
+/// paths.
+fn relative_path_escaping(from: &str, base: &str) -> Option<String> {
+    let from_components: Vec<&str> =
+        from.trim_end_matches('/').split('/').filter(|c| !c.is_empty()).collect();
+    let base_components: Vec<&str> =
+        base.trim_end_matches('/').split('/').filter(|c| !c.is_empty()).collect();
+    // Find common prefix length.
+    let common: usize = from_components
+        .iter()
+        .zip(base_components.iter())
+        .take_while(|(a, b)| a == b)
+        .count();
+    if common == 0 {
+        return None;
+    }
+    let up_count = base_components.len() - common;
+    let down: Vec<&str> = from_components[common..].to_vec();
+    let mut parts: Vec<String> = std::iter::repeat_n("..".to_string(), up_count).collect();
+    parts.extend(down.into_iter().map(String::from));
+    if parts.is_empty() {
+        return Some(".".to_string());
+    }
+    Some(parts.join("/"))
+}
+
 /// Compute relative path from `from` to `base`. Returns None if
 /// `from` doesn't start with `base`. Both inputs are display paths.
 fn pathdiff_relative(from: &str, base: &str) -> Option<String> {
@@ -1282,4 +1373,64 @@ fn pathdiff_relative(from: &str, base: &str) -> Option<String> {
     }
     let with_slash = format!("{base_trim}/");
     from.strip_prefix(&with_slash).map(String::from)
+}
+
+#[cfg(test)]
+mod path_helper_tests {
+    use super::{pathdiff_relative, relative_path_escaping};
+
+    #[test]
+    fn pathdiff_relative_returns_none_when_path_escapes_base() {
+        // Workspace at /Users/me/code/kura; external path-dep at
+        // /Users/me/code/gen/crates/gen-platform — outside the workspace.
+        assert_eq!(
+            pathdiff_relative(
+                "/Users/me/code/gen/crates/gen-platform",
+                "/Users/me/code/kura"
+            ),
+            None,
+            "pathdiff_relative cannot represent escapes — that's relative_path_escaping's job"
+        );
+    }
+
+    /// Regression for the gen-platform-external-path-dep bug:
+    /// `kura-run` consumed gen-platform via `path = "../gen/crates/gen-platform"`,
+    /// gen-cargo's old code fell back to `relative_path = "."` because
+    /// the helper couldn't escape via `..`. lockfile-builder then looked
+    /// for source at `/kura/src/lib.rs` (nothing) and produced an empty
+    /// drv with no rlib. The consumer failed with "extern location for
+    /// gen_platform does not exist".
+    #[test]
+    fn relative_path_escaping_handles_external_path_dep() {
+        assert_eq!(
+            relative_path_escaping(
+                "/Users/me/code/gen/crates/gen-platform",
+                "/Users/me/code/kura"
+            ),
+            Some("../gen/crates/gen-platform".to_string())
+        );
+    }
+
+    #[test]
+    fn relative_path_escaping_handles_sibling_workspaces() {
+        assert_eq!(
+            relative_path_escaping("/a/b/c", "/a/d/e"),
+            Some("../../b/c".to_string())
+        );
+    }
+
+    #[test]
+    fn relative_path_escaping_returns_none_for_disjoint_roots() {
+        assert_eq!(relative_path_escaping("/a/b", "/x/y"), None);
+    }
+
+    #[test]
+    fn relative_path_escaping_returns_dot_for_same_dir() {
+        // Same path → ".". Different from pathdiff_relative which returns
+        // empty-string in this case.
+        assert_eq!(
+            relative_path_escaping("/a/b", "/a/b"),
+            Some(".".to_string())
+        );
+    }
 }

@@ -195,8 +195,14 @@ fn sweep_one(repo: &Path, write: bool) -> SweepOutcome {
         };
     }
     let started = Instant::now();
+    // Fast-path through `cargo_lock_hash`: if the committed spec
+    // already matches the current Cargo.lock's BLAKE3 digest, the
+    // write path is a two-hash no-op instead of a full cargo
+    // metadata + serde emission. Fleet sweep over a clean fleet
+    // drops from O(N seconds) to O(N milliseconds). Same shape as
+    // the `gen build --if-stale` operator-facing flag.
     let spec_result = if write {
-        build_spec::generate_and_write(repo).map(|path| {
+        build_spec::generate_and_write_if_stale(repo).map(|(_freshness, path)| {
             std::fs::metadata(&path).map(|m| m.len() as usize).unwrap_or(0)
         })
     } else {

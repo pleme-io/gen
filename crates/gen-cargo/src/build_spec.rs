@@ -26,7 +26,7 @@ use crate::error::{CargoError, Result};
 ///     kwargs); + `links` + universal `preBuild`. Substrate's
 ///     lockfile-builder asserts on this version — older specs MUST
 ///     be regenerated via `gen build .` (no silent fallback).
-pub const SCHEMA_VERSION: u32 = 5;
+pub const SCHEMA_VERSION: u32 = 6;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BuildSpec {
@@ -582,11 +582,28 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
     }
     // Filter the resolve graph to deps active for this target.
     // cargo's resolver does the heavy lifting; we just pass --filter-platform.
+    //
+    // Hermetic-by-default: `--offline` + `GIT_TERMINAL_PROMPT=0`.
+    // The fleet sweep must never prompt the operator for credentials
+    // nor hit the network — a stale `~/.cargo/registry` or missing
+    // git checkout should surface as a typed cargo error, not as a
+    // hung HTTPS auth dialog. Operators pre-warm caches via
+    // `cargo fetch` once; from then on `gen build` stays offline.
+    // Safety: setting GIT_TERMINAL_PROMPT in-process is acceptable
+    // — gen is a CLI binary, the env mutation is bounded to this
+    // process's lifetime.
+    // Safety: setting a process-global env var. gen is a short-lived
+    // CLI; the mutation is bounded to this process's lifetime and the
+    // value matches what a hermetic invocation should always have.
+    unsafe { std::env::set_var("GIT_TERMINAL_PROMPT", "0") };
     let mut cmd = MetadataCommand::new();
     cmd.manifest_path(&manifest_path);
+    let mut opts: Vec<String> = vec!["--offline".to_string()];
     if !target.is_empty() {
-        cmd.other_options(vec!["--filter-platform".to_string(), target.to_string()]);
+        opts.push("--filter-platform".to_string());
+        opts.push(target.to_string());
     }
+    cmd.other_options(opts);
     let meta = cmd.exec().map_err(|e| CargoError::Io {
         path: manifest_path.clone(),
         source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
@@ -1216,6 +1233,134 @@ pub fn generate_and_write(root: &Path) -> Result<std::path::PathBuf> {
     generate_for_target_and_write(root, host_target_triple())
 }
 
+/// Typed spec freshness — read-only check that compares the
+/// committed `Cargo.build-spec.json`'s `cargo_lock_hash` against
+/// the current `Cargo.lock` content's BLAKE3 digest. No subprocess,
+/// no spec regeneration; cheap enough to run per-repo across the
+/// entire fleet in a tight loop.
+///
+/// Consumers (fleet's pre-rebuild sweep, CI invariant checks,
+/// operator `gen check` diagnostics) use the typed `Freshness`
+/// variants to make decisions: `Fresh` means skip regeneration,
+/// `Drifted` / `Missing` / `UnhashedSpec` mean a regen is needed.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "kebab-case")]
+pub enum Freshness {
+    /// `Cargo.lock` hashes match the spec's stored hash — spec is
+    /// byte-equal to what a regen would produce. Skip regeneration.
+    Fresh {
+        spec_hash: String,
+        lock_hash: String,
+    },
+    /// Spec exists + has a stored hash, but it doesn't match the
+    /// current `Cargo.lock`. Regen needed.
+    Drifted {
+        spec_hash: String,
+        lock_hash: String,
+    },
+    /// Spec exists but predates the hash field (schema < 6). Treated
+    /// as drift — regen to upgrade.
+    UnhashedSpec { lock_hash: String },
+    /// `Cargo.build-spec.json` doesn't exist. First-time emission
+    /// needed.
+    MissingSpec { lock_hash: String },
+    /// `Cargo.lock` doesn't exist — the workspace isn't buildable
+    /// in its current state. Operator-actionable; not a regen
+    /// candidate.
+    MissingLock,
+}
+
+impl Freshness {
+    /// True iff the spec is byte-equal to a fresh regen.
+    #[must_use]
+    pub fn is_fresh(&self) -> bool {
+        matches!(self, Freshness::Fresh { .. })
+    }
+
+    /// True iff `gen build` would do meaningful work.
+    #[must_use]
+    pub fn needs_regen(&self) -> bool {
+        matches!(
+            self,
+            Freshness::Drifted { .. }
+                | Freshness::UnhashedSpec { .. }
+                | Freshness::MissingSpec { .. }
+        )
+    }
+
+    /// Operator-facing one-line summary.
+    #[must_use]
+    pub fn summary(&self) -> &'static str {
+        match self {
+            Freshness::Fresh { .. } => "fresh",
+            Freshness::Drifted { .. } => "drifted",
+            Freshness::UnhashedSpec { .. } => "unhashed-spec",
+            Freshness::MissingSpec { .. } => "missing-spec",
+            Freshness::MissingLock => "missing-lock",
+        }
+    }
+}
+
+/// Minimal spec-header view used by `check_freshness`. Decoupled
+/// from the full `BuildSpec` so an old or in-flight spec whose
+/// nested shape has drifted (a new required field on a nested
+/// `CrateSpec`, an old schema_version, etc.) still yields a useful
+/// `Freshness` reading. The only fields we consult are `version`
+/// (reserved for future "stale schema" classification) and
+/// `cargo_lock_hash`. Any failure to parse even this minimal shape
+/// is treated as `MissingSpec`.
+#[derive(Deserialize)]
+struct SpecHeader {
+    #[serde(default)]
+    #[allow(dead_code)] // reserved for future schema-staleness check
+    version: Option<u32>,
+    #[serde(default)]
+    cargo_lock_hash: Option<String>,
+}
+
+/// Compute the spec's freshness without touching the spec or
+/// invoking cargo. Pure file I/O + two BLAKE3 hashes.
+#[must_use]
+pub fn check_freshness(root: &Path) -> Freshness {
+    let lock_hash = match hash_cargo_lock(root) {
+        Some(h) => h,
+        None => return Freshness::MissingLock,
+    };
+    let spec_path = root.join("Cargo.build-spec.json");
+    let spec_bytes = match std::fs::read(&spec_path) {
+        Ok(b) => b,
+        Err(_) => return Freshness::MissingSpec { lock_hash },
+    };
+    // Permissive parse: only the two fields we actually need.
+    // Any other field's evolution must not block the freshness
+    // signal — the regen below will overwrite anyway.
+    let header: SpecHeader = match serde_json::from_slice(&spec_bytes) {
+        Ok(h) => h,
+        Err(_) => return Freshness::MissingSpec { lock_hash },
+    };
+    match header.cargo_lock_hash {
+        None => Freshness::UnhashedSpec { lock_hash },
+        Some(spec_hash) if spec_hash == lock_hash => {
+            Freshness::Fresh { spec_hash, lock_hash }
+        }
+        Some(spec_hash) => Freshness::Drifted { spec_hash, lock_hash },
+    }
+}
+
+/// Idempotent variant of `generate_and_write` — fast-path no-op
+/// when the spec is already fresh. Returns the `Freshness` outcome
+/// alongside the spec path so callers can log the decision.
+pub fn generate_and_write_if_stale(root: &Path) -> Result<(Freshness, std::path::PathBuf)> {
+    let freshness = check_freshness(root);
+    let spec_path = root.join("Cargo.build-spec.json");
+    if freshness.is_fresh() {
+        return Ok((freshness, spec_path));
+    }
+    let written = generate_multi_target_and_write(root)?;
+    let post = check_freshness(root);
+    Ok((post, written))
+}
+
 /// Multi-target emission: write a spec that covers every fleet target
 /// (FLEET_TARGETS). One committed spec, every target's resolves
 /// available — gen-bootstrap chicken-and-egg permanently resolved.
@@ -1431,6 +1576,114 @@ mod path_helper_tests {
         assert_eq!(
             relative_path_escaping("/a/b", "/a/b"),
             Some(".".to_string())
+        );
+    }
+
+    // ------------------------------------------------------------------
+    // Freshness primitive — typed BLAKE3 lock-hash for sweep fast-path.
+    // ------------------------------------------------------------------
+
+    fn freshness_tmpdir() -> std::path::PathBuf {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static C: AtomicU64 = AtomicU64::new(0);
+        let n = C.fetch_add(1, Ordering::Relaxed);
+        let p = std::env::temp_dir().join(format!(
+            "gen-cargo-freshness-{}-{}",
+            std::process::id(),
+            n
+        ));
+        let _ = std::fs::remove_dir_all(&p);
+        std::fs::create_dir_all(&p).unwrap();
+        p
+    }
+
+    #[test]
+    fn check_freshness_missing_lock() {
+        let dir = freshness_tmpdir();
+        assert_eq!(
+            super::check_freshness(&dir).summary(),
+            "missing-lock"
+        );
+    }
+
+    #[test]
+    fn check_freshness_missing_spec() {
+        let dir = freshness_tmpdir();
+        std::fs::write(dir.join("Cargo.lock"), b"# lock").unwrap();
+        assert_eq!(
+            super::check_freshness(&dir).summary(),
+            "missing-spec"
+        );
+    }
+
+    #[test]
+    fn check_freshness_unhashed_spec_old_schema() {
+        // A v5 (pre-cargo_lock_hash) spec must surface as
+        // `unhashed-spec`, NOT `missing-spec` — the permissive
+        // `SpecHeader` parse exists precisely so a schema-drift on
+        // any nested field doesn't masquerade as "no spec at all."
+        let dir = freshness_tmpdir();
+        std::fs::write(dir.join("Cargo.lock"), b"# lock").unwrap();
+        // Spec missing `cargo_lock_hash` AND with nested fields
+        // (workspace.crates) that the full BuildSpec parser would
+        // reject — only the header view should drive the decision.
+        std::fs::write(
+            dir.join("Cargo.build-spec.json"),
+            br#"{"version": 5, "workspace": {"crates": {"x": {"this_field_doesnt_exist": true}}}}"#,
+        )
+        .unwrap();
+        assert_eq!(
+            super::check_freshness(&dir).summary(),
+            "unhashed-spec"
+        );
+    }
+
+    #[test]
+    fn check_freshness_fresh_when_hashes_match() {
+        let dir = freshness_tmpdir();
+        let lock_body: &[u8] = b"# lock\nfresh test\n";
+        std::fs::write(dir.join("Cargo.lock"), lock_body).unwrap();
+        let hash = blake3::hash(lock_body).to_hex().to_string();
+        std::fs::write(
+            dir.join("Cargo.build-spec.json"),
+            format!(r#"{{"version": 6, "cargo_lock_hash": "{hash}"}}"#).as_bytes(),
+        )
+        .unwrap();
+        let f = super::check_freshness(&dir);
+        assert_eq!(f.summary(), "fresh");
+        assert!(f.is_fresh());
+        assert!(!f.needs_regen());
+    }
+
+    #[test]
+    fn check_freshness_drifted_when_hashes_differ() {
+        let dir = freshness_tmpdir();
+        let lock_body: &[u8] = b"# new lock contents\n";
+        std::fs::write(dir.join("Cargo.lock"), lock_body).unwrap();
+        std::fs::write(
+            dir.join("Cargo.build-spec.json"),
+            br#"{"version": 6, "cargo_lock_hash": "deadbeef"}"#,
+        )
+        .unwrap();
+        let f = super::check_freshness(&dir);
+        assert_eq!(f.summary(), "drifted");
+        assert!(!f.is_fresh());
+        assert!(f.needs_regen());
+    }
+
+    #[test]
+    fn check_freshness_unparseable_spec_treated_as_missing() {
+        let dir = freshness_tmpdir();
+        std::fs::write(dir.join("Cargo.lock"), b"# lock").unwrap();
+        // Not even valid JSON.
+        std::fs::write(
+            dir.join("Cargo.build-spec.json"),
+            b"this is not json at all",
+        )
+        .unwrap();
+        assert_eq!(
+            super::check_freshness(&dir).summary(),
+            "missing-spec"
         );
     }
 }

@@ -171,6 +171,39 @@ enum Cmd {
         /// for committed specs).
         #[arg(long, conflicts_with = "filter_platform")]
         single_target: bool,
+        /// Fast-path: if the committed spec's cargo_lock_hash matches
+        /// the current Cargo.lock's BLAKE3 digest, skip regeneration
+        /// entirely. Idempotent on the no-drift path — cost drops
+        /// from "full cargo metadata + serde emit" to "two file
+        /// reads + two hashes." The fleet sweep (fleet/rebuild)
+        /// turns this on by default; manual `gen build` calls leave
+        /// it off so the operator can force a regen on demand.
+        #[arg(long)]
+        if_stale: bool,
+    },
+    /// Typed read-only freshness check of `Cargo.build-spec.json`.
+    /// Returns the `Freshness` variants (Fresh / Drifted /
+    /// UnhashedSpec / MissingSpec / MissingLock) without writing
+    /// anything. Exit code is non-zero when `needs_regen()` is true
+    /// so shell pipelines can branch on it cheaply.
+    ///
+    /// `gen check-spec` is the typed companion to `gen build
+    /// --if-stale` — same algorithm, different surface (read-only
+    /// report vs in-place fast-path).
+    #[command(name = "check-spec")]
+    CheckSpec {
+        /// Path to a workspace root (defaults to CWD).
+        path: Option<PathBuf>,
+    },
+    /// `gen fleet-check` — recursively report freshness for every
+    /// workspace under <path>. Same shape as `gen fleet-sweep` but
+    /// read-only: emits typed `Freshness` per repo without
+    /// touching any spec. Exit code is non-zero iff any repo's
+    /// `needs_regen()` is true.
+    #[command(name = "fleet-check")]
+    FleetCheck {
+        /// Root directory containing N repo sub-directories.
+        path: PathBuf,
     },
     /// Run gen build across every cargo workspace under <path>.
     /// Emits a typed sweep report (JSON|YAML). Use --write to persist
@@ -465,7 +498,7 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             };
             emit(&summary, cli.format)
         }
-        Cmd::Build { path, filter_platform, single_target } => {
+        Cmd::Build { path, filter_platform, single_target, if_stale } => {
             let root = resolve_root(path, cfg);
             // Atomic: regenerate every sidecar the substrate consumer
             // needs based on the adapter the workspace declares. Today
@@ -478,6 +511,22 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             let adapter = pick_adapter(&root, cfg)?;
             match adapter.as_str() {
                 "cargo" => {
+                    // --if-stale: fast-path through the spec's
+                    // cargo_lock_hash; skip regen if hash matches.
+                    // Mutually exclusive with single-target /
+                    // filter-platform (those force a full regen by
+                    // construction).
+                    if *if_stale && filter_platform.is_none() && !*single_target {
+                        let (freshness, out) =
+                            gen_cargo::build_spec::generate_and_write_if_stale(&root)
+                                .map_err(CliError::Cargo)?;
+                        eprintln!(
+                            "gen build --if-stale: {} ({})",
+                            freshness.summary(),
+                            out.display()
+                        );
+                        return Ok(());
+                    }
                     let out = if let Some(triple) = filter_platform {
                         gen_cargo::build_spec::generate_for_target_and_write(&root, &triple)
                             .map_err(CliError::Cargo)?
@@ -493,6 +542,77 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                 other => {
                     return Err(CliError::RenderNotImplementedForAdapter(other.to_string()));
                 }
+            }
+            Ok(())
+        }
+        Cmd::CheckSpec { path } => {
+            let root = resolve_root(path, cfg);
+            let adapter = pick_adapter(&root, cfg)?;
+            match adapter.as_str() {
+                "cargo" => {
+                    let freshness = gen_cargo::build_spec::check_freshness(&root);
+                    let needs_regen = freshness.needs_regen();
+                    emit(&freshness, cli.format)?;
+                    // Non-zero exit code when regen is needed so
+                    // shell pipelines branch cheaply: `gen
+                    // check-spec && echo fresh || gen build`.
+                    if needs_regen {
+                        std::process::exit(1);
+                    }
+                    Ok(())
+                }
+                other => {
+                    return Err(CliError::RenderNotImplementedForAdapter(other.to_string()));
+                }
+            }
+        }
+        Cmd::FleetCheck { path } => {
+            #[derive(serde::Serialize)]
+            struct RepoFreshness<'a> {
+                path: &'a str,
+                freshness: gen_cargo::build_spec::Freshness,
+            }
+            // Enumerate repos = top-level subdirectories that have a
+            // `Cargo.toml` at their root. Same shape as fleet-sweep
+            // but read-only.
+            let mut entries: Vec<RepoFreshness> = Vec::new();
+            let mut owned_paths: Vec<String> = Vec::new();
+            let mut needs_any_regen = false;
+            for entry in std::fs::read_dir(path).map_err(|e| {
+                CliError::Other(format!("fleet-check: read_dir {}: {e}", path.display()))
+            })? {
+                let Ok(entry) = entry else { continue };
+                let p = entry.path();
+                if !p.is_dir() {
+                    continue;
+                }
+                if !p.join("Cargo.toml").is_file() {
+                    continue;
+                }
+                let f = gen_cargo::build_spec::check_freshness(&p);
+                if f.needs_regen() {
+                    needs_any_regen = true;
+                }
+                owned_paths.push(p.display().to_string());
+                entries.push(RepoFreshness {
+                    path: "",
+                    freshness: f,
+                });
+            }
+            // Stitch the borrowed `path` field into each entry — we
+            // can't borrow from `owned_paths` while pushing to it, so
+            // build the array of borrowed pairs after the walk.
+            let final_entries: Vec<RepoFreshness> = entries
+                .into_iter()
+                .zip(owned_paths.iter())
+                .map(|(e, p)| RepoFreshness {
+                    path: p.as_str(),
+                    freshness: e.freshness,
+                })
+                .collect();
+            emit(&final_entries, cli.format)?;
+            if needs_any_regen {
+                std::process::exit(1);
             }
             Ok(())
         }

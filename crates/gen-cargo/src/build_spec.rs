@@ -22,7 +22,11 @@ use crate::error::{CargoError, Result};
 /// Schema version — bump on breaking changes.
 /// v2: + `flake_metadata`, `root_crate` is non-optional, git URLs
 ///     normalized (no `?branch=` suffix).
-pub const SCHEMA_VERSION: u32 = 2;
+/// v3: + per-crate `build_rust_crate_args` (pre-shaped buildRustCrate
+///     kwargs); + `links` + universal `preBuild`. Substrate's
+///     lockfile-builder asserts on this version — older specs MUST
+///     be regenerated via `gen build .` (no silent fallback).
+pub const SCHEMA_VERSION: u32 = 3;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BuildSpec {

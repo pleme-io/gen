@@ -164,5 +164,15 @@ fn violation_locus(v: &crate::invariants::Violation) -> (&'static str, Option<St
         }
         RenameVersionMismatch { from, .. } => ("rename-version-mismatch", Some(from.clone())),
         DuplicateCrateKey { key } => ("duplicate-crate-key", Some(key.clone())),
+        MissingBuildRustCrateName { crate_key, .. } => {
+            ("missing-build-rust-crate-name", Some(crate_key.clone()))
+        }
+        MissingUniversalPreBuild { crate_key, .. } => {
+            ("missing-universal-pre-build", Some(crate_key.clone()))
+        }
+        RegistryUrlNotCanonical { crate_key, .. } => {
+            ("registry-url-not-canonical", Some(crate_key.clone()))
+        }
+        StaleSchemaVersion { .. } => ("stale-schema-version", None),
     }
 }

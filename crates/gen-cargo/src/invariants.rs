@@ -50,6 +50,28 @@ pub enum Violation {
     /// Two crates share the same key — the spec's IndexMap silently
     /// drops one. Catches lockfile-parsing shadowing bugs.
     DuplicateCrateKey { key: String },
+    /// A crate's `build_rust_crate_args` is missing the `crate_name`
+    /// field. Substrate's lockfile-builder spreads this attrset
+    /// verbatim into `buildRustCrate { … }`; missing `crate_name`
+    /// would yield an unhelpful Nix error. Catches gen-cargo emission
+    /// regressions and ensures every spec round-trip is self-contained.
+    MissingBuildRustCrateName { crate_key: String, name: String },
+    /// A crate has a non-empty `build_rust_crate_args` but `preBuild`
+    /// is unset. The substrate's universal `CARGO_CRATE_NAME` export
+    /// flows through this field — absence means a regression in the
+    /// emission loop in build_spec.rs.
+    MissingUniversalPreBuild { crate_key: String, name: String },
+    /// A registry-source URL points at the rate-limited /api/v1
+    /// redirect endpoint instead of static.crates.io. crates.io has
+    /// started serving 403 on the API endpoint without a User-Agent
+    /// header (which nixpkgs' fetchurl does not set). Substrate has a
+    /// transitional Nix-side rewrite, but the gen-side emission must
+    /// be the canonical form.
+    RegistryUrlNotCanonical { crate_key: String, name: String, url: String },
+    /// Spec emitted with a `version` field below the current
+    /// SCHEMA_VERSION. Means the spec was emitted by an older gen
+    /// and is missing fields downstream consumers rely on.
+    StaleSchemaVersion { found: u32, expected: u32 },
 }
 
 /// Run every invariant. Returns the violation list (empty on success).
@@ -64,11 +86,55 @@ pub fn check(spec: &BuildSpec) -> Vec<Violation> {
     check_root_crate(spec, &mut out);
     check_no_dev_in_runtime(spec, &mut out);
     check_renames(spec, &mut out);
+    check_build_rust_crate_args(spec, &mut out);
+    check_registry_url_canonical(spec, &mut out);
+    check_schema_version(spec, &mut out);
     // duplicate-key check: a sanity check on IndexMap usage.
     // (IndexMap dedupes on insert, so duplicates can only happen if
     // the source data already had them — we re-verify here for
     // future-proofing against schema changes.)
     out
+}
+
+fn check_build_rust_crate_args(spec: &BuildSpec, out: &mut Vec<Violation>) {
+    for (key, c) in &spec.crates {
+        let args = &c.build_rust_crate_args;
+        if args.crate_name.is_none() {
+            out.push(Violation::MissingBuildRustCrateName {
+                crate_key: key.clone(),
+                name: c.name.clone(),
+            });
+        }
+        if args.pre_build.is_none() {
+            out.push(Violation::MissingUniversalPreBuild {
+                crate_key: key.clone(),
+                name: c.name.clone(),
+            });
+        }
+    }
+}
+
+fn check_registry_url_canonical(spec: &BuildSpec, out: &mut Vec<Violation>) {
+    for (key, c) in &spec.crates {
+        if let CrateSource::Registry { url, .. } = &c.source {
+            if url.starts_with("https://crates.io/api/v1/crates/") {
+                out.push(Violation::RegistryUrlNotCanonical {
+                    crate_key: key.clone(),
+                    name: c.name.clone(),
+                    url: url.clone(),
+                });
+            }
+        }
+    }
+}
+
+fn check_schema_version(spec: &BuildSpec, out: &mut Vec<Violation>) {
+    if spec.version < crate::build_spec::SCHEMA_VERSION {
+        out.push(Violation::StaleSchemaVersion {
+            found: spec.version,
+            expected: crate::build_spec::SCHEMA_VERSION,
+        });
+    }
 }
 
 fn check_unresolved_deps(spec: &BuildSpec, out: &mut Vec<Violation>) {

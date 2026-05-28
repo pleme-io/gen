@@ -562,6 +562,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "gen-platform"
+version = "0.1.0"
+dependencies = [
+ "gen-cargo",
+ "gen-macros",
+ "gen-types",
+ "inventory",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "gen-poetry"
 version = "0.1.0"
 dependencies = [

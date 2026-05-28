@@ -22,6 +22,7 @@ gen-macros = { path = "../gen-macros" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+inventory = { workspace = true }
 
 [dev-dependencies]
 gen-cargo = { workspace = true }

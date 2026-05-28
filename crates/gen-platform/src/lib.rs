@@ -61,9 +61,11 @@
 
 #![allow(clippy::module_name_repetitions)]
 
+pub mod catalog;
 pub mod dispatcher;
 pub mod merge;
 
+pub use catalog::{by_label as catalog_by_label, registered as catalog_registered, DispatcherEntry};
 pub use dispatcher::{Dispatcher, DispatcherError, SealedDispatcher};
 pub use merge::MergeStrategy;
 

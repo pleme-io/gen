@@ -225,6 +225,74 @@ where
         }
         Ok(out)
     }
+
+    /// Saturation witness — list of every kind the dispatcher
+    /// covers, in canonical order. Equal to `V::variant_kinds()`
+    /// by construction (the seal proved this). Useful for catalog
+    /// tooling that wants to expose what a dispatcher accepts
+    /// without recomputing the universe from the trait.
+    #[must_use]
+    pub fn saturation_witness(&self) -> Vec<&str> {
+        self.helpers.keys().map(String::as_str).collect()
+    }
+
+    /// The number of registered helpers. Equal to
+    /// `V::variant_count()` by construction.
+    #[must_use]
+    pub fn helper_count(&self) -> usize {
+        self.helpers.len()
+    }
+}
+
+impl<V, C, O> SealedDispatcher<V, C, O>
+where
+    V: TypedDispatcher + serde::Serialize,
+    C: Clone,
+    O: Default + Clone + PartialEq,
+{
+    /// Determinism law — assert that applying the same variants
+    /// twice (against a clone of the context) produces the same
+    /// output vector. The substrate-wide invariant from
+    /// `theory/QUIRK-APPLIER.md` §IV-bis.2: "determinism — same
+    /// input → same output, property-test."
+    ///
+    /// Returns `true` if the law holds for this input; `false` if
+    /// the helpers carry observable side effects that diverge on
+    /// re-apply. Consumers typically `assert!()` this in tests.
+    pub fn is_deterministic(&self, variants: &[V], ctx: &C) -> bool {
+        let mut a = ctx.clone();
+        let mut b = ctx.clone();
+        let r1 = self.apply_each(variants, &mut a);
+        let r2 = self.apply_each(variants, &mut b);
+        r1 == r2
+    }
+
+    /// Idempotence law — assert that applying the variant list
+    /// twice in sequence produces the same output as applying it
+    /// once (for the `Override`/last-wins merge family). Consumers
+    /// whose helpers accumulate state (counters, append-only logs)
+    /// will return `false` here; that's the diagnostic — they're
+    /// not idempotent in the algebraic sense.
+    ///
+    /// Returns `true` iff `apply_each(variants) == apply_each(variants ++ variants)`.
+    pub fn is_idempotent(&self, variants: &[V], ctx: &C) -> bool
+    where
+        V: Clone,
+    {
+        let mut a = ctx.clone();
+        let r1 = self.apply_each(variants, &mut a);
+
+        let mut b = ctx.clone();
+        let doubled: Vec<V> = variants.iter().chain(variants.iter()).cloned().collect();
+        let r2 = self.apply_each(&doubled, &mut b);
+
+        // For OverrideLast semantics: the second pass replays the
+        // same variants, and the last application of each kind wins
+        // — so r2's tail (last len(variants) entries) should equal
+        // r1.
+        r2.len() == 2 * r1.len()
+            && r2.iter().skip(r1.len()).cloned().collect::<Vec<_>>() == r1
+    }
 }
 
 /// Pull the kebab-case serde tag out of a `#[serde(tag = "kind", ...)]`

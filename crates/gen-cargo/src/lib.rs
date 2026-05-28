@@ -14,12 +14,14 @@
 pub mod adapter;
 pub mod build_spec;
 pub mod convert;
+pub mod diagnostics;
 pub mod ecosystem_impl;
 pub mod error;
 pub mod features;
 pub mod fleet_commit;
 pub mod fleet_sweep;
 pub mod invariants;
+pub mod platform_features;
 pub mod quirks;
 pub mod raw;
 

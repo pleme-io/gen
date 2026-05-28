@@ -309,6 +309,7 @@ mod tests {
             root_crate: String::new(),
             workspace_members: vec![],
             flake_metadata: IndexMap::new(),
+            target_resolves: None,
         }
     }
 

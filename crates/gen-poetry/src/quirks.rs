@@ -9,13 +9,22 @@
 use serde::{Deserialize, Serialize};
 
 /// Typed quirks for known third-party upstream poetry packages.
-/// Add variants as needed; remember to mirror with a Nix dispatch
-/// arm in `substrate/lib/build/poetry/quirk-apply.nix`.
+/// Each variant maps to a Nix dispatch arm in
+/// `substrate/lib/build/poetry/quirk-apply.nix`.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum PoetryQuirk {
-    // TODO: add ecosystem-specific quirk variants. Example shape:
-    // ForceFlag { flag: String },
+    /// Override the build-system backend for a wheel that ships
+    /// broken `[build-system]` metadata.
+    OverrideBuildSystem { package: String, backend: String },
+    /// Inject a poetry2nix `defaultPoetryOverrides` arm — apply a
+    /// `prev.<package>.overridePythonAttrs` patch declaratively.
+    OverrideAttrs { package: String, attr: String, value: String },
+    /// Skip the package's check phase.
+    SkipCheck { package: String },
+    /// Force wheel-or-sdist preference per-package — overrides the
+    /// global `preferWheels` setting.
+    PreferWheel { package: String, prefer: bool },
 }
 
 pub fn registry() -> Vec<(&'static str, Vec<PoetryQuirk>)> {

@@ -9,13 +9,20 @@
 use serde::{Deserialize, Serialize};
 
 /// Typed quirks for known third-party upstream swift packages.
-/// Add variants as needed; remember to mirror with a Nix dispatch
-/// arm in `substrate/lib/build/swift/quirk-apply.nix`.
+/// Each variant maps to a Nix dispatch arm in
+/// `substrate/lib/build/swift/quirk-apply.nix`.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum SwiftQuirk {
-    // TODO: add ecosystem-specific quirk variants. Example shape:
-    // ForceFlag { flag: String },
+    /// Pin a specific Swift toolchain version.
+    PinToolchain { version: String },
+    /// Force a build configuration override per package (e.g.
+    /// `debug` for diagnostic builds).
+    ForceConfiguration { configuration: String },
+    /// Inject a linker flag specific to this package.
+    Ldflag { flag: String },
+    /// Inject a `Package.swift` patch via `substituteInPlace`.
+    SubstituteSource { file: String, from: String, to: String },
 }
 
 pub fn registry() -> Vec<(&'static str, Vec<SwiftQuirk>)> {

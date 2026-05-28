@@ -1,5 +1,9 @@
-//! Typed build spec for ansible. Implements `gen_types::Spec`
-//! via `#[derive(SpecShape)]`.
+//! Typed build spec for ansible — mirrors `galaxy.yml` schema for
+//! Ansible collections; substrate's `ansible-galaxy collection build`
+//! wrapper consumes the rendered YAML.
+//!
+//! Ansible reference:
+//! `https://docs.ansible.com/ansible/latest/dev_guide/collections_galaxy_meta.html`.
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -31,10 +35,40 @@ pub struct PackageSpec {
     pub quirks: Vec<crate::quirks::AnsibleQuirk>,
 }
 
-/// Pre-shaped builder args for one package. Substrate spreads this
-/// verbatim into the ecosystem's nixpkgs builder. Adapter authors
-/// fill in fields matching `buildXxxPackage`'s mkArgs signature.
+/// Pre-shaped `galaxy.yml` kwargs. Field names match Ansible's
+/// collection-metadata schema so substrate renders verbatim into
+/// the on-disk YAML the `ansible-galaxy` CLI consumes.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct PackageArgs {
-    // TODO: add ecosystem-specific fields here.
+    pub namespace: Option<String>,
+    pub name: Option<String>,
+    pub version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub authors: Vec<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub license: Vec<String>,
+    /// `license_file` for non-SPDX licenses — mutually exclusive
+    /// with `license` per galaxy.yml schema.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub license_file: Option<String>,
+    /// Tag list for galaxy search (e.g. `["cloud", "aws"]`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub tags: Vec<String>,
+    /// Cross-collection dep map — `namespace.collection: version-spec`.
+    #[serde(skip_serializing_if = "IndexMap::is_empty")]
+    pub dependencies: IndexMap<String, String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub repository: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub documentation: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub homepage: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub issues: Option<String>,
+    /// Path patterns the build phase should NOT bundle into the
+    /// collection tarball (e.g. `["tests/output", "*.swp"]`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub build_ignore: Vec<String>,
 }

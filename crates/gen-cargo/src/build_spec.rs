@@ -332,26 +332,29 @@ fn host_target_triple() -> &'static str {
 
 /// Generate the complete typed BuildSpec for the workspace at `root`,
 /// targeting the host. cargo metadata is invoked with
-/// Generates the MULTI-PLATFORM BuildSpec by default — `cargo metadata`
-/// is invoked WITHOUT `--filter-platform`, so the resolve graph
-/// contains every cfg-conditional dep edge across all targets the
-/// workspace supports.
+/// Generates the BuildSpec for the operator's HOST platform.
 ///
-/// This is the right default for a committed `Cargo.build-spec.json`:
-/// it carries enough information for substrate to build the workspace
-/// on any target without re-running gen. The per-target filtered emit
-/// is `generate_for_target(root, <triple>)`, used by substrate's IFD
-/// auto-regen path to narrow the spec when an exact target is known
-/// (invariant I4).
+/// `cargo metadata` is invoked with `--filter-platform=<host>` so the
+/// resolve graph contains only deps active for this target. Substrate's
+/// Nix side consumes the resolved dep edges directly — no Nix-side cfg
+/// evaluation, no risk of getting cfg-target right on every nested
+/// conditional.
 ///
-/// Earlier behavior host-filtered here. That broke the gen-bootstrap
-/// chain: gen's own committed spec, emitted on a darwin author host,
-/// dropped linux-only deps (mio) — making gen unbuildable on linux
-/// from the committed spec until the IFD could regen it (but the IFD
-/// itself needs a built gen). Multi-platform default eliminates the
-/// chicken-and-egg.
+/// True multi-platform emission (one spec covering all fleet targets)
+/// is task #25 — it requires running cargo metadata N times (once
+/// per target) and unioning the dep edges. Until that lands, committed
+/// specs are single-target; cross-platform bootstrap relies on
+/// substrate's IFD auto-regen to refresh the spec for the target
+/// platform.
+///
+/// Earlier code briefly tried `target = ""` (no --filter-platform).
+/// That turned out to STILL be host-filtered by cargo's default
+/// behavior, AND it dropped some genuinely cfg-conditional edges
+/// (cpufeatures + core_foundation_sys + libc on darwin) — same
+/// cfg-resolution problem from a different angle. Revert to the
+/// explicit host-filter default; the multi-target fix is #25.
 pub fn generate(root: &Path) -> Result<BuildSpec> {
-    generate_for_target(root, "")
+    generate_for_target(root, host_target_triple())
 }
 
 /// Generate the BuildSpec for an explicit target triple. Used by

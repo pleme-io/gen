@@ -73,6 +73,19 @@ pub struct CrateTargetEdges {
     pub dependencies: Vec<CrateDepSpec>,
     pub runtime_dependencies: Vec<CrateDepSpec>,
     pub build_dependencies: Vec<CrateDepSpec>,
+    /// Per-target resolved feature list. Cargo's resolver computes
+    /// features differently per target (cfg-conditional feature
+    /// activation, target-specific dep feature unification). The
+    /// top-level `CrateSpec.features` field is whichever target was
+    /// processed first during multi-target emission, but it's NOT
+    /// correct for other targets — passing macos_fsevent to rustc
+    /// on linux is the canonical bug this field eliminates.
+    ///
+    /// Substrate reads `target_resolves[triple].crates[key].features`
+    /// when available, falling back to `spec.crates[key].features`
+    /// for backward compat with schema < 5 specs.
+    #[serde(default)]
+    pub features: Vec<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -455,7 +468,12 @@ pub fn generate_multi_target(root: &Path) -> Result<BuildSpec> {
         }
     }
 
-    // Populate target_resolves with each target's per-crate edges.
+    // Populate target_resolves with each target's per-crate edges
+    // AND per-target features (cargo's resolver computes features
+    // differently per target due to cfg-conditional feature
+    // activations; the top-level CrateSpec.features field is only
+    // correct for whichever target was processed first — see the
+    // notify+macos_fsevent leak that prompted this field).
     let mut resolves: IndexMap<String, TargetResolve> = IndexMap::new();
     for (target, spec) in &per_target {
         let mut crates: IndexMap<String, CrateTargetEdges> = IndexMap::new();
@@ -466,6 +484,7 @@ pub fn generate_multi_target(root: &Path) -> Result<BuildSpec> {
                     dependencies: crate_spec.dependencies.clone(),
                     runtime_dependencies: crate_spec.runtime_dependencies.clone(),
                     build_dependencies: crate_spec.build_dependencies.clone(),
+                    features: crate_spec.features.clone(),
                 },
             );
         }

@@ -9039,12 +9039,21 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "auto",
+            "default",
+            "wincon"
+          ]
         },
         "anstyle-1.0.14": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "anstyle-parse-1.0.0": {
           "dependencies": [
@@ -9071,12 +9080,17 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "utf8"
+          ]
         },
         "anstyle-query-1.1.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arc-swap-1.9.1": {
           "dependencies": [
@@ -9103,17 +9117,20 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arrayref-0.3.9": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arrayvec-0.7.6": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "async-trait-0.1.89": {
           "dependencies": [
@@ -9194,17 +9211,20 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "autocfg-1.5.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "bitflags-2.11.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "blake3-1.8.5": {
           "dependencies": [
@@ -9312,6 +9332,10 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "default",
+            "std"
           ]
         },
         "camino-1.2.2": {
@@ -9339,7 +9363,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde1"
+          ]
         },
         "cargo-platform-0.1.9": {
           "dependencies": [
@@ -9366,7 +9393,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "cargo_metadata-0.18.1": {
           "dependencies": [
@@ -9509,7 +9537,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "cc-1.2.62": {
           "dependencies": [
@@ -9556,12 +9587,14 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "cfg-if-1.0.4": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "chrono-0.4.44": {
           "dependencies": [
@@ -9628,7 +9661,22 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "clock",
+            "default",
+            "iana-time-zone",
+            "js-sys",
+            "now",
+            "oldtime",
+            "serde",
+            "std",
+            "wasm-bindgen",
+            "wasmbind",
+            "winapi",
+            "windows-link"
+          ]
         },
         "clap-4.6.1": {
           "dependencies": [
@@ -9675,7 +9723,17 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "default",
+            "derive",
+            "error-context",
+            "help",
+            "std",
+            "suggestions",
+            "usage"
+          ]
         },
         "clap_builder-4.6.0": {
           "dependencies": [
@@ -9762,7 +9820,15 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "error-context",
+            "help",
+            "std",
+            "suggestions",
+            "usage"
+          ]
         },
         "clap_derive-4.6.1": {
           "dependencies": [
@@ -9853,32 +9919,45 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "clap_lex-1.1.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "colorchoice-1.0.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "constant_time_eq-0.4.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "std"
+          ]
         },
         "core-foundation-sys-0.8.7": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "link"
+          ]
         },
         "equivalent-1.0.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "figment-0.10.19": {
           "dependencies": [
@@ -10006,12 +10085,21 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "env",
+            "parse-value",
+            "pear",
+            "serde_yaml",
+            "toml",
+            "yaml"
           ]
         },
         "find-msvc-tools-0.1.9": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "fsevent-sys-4.1.0": {
           "dependencies": [
@@ -10038,7 +10126,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-adapter-forge-0.1.0": {
           "dependencies": [
@@ -10133,7 +10222,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-bazel-0.1.0": {
           "dependencies": [
@@ -10204,7 +10294,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-buck-0.1.0": {
           "dependencies": [
@@ -10295,7 +10386,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-bundler-0.1.0": {
           "dependencies": [
@@ -10410,7 +10502,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cache-attic-0.1.0": {
           "dependencies": [
@@ -10525,7 +10618,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-caixa-bridge-0.1.0": {
           "dependencies": [
@@ -10640,7 +10734,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cargo-0.1.0": {
           "dependencies": [
@@ -10815,7 +10910,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cli-0.1.0": {
           "dependencies": [
@@ -11114,7 +11210,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-config-0.1.0": {
           "dependencies": [
@@ -11229,7 +11326,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-nix-0.1.0": {
           "dependencies": [
@@ -11300,7 +11398,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-nix-bulk-0.1.0": {
           "dependencies": [
@@ -11391,7 +11490,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-npm-0.1.0": {
           "dependencies": [
@@ -11526,7 +11626,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-polyglot-0.1.0": {
           "dependencies": [
@@ -11701,7 +11802,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-types-0.1.0": {
           "dependencies": [
@@ -11840,17 +11942,20 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "hashbrown-0.17.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "heck-0.5.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "iana-time-zone-0.1.65": {
           "dependencies": [
@@ -11877,7 +11982,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "fallback"
+          ]
         },
         "indexmap-2.14.0": {
           "dependencies": [
@@ -11944,37 +12052,56 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "serde",
+            "std"
+          ]
         },
         "inlinable_string-0.1.15": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "is_terminal_polyfill-1.70.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "itoa-1.0.18": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "libc-0.2.186": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "log-0.4.30": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "memchr-2.8.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "std"
+          ]
         },
         "notify-8.2.0": {
           "dependencies": [
@@ -12101,7 +12228,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "fsevent-sys",
+            "macos_fsevent"
+          ]
         },
         "notify-types-2.1.0": {
           "dependencies": [
@@ -12128,7 +12260,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "num-traits-0.2.19": {
           "dependencies": [
@@ -12155,12 +12288,19 @@
               "target": null,
               "tree": "host"
             }
-          ]
+          ],
+          "features": []
         },
         "once_cell-1.21.4": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "race",
+            "std"
+          ]
         },
         "pear-0.2.9": {
           "dependencies": [
@@ -12227,7 +12367,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "default",
+            "yansi"
+          ]
         },
         "pear_codegen-0.2.9": {
           "dependencies": [
@@ -12322,12 +12467,14 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "pin-project-lite-0.2.17": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "proc-macro2-1.0.106": {
           "dependencies": [
@@ -12354,7 +12501,11 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "proc-macro"
+          ]
         },
         "proc-macro2-diagnostics-0.10.1": {
           "dependencies": [
@@ -12462,6 +12613,11 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "colors",
+            "default",
+            "yansi"
           ]
         },
         "quote-1.0.45": {
@@ -12489,22 +12645,29 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "proc-macro"
+          ]
         },
         "rustversion-1.0.22": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "ryu-1.0.23": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "same-file-1.0.6": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "semver-1.0.28": {
           "dependencies": [
@@ -12531,7 +12694,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "serde",
+            "std"
+          ]
         },
         "serde-1.0.228": {
           "dependencies": [
@@ -12582,12 +12750,23 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "derive",
+            "serde_derive",
+            "std"
+          ]
         },
         "serde_core-1.0.228": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "result",
+            "std"
+          ]
         },
         "serde_derive-1.0.228": {
           "dependencies": [
@@ -12670,7 +12849,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "serde_json-1.0.150": {
           "dependencies": [
@@ -12757,7 +12939,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std",
+            "unbounded_depth"
+          ]
         },
         "serde_spanned-0.6.9": {
           "dependencies": [
@@ -12784,7 +12971,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde"
+          ]
         },
         "serde_yaml-0.9.34+deprecated": {
           "dependencies": [
@@ -12891,7 +13081,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "shikumi-0.1.0": {
           "dependencies": [
@@ -13090,17 +13281,25 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "shlex-1.3.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "strsim-0.11.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "syn-2.0.117": {
           "dependencies": [
@@ -13167,7 +13366,19 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "clone-impls",
+            "default",
+            "derive",
+            "extra-traits",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "visit",
+            "visit-mut"
+          ]
         },
         "thiserror-1.0.69": {
           "dependencies": [
@@ -13194,7 +13405,8 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-2.0.18": {
           "dependencies": [
@@ -13221,7 +13433,11 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "thiserror-impl-1.0.69": {
           "dependencies": [
@@ -13288,7 +13504,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-impl-2.0.18": {
           "dependencies": [
@@ -13355,7 +13572,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "toml-0.8.23": {
           "dependencies": [
@@ -13454,7 +13672,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "display",
+            "parse"
+          ]
         },
         "toml_datetime-0.6.11": {
           "dependencies": [
@@ -13481,7 +13704,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde"
+          ]
         },
         "toml_edit-0.22.27": {
           "dependencies": [
@@ -13616,12 +13842,22 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "display",
+            "parse",
+            "serde"
+          ]
         },
         "toml_write-0.1.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "tracing-0.1.44": {
           "dependencies": [
@@ -13688,7 +13924,13 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "attributes",
+            "default",
+            "std",
+            "tracing-attributes"
+          ]
         },
         "tracing-attributes-0.1.31": {
           "dependencies": [
@@ -13771,7 +14013,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "tracing-core-0.1.36": {
           "dependencies": [
@@ -13798,7 +14041,11 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "once_cell",
+            "std"
+          ]
         },
         "uncased-0.9.10": {
           "dependencies": [
@@ -13825,27 +14072,37 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "alloc",
+            "default"
           ]
         },
         "unicode-ident-1.0.24": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "unsafe-libyaml-0.2.11": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "utf8parse-0.2.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "version_check-0.9.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "walkdir-2.5.0": {
           "dependencies": [
@@ -13872,7 +14129,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "winnow-0.7.15": {
           "dependencies": [
@@ -13899,17 +14157,28 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "yansi-1.0.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "zmij-1.0.21": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         }
       }
     },
@@ -14040,12 +14309,21 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "auto",
+            "default",
+            "wincon"
+          ]
         },
         "anstyle-1.0.14": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "anstyle-parse-1.0.0": {
           "dependencies": [
@@ -14072,12 +14350,17 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "utf8"
+          ]
         },
         "anstyle-query-1.1.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arc-swap-1.9.1": {
           "dependencies": [
@@ -14104,17 +14387,20 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arrayref-0.3.9": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arrayvec-0.7.6": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "async-trait-0.1.89": {
           "dependencies": [
@@ -14195,17 +14481,20 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "autocfg-1.5.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "bitflags-2.11.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "blake3-1.8.5": {
           "dependencies": [
@@ -14333,6 +14622,10 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "default",
+            "std"
           ]
         },
         "camino-1.2.2": {
@@ -14360,7 +14653,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde1"
+          ]
         },
         "cargo-platform-0.1.9": {
           "dependencies": [
@@ -14387,7 +14683,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "cargo_metadata-0.18.1": {
           "dependencies": [
@@ -14530,7 +14827,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "cc-1.2.62": {
           "dependencies": [
@@ -14577,12 +14877,14 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "cfg-if-1.0.4": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "chrono-0.4.44": {
           "dependencies": [
@@ -14649,7 +14951,22 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "clock",
+            "default",
+            "iana-time-zone",
+            "js-sys",
+            "now",
+            "oldtime",
+            "serde",
+            "std",
+            "wasm-bindgen",
+            "wasmbind",
+            "winapi",
+            "windows-link"
+          ]
         },
         "clap-4.6.1": {
           "dependencies": [
@@ -14696,7 +15013,17 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "default",
+            "derive",
+            "error-context",
+            "help",
+            "std",
+            "suggestions",
+            "usage"
+          ]
         },
         "clap_builder-4.6.0": {
           "dependencies": [
@@ -14783,7 +15110,15 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "error-context",
+            "help",
+            "std",
+            "suggestions",
+            "usage"
+          ]
         },
         "clap_derive-4.6.1": {
           "dependencies": [
@@ -14874,37 +15209,51 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "clap_lex-1.1.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "colorchoice-1.0.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "constant_time_eq-0.4.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "std"
+          ]
         },
         "core-foundation-sys-0.8.7": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "link"
+          ]
         },
         "cpufeatures-0.3.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "equivalent-1.0.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "figment-0.10.19": {
           "dependencies": [
@@ -15032,12 +15381,21 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "env",
+            "parse-value",
+            "pear",
+            "serde_yaml",
+            "toml",
+            "yaml"
           ]
         },
         "find-msvc-tools-0.1.9": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "fsevent-sys-4.1.0": {
           "dependencies": [
@@ -15064,7 +15422,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-adapter-forge-0.1.0": {
           "dependencies": [
@@ -15159,7 +15518,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-bazel-0.1.0": {
           "dependencies": [
@@ -15230,7 +15590,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-buck-0.1.0": {
           "dependencies": [
@@ -15321,7 +15682,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-bundler-0.1.0": {
           "dependencies": [
@@ -15436,7 +15798,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cache-attic-0.1.0": {
           "dependencies": [
@@ -15551,7 +15914,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-caixa-bridge-0.1.0": {
           "dependencies": [
@@ -15666,7 +16030,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cargo-0.1.0": {
           "dependencies": [
@@ -15841,7 +16206,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cli-0.1.0": {
           "dependencies": [
@@ -16140,7 +16506,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-config-0.1.0": {
           "dependencies": [
@@ -16255,7 +16622,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-nix-0.1.0": {
           "dependencies": [
@@ -16326,7 +16694,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-nix-bulk-0.1.0": {
           "dependencies": [
@@ -16417,7 +16786,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-npm-0.1.0": {
           "dependencies": [
@@ -16552,7 +16922,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-polyglot-0.1.0": {
           "dependencies": [
@@ -16727,7 +17098,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-types-0.1.0": {
           "dependencies": [
@@ -16866,17 +17238,20 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "hashbrown-0.17.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "heck-0.5.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "iana-time-zone-0.1.65": {
           "dependencies": [
@@ -16903,7 +17278,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "fallback"
+          ]
         },
         "indexmap-2.14.0": {
           "dependencies": [
@@ -16970,37 +17348,56 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "serde",
+            "std"
+          ]
         },
         "inlinable_string-0.1.15": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "is_terminal_polyfill-1.70.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "itoa-1.0.18": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "libc-0.2.186": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "log-0.4.30": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "memchr-2.8.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "std"
+          ]
         },
         "notify-8.2.0": {
           "dependencies": [
@@ -17127,7 +17524,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "fsevent-sys",
+            "macos_fsevent"
+          ]
         },
         "notify-types-2.1.0": {
           "dependencies": [
@@ -17154,7 +17556,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "num-traits-0.2.19": {
           "dependencies": [
@@ -17181,12 +17584,19 @@
               "target": null,
               "tree": "host"
             }
-          ]
+          ],
+          "features": []
         },
         "once_cell-1.21.4": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "race",
+            "std"
+          ]
         },
         "pear-0.2.9": {
           "dependencies": [
@@ -17253,7 +17663,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "default",
+            "yansi"
+          ]
         },
         "pear_codegen-0.2.9": {
           "dependencies": [
@@ -17348,12 +17763,14 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "pin-project-lite-0.2.17": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "proc-macro2-1.0.106": {
           "dependencies": [
@@ -17380,7 +17797,11 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "proc-macro"
+          ]
         },
         "proc-macro2-diagnostics-0.10.1": {
           "dependencies": [
@@ -17488,6 +17909,11 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "colors",
+            "default",
+            "yansi"
           ]
         },
         "quote-1.0.45": {
@@ -17515,22 +17941,29 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "proc-macro"
+          ]
         },
         "rustversion-1.0.22": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "ryu-1.0.23": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "same-file-1.0.6": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "semver-1.0.28": {
           "dependencies": [
@@ -17557,7 +17990,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "serde",
+            "std"
+          ]
         },
         "serde-1.0.228": {
           "dependencies": [
@@ -17608,12 +18046,23 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "derive",
+            "serde_derive",
+            "std"
+          ]
         },
         "serde_core-1.0.228": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "result",
+            "std"
+          ]
         },
         "serde_derive-1.0.228": {
           "dependencies": [
@@ -17696,7 +18145,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "serde_json-1.0.150": {
           "dependencies": [
@@ -17783,7 +18235,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std",
+            "unbounded_depth"
+          ]
         },
         "serde_spanned-0.6.9": {
           "dependencies": [
@@ -17810,7 +18267,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde"
+          ]
         },
         "serde_yaml-0.9.34+deprecated": {
           "dependencies": [
@@ -17917,7 +18377,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "shikumi-0.1.0": {
           "dependencies": [
@@ -18116,17 +18577,25 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "shlex-1.3.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "strsim-0.11.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "syn-2.0.117": {
           "dependencies": [
@@ -18193,7 +18662,19 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "clone-impls",
+            "default",
+            "derive",
+            "extra-traits",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "visit",
+            "visit-mut"
+          ]
         },
         "thiserror-1.0.69": {
           "dependencies": [
@@ -18220,7 +18701,8 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-2.0.18": {
           "dependencies": [
@@ -18247,7 +18729,11 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "thiserror-impl-1.0.69": {
           "dependencies": [
@@ -18314,7 +18800,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-impl-2.0.18": {
           "dependencies": [
@@ -18381,7 +18868,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "toml-0.8.23": {
           "dependencies": [
@@ -18480,7 +18968,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "display",
+            "parse"
+          ]
         },
         "toml_datetime-0.6.11": {
           "dependencies": [
@@ -18507,7 +19000,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde"
+          ]
         },
         "toml_edit-0.22.27": {
           "dependencies": [
@@ -18642,12 +19138,22 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "display",
+            "parse",
+            "serde"
+          ]
         },
         "toml_write-0.1.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "tracing-0.1.44": {
           "dependencies": [
@@ -18714,7 +19220,13 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "attributes",
+            "default",
+            "std",
+            "tracing-attributes"
+          ]
         },
         "tracing-attributes-0.1.31": {
           "dependencies": [
@@ -18797,7 +19309,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "tracing-core-0.1.36": {
           "dependencies": [
@@ -18824,7 +19337,11 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "once_cell",
+            "std"
+          ]
         },
         "uncased-0.9.10": {
           "dependencies": [
@@ -18851,27 +19368,37 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "alloc",
+            "default"
           ]
         },
         "unicode-ident-1.0.24": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "unsafe-libyaml-0.2.11": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "utf8parse-0.2.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "version_check-0.9.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "walkdir-2.5.0": {
           "dependencies": [
@@ -18898,7 +19425,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "winnow-0.7.15": {
           "dependencies": [
@@ -18925,17 +19453,28 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "yansi-1.0.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "zmij-1.0.21": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         }
       }
     },
@@ -19066,12 +19605,21 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "auto",
+            "default",
+            "wincon"
+          ]
         },
         "anstyle-1.0.14": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "anstyle-parse-1.0.0": {
           "dependencies": [
@@ -19098,12 +19646,17 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "utf8"
+          ]
         },
         "anstyle-query-1.1.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arc-swap-1.9.1": {
           "dependencies": [
@@ -19130,17 +19683,20 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arrayref-0.3.9": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arrayvec-0.7.6": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "async-trait-0.1.89": {
           "dependencies": [
@@ -19221,17 +19777,20 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "autocfg-1.5.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "bitflags-2.11.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "blake3-1.8.5": {
           "dependencies": [
@@ -19359,6 +19918,10 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "default",
+            "std"
           ]
         },
         "camino-1.2.2": {
@@ -19386,7 +19949,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde1"
+          ]
         },
         "cargo-platform-0.1.9": {
           "dependencies": [
@@ -19413,7 +19979,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "cargo_metadata-0.18.1": {
           "dependencies": [
@@ -19556,7 +20123,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "cc-1.2.62": {
           "dependencies": [
@@ -19603,12 +20173,14 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "cfg-if-1.0.4": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "chrono-0.4.44": {
           "dependencies": [
@@ -19675,7 +20247,22 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "clock",
+            "default",
+            "iana-time-zone",
+            "js-sys",
+            "now",
+            "oldtime",
+            "serde",
+            "std",
+            "wasm-bindgen",
+            "wasmbind",
+            "winapi",
+            "windows-link"
+          ]
         },
         "clap-4.6.1": {
           "dependencies": [
@@ -19722,7 +20309,17 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "default",
+            "derive",
+            "error-context",
+            "help",
+            "std",
+            "suggestions",
+            "usage"
+          ]
         },
         "clap_builder-4.6.0": {
           "dependencies": [
@@ -19809,7 +20406,15 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "error-context",
+            "help",
+            "std",
+            "suggestions",
+            "usage"
+          ]
         },
         "clap_derive-4.6.1": {
           "dependencies": [
@@ -19900,32 +20505,42 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "clap_lex-1.1.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "colorchoice-1.0.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "constant_time_eq-0.4.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "std"
+          ]
         },
         "cpufeatures-0.3.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "equivalent-1.0.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "figment-0.10.19": {
           "dependencies": [
@@ -20053,12 +20668,21 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "env",
+            "parse-value",
+            "pear",
+            "serde_yaml",
+            "toml",
+            "yaml"
           ]
         },
         "find-msvc-tools-0.1.9": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-adapter-forge-0.1.0": {
           "dependencies": [
@@ -20153,7 +20777,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-bazel-0.1.0": {
           "dependencies": [
@@ -20224,7 +20849,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-buck-0.1.0": {
           "dependencies": [
@@ -20315,7 +20941,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-bundler-0.1.0": {
           "dependencies": [
@@ -20430,7 +21057,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cache-attic-0.1.0": {
           "dependencies": [
@@ -20545,7 +21173,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-caixa-bridge-0.1.0": {
           "dependencies": [
@@ -20660,7 +21289,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cargo-0.1.0": {
           "dependencies": [
@@ -20835,7 +21465,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cli-0.1.0": {
           "dependencies": [
@@ -21134,7 +21765,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-config-0.1.0": {
           "dependencies": [
@@ -21249,7 +21881,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-nix-0.1.0": {
           "dependencies": [
@@ -21320,7 +21953,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-nix-bulk-0.1.0": {
           "dependencies": [
@@ -21411,7 +22045,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-npm-0.1.0": {
           "dependencies": [
@@ -21546,7 +22181,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-polyglot-0.1.0": {
           "dependencies": [
@@ -21721,7 +22357,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-types-0.1.0": {
           "dependencies": [
@@ -21860,22 +22497,28 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "hashbrown-0.17.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "heck-0.5.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "iana-time-zone-0.1.65": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "fallback"
+          ]
         },
         "indexmap-2.14.0": {
           "dependencies": [
@@ -21942,12 +22585,18 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "serde",
+            "std"
+          ]
         },
         "inlinable_string-0.1.15": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "inotify-0.11.1": {
           "dependencies": [
@@ -22014,7 +22663,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "inotify-sys-0.1.5": {
           "dependencies": [
@@ -22041,32 +22691,46 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "is_terminal_polyfill-1.70.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "itoa-1.0.18": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "libc-0.2.186": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "log-0.4.30": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "memchr-2.8.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "std"
+          ]
         },
         "mio-1.2.0": {
           "dependencies": [
@@ -22113,7 +22777,13 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "log",
+            "os-ext",
+            "os-poll"
+          ]
         },
         "notify-8.2.0": {
           "dependencies": [
@@ -22268,7 +22938,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "fsevent-sys",
+            "macos_fsevent"
+          ]
         },
         "notify-types-2.1.0": {
           "dependencies": [
@@ -22295,7 +22970,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "num-traits-0.2.19": {
           "dependencies": [
@@ -22322,12 +22998,19 @@
               "target": null,
               "tree": "host"
             }
-          ]
+          ],
+          "features": []
         },
         "once_cell-1.21.4": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "race",
+            "std"
+          ]
         },
         "pear-0.2.9": {
           "dependencies": [
@@ -22394,7 +23077,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "default",
+            "yansi"
+          ]
         },
         "pear_codegen-0.2.9": {
           "dependencies": [
@@ -22489,12 +23177,14 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "pin-project-lite-0.2.17": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "proc-macro2-1.0.106": {
           "dependencies": [
@@ -22521,7 +23211,11 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "proc-macro"
+          ]
         },
         "proc-macro2-diagnostics-0.10.1": {
           "dependencies": [
@@ -22629,6 +23323,11 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "colors",
+            "default",
+            "yansi"
           ]
         },
         "quote-1.0.45": {
@@ -22656,22 +23355,29 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "proc-macro"
+          ]
         },
         "rustversion-1.0.22": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "ryu-1.0.23": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "same-file-1.0.6": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "semver-1.0.28": {
           "dependencies": [
@@ -22698,7 +23404,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "serde",
+            "std"
+          ]
         },
         "serde-1.0.228": {
           "dependencies": [
@@ -22749,12 +23460,23 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "derive",
+            "serde_derive",
+            "std"
+          ]
         },
         "serde_core-1.0.228": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "result",
+            "std"
+          ]
         },
         "serde_derive-1.0.228": {
           "dependencies": [
@@ -22837,7 +23559,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "serde_json-1.0.150": {
           "dependencies": [
@@ -22924,7 +23649,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std",
+            "unbounded_depth"
+          ]
         },
         "serde_spanned-0.6.9": {
           "dependencies": [
@@ -22951,7 +23681,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde"
+          ]
         },
         "serde_yaml-0.9.34+deprecated": {
           "dependencies": [
@@ -23058,7 +23791,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "shikumi-0.1.0": {
           "dependencies": [
@@ -23257,17 +23991,25 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "shlex-1.3.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "strsim-0.11.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "syn-2.0.117": {
           "dependencies": [
@@ -23334,7 +24076,19 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "clone-impls",
+            "default",
+            "derive",
+            "extra-traits",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "visit",
+            "visit-mut"
+          ]
         },
         "thiserror-1.0.69": {
           "dependencies": [
@@ -23361,7 +24115,8 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-2.0.18": {
           "dependencies": [
@@ -23388,7 +24143,11 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "thiserror-impl-1.0.69": {
           "dependencies": [
@@ -23455,7 +24214,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-impl-2.0.18": {
           "dependencies": [
@@ -23522,7 +24282,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "toml-0.8.23": {
           "dependencies": [
@@ -23621,7 +24382,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "display",
+            "parse"
+          ]
         },
         "toml_datetime-0.6.11": {
           "dependencies": [
@@ -23648,7 +24414,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde"
+          ]
         },
         "toml_edit-0.22.27": {
           "dependencies": [
@@ -23783,12 +24552,22 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "display",
+            "parse",
+            "serde"
+          ]
         },
         "toml_write-0.1.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "tracing-0.1.44": {
           "dependencies": [
@@ -23855,7 +24634,13 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "attributes",
+            "default",
+            "std",
+            "tracing-attributes"
+          ]
         },
         "tracing-attributes-0.1.31": {
           "dependencies": [
@@ -23938,7 +24723,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "tracing-core-0.1.36": {
           "dependencies": [
@@ -23965,7 +24751,11 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "once_cell",
+            "std"
+          ]
         },
         "uncased-0.9.10": {
           "dependencies": [
@@ -23992,27 +24782,37 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "alloc",
+            "default"
           ]
         },
         "unicode-ident-1.0.24": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "unsafe-libyaml-0.2.11": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "utf8parse-0.2.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "version_check-0.9.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "walkdir-2.5.0": {
           "dependencies": [
@@ -24039,7 +24839,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "winnow-0.7.15": {
           "dependencies": [
@@ -24066,17 +24867,28 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "yansi-1.0.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "zmij-1.0.21": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         }
       }
     },
@@ -24207,12 +25019,21 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "auto",
+            "default",
+            "wincon"
+          ]
         },
         "anstyle-1.0.14": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "anstyle-parse-1.0.0": {
           "dependencies": [
@@ -24239,12 +25060,17 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "utf8"
+          ]
         },
         "anstyle-query-1.1.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arc-swap-1.9.1": {
           "dependencies": [
@@ -24271,17 +25097,20 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arrayref-0.3.9": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arrayvec-0.7.6": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "async-trait-0.1.89": {
           "dependencies": [
@@ -24362,17 +25191,20 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "autocfg-1.5.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "bitflags-2.11.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "blake3-1.8.5": {
           "dependencies": [
@@ -24500,6 +25332,10 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "default",
+            "std"
           ]
         },
         "camino-1.2.2": {
@@ -24527,7 +25363,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde1"
+          ]
         },
         "cargo-platform-0.1.9": {
           "dependencies": [
@@ -24554,7 +25393,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "cargo_metadata-0.18.1": {
           "dependencies": [
@@ -24697,7 +25537,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "cc-1.2.62": {
           "dependencies": [
@@ -24744,12 +25587,14 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "cfg-if-1.0.4": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "chrono-0.4.44": {
           "dependencies": [
@@ -24816,7 +25661,22 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "clock",
+            "default",
+            "iana-time-zone",
+            "js-sys",
+            "now",
+            "oldtime",
+            "serde",
+            "std",
+            "wasm-bindgen",
+            "wasmbind",
+            "winapi",
+            "windows-link"
+          ]
         },
         "clap-4.6.1": {
           "dependencies": [
@@ -24863,7 +25723,17 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "default",
+            "derive",
+            "error-context",
+            "help",
+            "std",
+            "suggestions",
+            "usage"
+          ]
         },
         "clap_builder-4.6.0": {
           "dependencies": [
@@ -24950,7 +25820,15 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "error-context",
+            "help",
+            "std",
+            "suggestions",
+            "usage"
+          ]
         },
         "clap_derive-4.6.1": {
           "dependencies": [
@@ -25041,32 +25919,42 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "clap_lex-1.1.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "colorchoice-1.0.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "constant_time_eq-0.4.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "std"
+          ]
         },
         "cpufeatures-0.3.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "equivalent-1.0.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "figment-0.10.19": {
           "dependencies": [
@@ -25194,12 +26082,21 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "env",
+            "parse-value",
+            "pear",
+            "serde_yaml",
+            "toml",
+            "yaml"
           ]
         },
         "find-msvc-tools-0.1.9": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-adapter-forge-0.1.0": {
           "dependencies": [
@@ -25294,7 +26191,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-bazel-0.1.0": {
           "dependencies": [
@@ -25365,7 +26263,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-buck-0.1.0": {
           "dependencies": [
@@ -25456,7 +26355,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-bundler-0.1.0": {
           "dependencies": [
@@ -25571,7 +26471,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cache-attic-0.1.0": {
           "dependencies": [
@@ -25686,7 +26587,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-caixa-bridge-0.1.0": {
           "dependencies": [
@@ -25801,7 +26703,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cargo-0.1.0": {
           "dependencies": [
@@ -25976,7 +26879,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cli-0.1.0": {
           "dependencies": [
@@ -26275,7 +27179,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-config-0.1.0": {
           "dependencies": [
@@ -26390,7 +27295,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-nix-0.1.0": {
           "dependencies": [
@@ -26461,7 +27367,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-nix-bulk-0.1.0": {
           "dependencies": [
@@ -26552,7 +27459,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-npm-0.1.0": {
           "dependencies": [
@@ -26687,7 +27595,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-polyglot-0.1.0": {
           "dependencies": [
@@ -26862,7 +27771,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-types-0.1.0": {
           "dependencies": [
@@ -27001,22 +27911,28 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "hashbrown-0.17.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "heck-0.5.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "iana-time-zone-0.1.65": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "fallback"
+          ]
         },
         "indexmap-2.14.0": {
           "dependencies": [
@@ -27083,12 +27999,18 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "serde",
+            "std"
+          ]
         },
         "inlinable_string-0.1.15": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "inotify-0.11.1": {
           "dependencies": [
@@ -27155,7 +28077,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "inotify-sys-0.1.5": {
           "dependencies": [
@@ -27182,32 +28105,46 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "is_terminal_polyfill-1.70.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "itoa-1.0.18": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "libc-0.2.186": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "log-0.4.30": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "memchr-2.8.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "std"
+          ]
         },
         "mio-1.2.0": {
           "dependencies": [
@@ -27254,7 +28191,13 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "log",
+            "os-ext",
+            "os-poll"
+          ]
         },
         "notify-8.2.0": {
           "dependencies": [
@@ -27409,7 +28352,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "fsevent-sys",
+            "macos_fsevent"
+          ]
         },
         "notify-types-2.1.0": {
           "dependencies": [
@@ -27436,7 +28384,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "num-traits-0.2.19": {
           "dependencies": [
@@ -27463,12 +28412,19 @@
               "target": null,
               "tree": "host"
             }
-          ]
+          ],
+          "features": []
         },
         "once_cell-1.21.4": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "race",
+            "std"
+          ]
         },
         "pear-0.2.9": {
           "dependencies": [
@@ -27535,7 +28491,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "default",
+            "yansi"
+          ]
         },
         "pear_codegen-0.2.9": {
           "dependencies": [
@@ -27630,12 +28591,14 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "pin-project-lite-0.2.17": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "proc-macro2-1.0.106": {
           "dependencies": [
@@ -27662,7 +28625,11 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "proc-macro"
+          ]
         },
         "proc-macro2-diagnostics-0.10.1": {
           "dependencies": [
@@ -27770,6 +28737,11 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "colors",
+            "default",
+            "yansi"
           ]
         },
         "quote-1.0.45": {
@@ -27797,22 +28769,29 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "proc-macro"
+          ]
         },
         "rustversion-1.0.22": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "ryu-1.0.23": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "same-file-1.0.6": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "semver-1.0.28": {
           "dependencies": [
@@ -27839,7 +28818,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "serde",
+            "std"
+          ]
         },
         "serde-1.0.228": {
           "dependencies": [
@@ -27890,12 +28874,23 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "derive",
+            "serde_derive",
+            "std"
+          ]
         },
         "serde_core-1.0.228": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "result",
+            "std"
+          ]
         },
         "serde_derive-1.0.228": {
           "dependencies": [
@@ -27978,7 +28973,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "serde_json-1.0.150": {
           "dependencies": [
@@ -28065,7 +29063,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std",
+            "unbounded_depth"
+          ]
         },
         "serde_spanned-0.6.9": {
           "dependencies": [
@@ -28092,7 +29095,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde"
+          ]
         },
         "serde_yaml-0.9.34+deprecated": {
           "dependencies": [
@@ -28199,7 +29205,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "shikumi-0.1.0": {
           "dependencies": [
@@ -28398,17 +29405,25 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "shlex-1.3.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "strsim-0.11.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "syn-2.0.117": {
           "dependencies": [
@@ -28475,7 +29490,19 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "clone-impls",
+            "default",
+            "derive",
+            "extra-traits",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "visit",
+            "visit-mut"
+          ]
         },
         "thiserror-1.0.69": {
           "dependencies": [
@@ -28502,7 +29529,8 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-2.0.18": {
           "dependencies": [
@@ -28529,7 +29557,11 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "thiserror-impl-1.0.69": {
           "dependencies": [
@@ -28596,7 +29628,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-impl-2.0.18": {
           "dependencies": [
@@ -28663,7 +29696,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "toml-0.8.23": {
           "dependencies": [
@@ -28762,7 +29796,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "display",
+            "parse"
+          ]
         },
         "toml_datetime-0.6.11": {
           "dependencies": [
@@ -28789,7 +29828,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde"
+          ]
         },
         "toml_edit-0.22.27": {
           "dependencies": [
@@ -28924,12 +29966,22 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "display",
+            "parse",
+            "serde"
+          ]
         },
         "toml_write-0.1.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "tracing-0.1.44": {
           "dependencies": [
@@ -28996,7 +30048,13 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "attributes",
+            "default",
+            "std",
+            "tracing-attributes"
+          ]
         },
         "tracing-attributes-0.1.31": {
           "dependencies": [
@@ -29079,7 +30137,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "tracing-core-0.1.36": {
           "dependencies": [
@@ -29106,7 +30165,11 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "once_cell",
+            "std"
+          ]
         },
         "uncased-0.9.10": {
           "dependencies": [
@@ -29133,27 +30196,37 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "alloc",
+            "default"
           ]
         },
         "unicode-ident-1.0.24": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "unsafe-libyaml-0.2.11": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "utf8parse-0.2.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "version_check-0.9.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "walkdir-2.5.0": {
           "dependencies": [
@@ -29180,7 +30253,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "winnow-0.7.15": {
           "dependencies": [
@@ -29207,17 +30281,28 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "yansi-1.0.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "zmij-1.0.21": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         }
       }
     },
@@ -29348,12 +30433,21 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "auto",
+            "default",
+            "wincon"
+          ]
         },
         "anstyle-1.0.14": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "anstyle-parse-1.0.0": {
           "dependencies": [
@@ -29380,12 +30474,17 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "utf8"
+          ]
         },
         "anstyle-query-1.1.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arc-swap-1.9.1": {
           "dependencies": [
@@ -29412,17 +30511,20 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arrayref-0.3.9": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arrayvec-0.7.6": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "async-trait-0.1.89": {
           "dependencies": [
@@ -29503,17 +30605,20 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "autocfg-1.5.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "bitflags-2.11.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "blake3-1.8.5": {
           "dependencies": [
@@ -29621,6 +30726,10 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "default",
+            "std"
           ]
         },
         "camino-1.2.2": {
@@ -29648,7 +30757,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde1"
+          ]
         },
         "cargo-platform-0.1.9": {
           "dependencies": [
@@ -29675,7 +30787,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "cargo_metadata-0.18.1": {
           "dependencies": [
@@ -29818,7 +30931,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "cc-1.2.62": {
           "dependencies": [
@@ -29865,12 +30981,14 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "cfg-if-1.0.4": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "chrono-0.4.44": {
           "dependencies": [
@@ -29937,7 +31055,22 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "clock",
+            "default",
+            "iana-time-zone",
+            "js-sys",
+            "now",
+            "oldtime",
+            "serde",
+            "std",
+            "wasm-bindgen",
+            "wasmbind",
+            "winapi",
+            "windows-link"
+          ]
         },
         "clap-4.6.1": {
           "dependencies": [
@@ -29984,7 +31117,17 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "default",
+            "derive",
+            "error-context",
+            "help",
+            "std",
+            "suggestions",
+            "usage"
+          ]
         },
         "clap_builder-4.6.0": {
           "dependencies": [
@@ -30071,7 +31214,15 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "error-context",
+            "help",
+            "std",
+            "suggestions",
+            "usage"
+          ]
         },
         "clap_derive-4.6.1": {
           "dependencies": [
@@ -30162,27 +31313,36 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "clap_lex-1.1.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "colorchoice-1.0.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "constant_time_eq-0.4.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "std"
+          ]
         },
         "equivalent-1.0.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "figment-0.10.19": {
           "dependencies": [
@@ -30310,12 +31470,21 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "env",
+            "parse-value",
+            "pear",
+            "serde_yaml",
+            "toml",
+            "yaml"
           ]
         },
         "find-msvc-tools-0.1.9": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-adapter-forge-0.1.0": {
           "dependencies": [
@@ -30410,7 +31579,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-bazel-0.1.0": {
           "dependencies": [
@@ -30481,7 +31651,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-buck-0.1.0": {
           "dependencies": [
@@ -30572,7 +31743,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-bundler-0.1.0": {
           "dependencies": [
@@ -30687,7 +31859,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cache-attic-0.1.0": {
           "dependencies": [
@@ -30802,7 +31975,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-caixa-bridge-0.1.0": {
           "dependencies": [
@@ -30917,7 +32091,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cargo-0.1.0": {
           "dependencies": [
@@ -31092,7 +32267,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cli-0.1.0": {
           "dependencies": [
@@ -31391,7 +32567,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-config-0.1.0": {
           "dependencies": [
@@ -31506,7 +32683,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-nix-0.1.0": {
           "dependencies": [
@@ -31577,7 +32755,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-nix-bulk-0.1.0": {
           "dependencies": [
@@ -31668,7 +32847,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-npm-0.1.0": {
           "dependencies": [
@@ -31803,7 +32983,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-polyglot-0.1.0": {
           "dependencies": [
@@ -31978,7 +33159,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-types-0.1.0": {
           "dependencies": [
@@ -32117,22 +33299,28 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "hashbrown-0.17.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "heck-0.5.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "iana-time-zone-0.1.65": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "fallback"
+          ]
         },
         "indexmap-2.14.0": {
           "dependencies": [
@@ -32199,12 +33387,18 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "serde",
+            "std"
+          ]
         },
         "inlinable_string-0.1.15": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "inotify-0.11.1": {
           "dependencies": [
@@ -32271,7 +33465,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "inotify-sys-0.1.5": {
           "dependencies": [
@@ -32298,32 +33493,46 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "is_terminal_polyfill-1.70.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "itoa-1.0.18": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "libc-0.2.186": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "log-0.4.30": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "memchr-2.8.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "std"
+          ]
         },
         "mio-1.2.0": {
           "dependencies": [
@@ -32370,7 +33579,13 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "log",
+            "os-ext",
+            "os-poll"
+          ]
         },
         "notify-8.2.0": {
           "dependencies": [
@@ -32525,7 +33740,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "fsevent-sys",
+            "macos_fsevent"
+          ]
         },
         "notify-types-2.1.0": {
           "dependencies": [
@@ -32552,7 +33772,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "num-traits-0.2.19": {
           "dependencies": [
@@ -32579,12 +33800,19 @@
               "target": null,
               "tree": "host"
             }
-          ]
+          ],
+          "features": []
         },
         "once_cell-1.21.4": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "race",
+            "std"
+          ]
         },
         "pear-0.2.9": {
           "dependencies": [
@@ -32651,7 +33879,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "default",
+            "yansi"
+          ]
         },
         "pear_codegen-0.2.9": {
           "dependencies": [
@@ -32746,12 +33979,14 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "pin-project-lite-0.2.17": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "proc-macro2-1.0.106": {
           "dependencies": [
@@ -32778,7 +34013,11 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "proc-macro"
+          ]
         },
         "proc-macro2-diagnostics-0.10.1": {
           "dependencies": [
@@ -32886,6 +34125,11 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "colors",
+            "default",
+            "yansi"
           ]
         },
         "quote-1.0.45": {
@@ -32913,22 +34157,29 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "proc-macro"
+          ]
         },
         "rustversion-1.0.22": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "ryu-1.0.23": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "same-file-1.0.6": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "semver-1.0.28": {
           "dependencies": [
@@ -32955,7 +34206,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "serde",
+            "std"
+          ]
         },
         "serde-1.0.228": {
           "dependencies": [
@@ -33006,12 +34262,23 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "derive",
+            "serde_derive",
+            "std"
+          ]
         },
         "serde_core-1.0.228": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "result",
+            "std"
+          ]
         },
         "serde_derive-1.0.228": {
           "dependencies": [
@@ -33094,7 +34361,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "serde_json-1.0.150": {
           "dependencies": [
@@ -33181,7 +34451,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std",
+            "unbounded_depth"
+          ]
         },
         "serde_spanned-0.6.9": {
           "dependencies": [
@@ -33208,7 +34483,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde"
+          ]
         },
         "serde_yaml-0.9.34+deprecated": {
           "dependencies": [
@@ -33315,7 +34593,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "shikumi-0.1.0": {
           "dependencies": [
@@ -33514,17 +34793,25 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "shlex-1.3.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "strsim-0.11.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "syn-2.0.117": {
           "dependencies": [
@@ -33591,7 +34878,19 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "clone-impls",
+            "default",
+            "derive",
+            "extra-traits",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "visit",
+            "visit-mut"
+          ]
         },
         "thiserror-1.0.69": {
           "dependencies": [
@@ -33618,7 +34917,8 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-2.0.18": {
           "dependencies": [
@@ -33645,7 +34945,11 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "thiserror-impl-1.0.69": {
           "dependencies": [
@@ -33712,7 +35016,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-impl-2.0.18": {
           "dependencies": [
@@ -33779,7 +35084,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "toml-0.8.23": {
           "dependencies": [
@@ -33878,7 +35184,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "display",
+            "parse"
+          ]
         },
         "toml_datetime-0.6.11": {
           "dependencies": [
@@ -33905,7 +35216,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde"
+          ]
         },
         "toml_edit-0.22.27": {
           "dependencies": [
@@ -34040,12 +35354,22 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "display",
+            "parse",
+            "serde"
+          ]
         },
         "toml_write-0.1.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "tracing-0.1.44": {
           "dependencies": [
@@ -34112,7 +35436,13 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "attributes",
+            "default",
+            "std",
+            "tracing-attributes"
+          ]
         },
         "tracing-attributes-0.1.31": {
           "dependencies": [
@@ -34195,7 +35525,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "tracing-core-0.1.36": {
           "dependencies": [
@@ -34222,7 +35553,11 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "once_cell",
+            "std"
+          ]
         },
         "uncased-0.9.10": {
           "dependencies": [
@@ -34249,27 +35584,37 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "alloc",
+            "default"
           ]
         },
         "unicode-ident-1.0.24": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "unsafe-libyaml-0.2.11": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "utf8parse-0.2.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "version_check-0.9.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "walkdir-2.5.0": {
           "dependencies": [
@@ -34296,7 +35641,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "winnow-0.7.15": {
           "dependencies": [
@@ -34323,17 +35669,28 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "yansi-1.0.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "zmij-1.0.21": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         }
       }
     },
@@ -34464,12 +35821,21 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "auto",
+            "default",
+            "wincon"
+          ]
         },
         "anstyle-1.0.14": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "anstyle-parse-1.0.0": {
           "dependencies": [
@@ -34496,12 +35862,17 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "utf8"
+          ]
         },
         "anstyle-query-1.1.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arc-swap-1.9.1": {
           "dependencies": [
@@ -34528,17 +35899,20 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arrayref-0.3.9": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "arrayvec-0.7.6": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "async-trait-0.1.89": {
           "dependencies": [
@@ -34619,17 +35993,20 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "autocfg-1.5.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "bitflags-2.11.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "blake3-1.8.5": {
           "dependencies": [
@@ -34737,6 +36114,10 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "default",
+            "std"
           ]
         },
         "camino-1.2.2": {
@@ -34764,7 +36145,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde1"
+          ]
         },
         "cargo-platform-0.1.9": {
           "dependencies": [
@@ -34791,7 +36175,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "cargo_metadata-0.18.1": {
           "dependencies": [
@@ -34934,7 +36319,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "cc-1.2.62": {
           "dependencies": [
@@ -34981,12 +36369,14 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "cfg-if-1.0.4": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "chrono-0.4.44": {
           "dependencies": [
@@ -35053,7 +36443,22 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "clock",
+            "default",
+            "iana-time-zone",
+            "js-sys",
+            "now",
+            "oldtime",
+            "serde",
+            "std",
+            "wasm-bindgen",
+            "wasmbind",
+            "winapi",
+            "windows-link"
+          ]
         },
         "clap-4.6.1": {
           "dependencies": [
@@ -35100,7 +36505,17 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "default",
+            "derive",
+            "error-context",
+            "help",
+            "std",
+            "suggestions",
+            "usage"
+          ]
         },
         "clap_builder-4.6.0": {
           "dependencies": [
@@ -35187,7 +36602,15 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "error-context",
+            "help",
+            "std",
+            "suggestions",
+            "usage"
+          ]
         },
         "clap_derive-4.6.1": {
           "dependencies": [
@@ -35278,27 +36701,36 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "clap_lex-1.1.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "colorchoice-1.0.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "constant_time_eq-0.4.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "std"
+          ]
         },
         "equivalent-1.0.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "figment-0.10.19": {
           "dependencies": [
@@ -35426,12 +36858,21 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "env",
+            "parse-value",
+            "pear",
+            "serde_yaml",
+            "toml",
+            "yaml"
           ]
         },
         "find-msvc-tools-0.1.9": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-adapter-forge-0.1.0": {
           "dependencies": [
@@ -35526,7 +36967,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-bazel-0.1.0": {
           "dependencies": [
@@ -35597,7 +37039,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-buck-0.1.0": {
           "dependencies": [
@@ -35688,7 +37131,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-bundler-0.1.0": {
           "dependencies": [
@@ -35803,7 +37247,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cache-attic-0.1.0": {
           "dependencies": [
@@ -35918,7 +37363,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-caixa-bridge-0.1.0": {
           "dependencies": [
@@ -36033,7 +37479,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cargo-0.1.0": {
           "dependencies": [
@@ -36208,7 +37655,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-cli-0.1.0": {
           "dependencies": [
@@ -36507,7 +37955,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-config-0.1.0": {
           "dependencies": [
@@ -36622,7 +38071,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-nix-0.1.0": {
           "dependencies": [
@@ -36693,7 +38143,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-nix-bulk-0.1.0": {
           "dependencies": [
@@ -36784,7 +38235,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-npm-0.1.0": {
           "dependencies": [
@@ -36919,7 +38371,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-polyglot-0.1.0": {
           "dependencies": [
@@ -37094,7 +38547,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "gen-types-0.1.0": {
           "dependencies": [
@@ -37233,22 +38687,28 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "hashbrown-0.17.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "heck-0.5.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "iana-time-zone-0.1.65": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "fallback"
+          ]
         },
         "indexmap-2.14.0": {
           "dependencies": [
@@ -37315,12 +38775,18 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "serde",
+            "std"
+          ]
         },
         "inlinable_string-0.1.15": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "inotify-0.11.1": {
           "dependencies": [
@@ -37387,7 +38853,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "inotify-sys-0.1.5": {
           "dependencies": [
@@ -37414,32 +38881,46 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "is_terminal_polyfill-1.70.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "itoa-1.0.18": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "libc-0.2.186": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "log-0.4.30": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "memchr-2.8.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "std"
+          ]
         },
         "mio-1.2.0": {
           "dependencies": [
@@ -37486,7 +38967,13 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "log",
+            "os-ext",
+            "os-poll"
+          ]
         },
         "notify-8.2.0": {
           "dependencies": [
@@ -37641,7 +39128,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "fsevent-sys",
+            "macos_fsevent"
+          ]
         },
         "notify-types-2.1.0": {
           "dependencies": [
@@ -37668,7 +39160,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "num-traits-0.2.19": {
           "dependencies": [
@@ -37695,12 +39188,19 @@
               "target": null,
               "tree": "host"
             }
-          ]
+          ],
+          "features": []
         },
         "once_cell-1.21.4": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "race",
+            "std"
+          ]
         },
         "pear-0.2.9": {
           "dependencies": [
@@ -37767,7 +39267,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "color",
+            "default",
+            "yansi"
+          ]
         },
         "pear_codegen-0.2.9": {
           "dependencies": [
@@ -37862,12 +39367,14 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "pin-project-lite-0.2.17": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "proc-macro2-1.0.106": {
           "dependencies": [
@@ -37894,7 +39401,11 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "proc-macro"
+          ]
         },
         "proc-macro2-diagnostics-0.10.1": {
           "dependencies": [
@@ -38002,6 +39513,11 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "colors",
+            "default",
+            "yansi"
           ]
         },
         "quote-1.0.45": {
@@ -38029,22 +39545,29 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "proc-macro"
+          ]
         },
         "rustversion-1.0.22": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "ryu-1.0.23": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "same-file-1.0.6": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "semver-1.0.28": {
           "dependencies": [
@@ -38071,7 +39594,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "serde",
+            "std"
+          ]
         },
         "serde-1.0.228": {
           "dependencies": [
@@ -38122,12 +39650,23 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "derive",
+            "serde_derive",
+            "std"
+          ]
         },
         "serde_core-1.0.228": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "result",
+            "std"
+          ]
         },
         "serde_derive-1.0.228": {
           "dependencies": [
@@ -38210,7 +39749,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "serde_json-1.0.150": {
           "dependencies": [
@@ -38297,7 +39839,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std",
+            "unbounded_depth"
+          ]
         },
         "serde_spanned-0.6.9": {
           "dependencies": [
@@ -38324,7 +39871,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde"
+          ]
         },
         "serde_yaml-0.9.34+deprecated": {
           "dependencies": [
@@ -38431,7 +39981,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "shikumi-0.1.0": {
           "dependencies": [
@@ -38630,17 +40181,25 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "shlex-1.3.0": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "strsim-0.11.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "syn-2.0.117": {
           "dependencies": [
@@ -38707,7 +40266,19 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "clone-impls",
+            "default",
+            "derive",
+            "extra-traits",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "visit",
+            "visit-mut"
+          ]
         },
         "thiserror-1.0.69": {
           "dependencies": [
@@ -38734,7 +40305,8 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-2.0.18": {
           "dependencies": [
@@ -38761,7 +40333,11 @@
               "tree": "host"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "std"
+          ]
         },
         "thiserror-impl-1.0.69": {
           "dependencies": [
@@ -38828,7 +40404,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-impl-2.0.18": {
           "dependencies": [
@@ -38895,7 +40472,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "toml-0.8.23": {
           "dependencies": [
@@ -38994,7 +40572,12 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "display",
+            "parse"
+          ]
         },
         "toml_datetime-0.6.11": {
           "dependencies": [
@@ -39021,7 +40604,10 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "serde"
+          ]
         },
         "toml_edit-0.22.27": {
           "dependencies": [
@@ -39156,12 +40742,22 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "display",
+            "parse",
+            "serde"
+          ]
         },
         "toml_write-0.1.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "tracing-0.1.44": {
           "dependencies": [
@@ -39228,7 +40824,13 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "attributes",
+            "default",
+            "std",
+            "tracing-attributes"
+          ]
         },
         "tracing-attributes-0.1.31": {
           "dependencies": [
@@ -39311,7 +40913,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "tracing-core-0.1.36": {
           "dependencies": [
@@ -39338,7 +40941,11 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "once_cell",
+            "std"
+          ]
         },
         "uncased-0.9.10": {
           "dependencies": [
@@ -39365,27 +40972,37 @@
               "target": null,
               "tree": "host"
             }
+          ],
+          "features": [
+            "alloc",
+            "default"
           ]
         },
         "unicode-ident-1.0.24": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "unsafe-libyaml-0.2.11": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "utf8parse-0.2.2": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "default"
+          ]
         },
         "version_check-0.9.5": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "walkdir-2.5.0": {
           "dependencies": [
@@ -39412,7 +41029,8 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         },
         "winnow-0.7.15": {
           "dependencies": [
@@ -39439,17 +41057,28 @@
               "tree": "target"
             }
           ],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "yansi-1.0.1": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ]
         },
         "zmij-1.0.21": {
           "dependencies": [],
           "runtime_dependencies": [],
-          "build_dependencies": []
+          "build_dependencies": [],
+          "features": []
         }
       }
     }

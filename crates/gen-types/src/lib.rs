@@ -51,7 +51,8 @@ pub mod workspace;
 pub use adapter::{
     adapter_by_name, registered_adapter_names, registered_adapters, Adapter, AdapterCtx,
     AdapterError, AdapterQuirkEntry, AdapterRegistration, AdapterResult,
-    BuildSpec as AdapterBuildSpec, ConfirmReport, DepChange, DepEdge, DependencyBump, DiffRef,
+    BuildSpec as AdapterBuildSpec, ConfirmReport, DepChange, DepEdge, DependencyBump,
+    DispatcherVariant, DiffRef,
     DiffReport, InvariantBreak, LockOutcome, Plan, PlanIntent, PlanWarning, PlanWarningSeverity,
     Sbom, SbomFormat,
 };

@@ -150,6 +150,17 @@ impl Adapter for CargoAdapter {
             })
             .collect()
     }
+
+    fn dispatcher_reflection(&self) -> Vec<gen_types::DispatcherVariant> {
+        use gen_types::TypedDispatcher;
+        <crate::quirks::CrateQuirk as TypedDispatcher>::variant_fields()
+            .into_iter()
+            .map(|(kind, fields)| gen_types::DispatcherVariant {
+                kind: kind.to_string(),
+                fields: fields.into_iter().map(str::to_string).collect(),
+            })
+            .collect()
+    }
 }
 
 /// Construct an `AdapterCtx` from a workspace root path. Convenience

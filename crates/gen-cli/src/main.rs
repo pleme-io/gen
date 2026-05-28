@@ -85,6 +85,22 @@ enum Cmd {
         #[arg(long)]
         adapter: Option<String>,
     },
+    /// `gen dispatchers` — operator-visible reflection over every
+    /// adapter's `#[derive(TypedDispatcher)]` enum. The substrate-
+    /// wide "common language" surface: which typed variants exist
+    /// per ecosystem, what fields each carries, what serde tag the
+    /// runtime emits. Source of truth for the matching
+    /// `substrate/lib/build/<eco>/quirk-apply.nix` helpers tables —
+    /// any drift between this output and a helpers table is a CI
+    /// failure.
+    ///
+    /// JSON output by default (machine + substrate-coverage-check
+    /// consumption). Use `--ecosystem <name>` to filter.
+    Dispatchers {
+        /// Filter to a single ecosystem by name (e.g. `cargo`, `npm`).
+        #[arg(long)]
+        ecosystem: Option<String>,
+    },
     /// Render the workspace at <path> to Nix source (crate2nix shape).
     /// Output goes to `cfg.render.output_path` or stdout.
     Render {
@@ -529,6 +545,31 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                 "✓ gen-{name} scaffolded.\n  Next: add `\"crates/gen-{name}\",` to the gen workspace members in `Cargo.toml`, fill in adapter::Adapter::build, then `cargo build -p gen-{name}`."
             );
             Ok(())
+        }
+        Cmd::Dispatchers { ecosystem } => {
+            #[derive(serde::Serialize)]
+            struct EcoDispatcher<'a> {
+                ecosystem: &'a str,
+                variant_count: usize,
+                variants: Vec<gen_types::DispatcherVariant>,
+            }
+            let filter = ecosystem.as_deref();
+            let mut out: Vec<EcoDispatcher> = gen_types::registered_adapters()
+                .iter()
+                .filter(|a| filter.map(|f| a.name() == f).unwrap_or(true))
+                .map(|a| {
+                    let variants = a.dispatcher_reflection();
+                    EcoDispatcher {
+                        ecosystem: a.name(),
+                        variant_count: variants.len(),
+                        variants,
+                    }
+                })
+                .collect();
+            // Deterministic ordering for committed catalog snapshots
+            // + reproducible diffing.
+            out.sort_by_key(|e| e.ecosystem);
+            emit(&out, cli.format)
         }
         Cmd::Quirks { adapter } => {
             // Distributed-slice introspection: every adapter

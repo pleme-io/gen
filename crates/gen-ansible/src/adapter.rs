@@ -49,6 +49,17 @@ impl Adapter for AnsibleAdapter {
             })
             .collect()
     }
+
+    fn dispatcher_reflection(&self) -> Vec<gen_types::DispatcherVariant> {
+        use gen_types::TypedDispatcher;
+        <crate::quirks::AnsibleQuirk as TypedDispatcher>::variant_fields()
+            .into_iter()
+            .map(|(kind, fields)| gen_types::DispatcherVariant {
+                kind: kind.to_string(),
+                fields: fields.into_iter().map(str::to_string).collect(),
+            })
+            .collect()
+    }
 }
 
 pub fn ctx_for(workspace_root: PathBuf) -> AdapterCtx {

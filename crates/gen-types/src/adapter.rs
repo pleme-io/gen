@@ -95,6 +95,35 @@ pub trait Adapter: Send + Sync {
     fn quirks_registry(&self) -> Vec<AdapterQuirkEntry> {
         Vec::new()
     }
+
+    /// Reflection over the adapter's typed quirk enum — kebab-case
+    /// serde tags + per-variant field names. Surfaces what
+    /// `#[derive(TypedDispatcher)]` knows mechanically without
+    /// exposing the concrete enum type through the trait.
+    ///
+    /// Used by `gen dispatchers list` (operator visibility) and by
+    /// substrate-side coverage tests that assert every kind in this
+    /// reflection has a matching helpers arm in the matching
+    /// `substrate/lib/build/<ecosystem>/quirk-apply.nix`. Default
+    /// implementation returns an empty Vec — adapters whose Quirk
+    /// enum hasn't yet adopted `#[derive(TypedDispatcher)]` simply
+    /// disappear from the catalog (no false coverage claims).
+    fn dispatcher_reflection(&self) -> Vec<DispatcherVariant> {
+        Vec::new()
+    }
+}
+
+/// One variant of a typed Adapter quirk enum, surfaced via
+/// `Adapter::dispatcher_reflection`. Mirrors `TypedDispatcher`'s
+/// per-variant reflection without forcing the trait to carry a
+/// generic Quirk associated type.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct DispatcherVariant {
+    /// Kebab-case serde tag the runtime emits.
+    pub kind: String,
+    /// Field names declared on the variant (named fields only).
+    /// Unit variants serialize as an empty Vec.
+    pub fields: Vec<String>,
 }
 
 /// One entry in an Adapter's quirks registry: a package name plus

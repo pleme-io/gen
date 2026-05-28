@@ -2840,6 +2840,16 @@
       },
       "dependencies": [
         {
+          "name": "gen_macros",
+          "package_key": "gen-macros-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "host"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -2905,6 +2915,16 @@
         }
       ],
       "runtime_dependencies": [
+        {
+          "name": "gen_macros",
+          "package_key": "gen-macros-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "host"
+        },
         {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
@@ -2972,6 +2992,12 @@
       ],
       "build_dependencies": [],
       "crate_renames": {
+        "gen-macros": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_macros"
+          }
+        ],
         "gen-types": [
           {
             "version": "0.1.0",
@@ -2984,6 +3010,12 @@
         "version": "0.1.0",
         "edition": "2024",
         "crateRenames": {
+          "gen-macros": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_macros"
+            }
+          ],
           "gen-types": [
             {
               "version": "0.1.0",
@@ -5167,6 +5199,16 @@
       },
       "dependencies": [
         {
+          "name": "gen_macros",
+          "package_key": "gen-macros-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "host"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -5242,6 +5284,16 @@
         }
       ],
       "runtime_dependencies": [
+        {
+          "name": "gen_macros",
+          "package_key": "gen-macros-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "host"
+        },
         {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
@@ -5319,6 +5371,12 @@
       ],
       "build_dependencies": [],
       "crate_renames": {
+        "gen-macros": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_macros"
+          }
+        ],
         "gen-types": [
           {
             "version": "0.1.0",
@@ -5331,6 +5389,12 @@
         "version": "0.1.0",
         "edition": "2024",
         "crateRenames": {
+          "gen-macros": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_macros"
+            }
+          ],
           "gen-types": [
             {
               "version": "0.1.0",
@@ -13988,6 +14052,16 @@
         "gen-bundler-0.1.0": {
           "dependencies": [
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -14053,6 +14127,16 @@
             }
           ],
           "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
             {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
@@ -15658,6 +15742,16 @@
         "gen-npm-0.1.0": {
           "dependencies": [
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -15733,6 +15827,16 @@
             }
           ],
           "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
             {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
@@ -21691,6 +21795,16 @@
         "gen-bundler-0.1.0": {
           "dependencies": [
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -21756,6 +21870,16 @@
             }
           ],
           "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
             {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
@@ -23361,6 +23485,16 @@
         "gen-npm-0.1.0": {
           "dependencies": [
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -23436,6 +23570,16 @@
             }
           ],
           "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
             {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
@@ -29385,6 +29529,16 @@
         "gen-bundler-0.1.0": {
           "dependencies": [
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -29450,6 +29604,16 @@
             }
           ],
           "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
             {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
@@ -31055,6 +31219,16 @@
         "gen-npm-0.1.0": {
           "dependencies": [
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -31130,6 +31304,16 @@
             }
           ],
           "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
             {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
@@ -37070,6 +37254,16 @@
         "gen-bundler-0.1.0": {
           "dependencies": [
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -37135,6 +37329,16 @@
             }
           ],
           "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
             {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
@@ -38740,6 +38944,16 @@
         "gen-npm-0.1.0": {
           "dependencies": [
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -38815,6 +39029,16 @@
             }
           ],
           "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
             {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
@@ -44729,6 +44953,16 @@
         "gen-bundler-0.1.0": {
           "dependencies": [
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -44794,6 +45028,16 @@
             }
           ],
           "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
             {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
@@ -46399,6 +46643,16 @@
         "gen-npm-0.1.0": {
           "dependencies": [
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -46474,6 +46728,16 @@
             }
           ],
           "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
             {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
@@ -52388,6 +52652,16 @@
         "gen-bundler-0.1.0": {
           "dependencies": [
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -52453,6 +52727,16 @@
             }
           ],
           "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
             {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
@@ -54058,6 +54342,16 @@
         "gen-npm-0.1.0": {
           "dependencies": [
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -54133,6 +54427,16 @@
             }
           ],
           "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
             {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",

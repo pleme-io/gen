@@ -12,8 +12,16 @@
         "relative_path": "crates/gen-macros"
       },
       {
+        "name": "gen-platform",
+        "relative_path": "crates/gen-platform"
+      },
+      {
         "name": "gen-cargo",
         "relative_path": "crates/gen-cargo"
+      },
+      {
+        "name": "gen-npm",
+        "relative_path": "crates/gen-npm"
       },
       {
         "name": "gen-helm",
@@ -38,10 +46,6 @@
       {
         "name": "gen-swift",
         "relative_path": "crates/gen-swift"
-      },
-      {
-        "name": "gen-npm",
-        "relative_path": "crates/gen-npm"
       },
       {
         "name": "gen-bundler",
@@ -2386,6 +2390,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -2462,6 +2476,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -2534,6 +2558,12 @@
             "rename": "gen_macros"
           }
         ],
+        "gen-platform": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_platform"
+          }
+        ],
         "gen-types": [
           {
             "version": "0.1.0",
@@ -2550,6 +2580,12 @@
             {
               "version": "0.1.0",
               "rename": "gen_macros"
+            }
+          ],
+          "gen-platform": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_platform"
             }
           ],
           "gen-types": [
@@ -2850,6 +2886,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -2926,6 +2972,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -2998,6 +3054,12 @@
             "rename": "gen_macros"
           }
         ],
+        "gen-platform": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_platform"
+          }
+        ],
         "gen-types": [
           {
             "version": "0.1.0",
@@ -3014,6 +3076,12 @@
             {
               "version": "0.1.0",
               "rename": "gen_macros"
+            }
+          ],
+          "gen-platform": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_platform"
             }
           ],
           "gen-types": [
@@ -3414,6 +3482,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -3520,6 +3598,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -3602,6 +3690,12 @@
             "rename": "gen_macros"
           }
         ],
+        "gen-platform": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_platform"
+          }
+        ],
         "gen-types": [
           {
             "version": "0.1.0",
@@ -3618,6 +3712,12 @@
             {
               "version": "0.1.0",
               "rename": "gen_macros"
+            }
+          ],
+          "gen-platform": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_platform"
             }
           ],
           "gen-types": [
@@ -3758,6 +3858,16 @@
         {
           "name": "gen_pip",
           "package_key": "gen-pip-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3966,6 +4076,16 @@
         {
           "name": "gen_pip",
           "package_key": "gen-pip-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4130,6 +4250,12 @@
             "rename": "gen_pip"
           }
         ],
+        "gen-platform": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_platform"
+          }
+        ],
         "gen-poetry": [
           {
             "version": "0.1.0",
@@ -4212,6 +4338,12 @@
             {
               "version": "0.1.0",
               "rename": "gen_pip"
+            }
+          ],
+          "gen-platform": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_platform"
             }
           ],
           "gen-poetry": [
@@ -4422,6 +4554,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -4498,6 +4640,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -4570,6 +4722,12 @@
             "rename": "gen_macros"
           }
         ],
+        "gen-platform": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_platform"
+          }
+        ],
         "gen-types": [
           {
             "version": "0.1.0",
@@ -4586,6 +4744,12 @@
             {
               "version": "0.1.0",
               "rename": "gen_macros"
+            }
+          ],
+          "gen-platform": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_platform"
             }
           ],
           "gen-types": [
@@ -4630,6 +4794,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -4706,6 +4880,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -4778,6 +4962,12 @@
             "rename": "gen_macros"
           }
         ],
+        "gen-platform": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_platform"
+          }
+        ],
         "gen-types": [
           {
             "version": "0.1.0",
@@ -4794,6 +4984,12 @@
             {
               "version": "0.1.0",
               "rename": "gen_macros"
+            }
+          ],
+          "gen-platform": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_platform"
             }
           ],
           "gen-types": [
@@ -5209,6 +5405,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -5295,6 +5501,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -5377,6 +5593,12 @@
             "rename": "gen_macros"
           }
         ],
+        "gen-platform": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_platform"
+          }
+        ],
         "gen-types": [
           {
             "version": "0.1.0",
@@ -5393,6 +5615,12 @@
             {
               "version": "0.1.0",
               "rename": "gen_macros"
+            }
+          ],
+          "gen-platform": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_platform"
             }
           ],
           "gen-types": [
@@ -5437,6 +5665,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -5513,6 +5751,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -5585,6 +5833,12 @@
             "rename": "gen_macros"
           }
         ],
+        "gen-platform": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_platform"
+          }
+        ],
         "gen-types": [
           {
             "version": "0.1.0",
@@ -5603,6 +5857,12 @@
               "rename": "gen_macros"
             }
           ],
+          "gen-platform": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_platform"
+            }
+          ],
           "gen-types": [
             {
               "version": "0.1.0",
@@ -5614,6 +5874,190 @@
         "libName": "gen_pip",
         "libPath": "src/lib.rs",
         "preBuild": "export CARGO_CRATE_NAME=gen_pip;"
+      }
+    },
+    "gen-platform-0.1.0": {
+      "name": "gen-platform",
+      "version": "0.1.0",
+      "edition": "2024",
+      "source": {
+        "kind": "path",
+        "relative_path": "crates/gen-platform"
+      },
+      "features": [],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": {
+        "name": "gen_platform",
+        "path": "src/lib.rs"
+      },
+      "dependencies": [
+        {
+          "name": "gen_macros",
+          "package_key": "gen-macros-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "host"
+        },
+        {
+          "name": "gen_types",
+          "package_key": "gen-types-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "inventory",
+          "package_key": "inventory-0.3.24",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde",
+          "package_key": "serde-1.0.228",
+          "kind": "normal",
+          "features": [
+            "derive"
+          ],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde_json",
+          "package_key": "serde_json-1.0.150",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "thiserror",
+          "package_key": "thiserror-2.0.18",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "runtime_dependencies": [
+        {
+          "name": "gen_macros",
+          "package_key": "gen-macros-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "host"
+        },
+        {
+          "name": "gen_types",
+          "package_key": "gen-types-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "inventory",
+          "package_key": "inventory-0.3.24",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde",
+          "package_key": "serde-1.0.228",
+          "kind": "normal",
+          "features": [
+            "derive"
+          ],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde_json",
+          "package_key": "serde_json-1.0.150",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "thiserror",
+          "package_key": "thiserror-2.0.18",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "build_dependencies": [],
+      "crate_renames": {
+        "gen-macros": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_macros"
+          }
+        ],
+        "gen-types": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_types"
+          }
+        ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-platform",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-macros": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_macros"
+            }
+          ],
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "libName": "gen_platform",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_platform;"
       }
     },
     "gen-poetry-0.1.0": {
@@ -5645,6 +6089,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -5721,6 +6175,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -5793,6 +6257,12 @@
             "rename": "gen_macros"
           }
         ],
+        "gen-platform": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_platform"
+          }
+        ],
         "gen-types": [
           {
             "version": "0.1.0",
@@ -5809,6 +6279,12 @@
             {
               "version": "0.1.0",
               "rename": "gen_macros"
+            }
+          ],
+          "gen-platform": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_platform"
             }
           ],
           "gen-types": [
@@ -6117,6 +6593,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -6193,6 +6679,16 @@
           "tree": "host"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -6265,6 +6761,12 @@
             "rename": "gen_macros"
           }
         ],
+        "gen-platform": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_platform"
+          }
+        ],
         "gen-types": [
           {
             "version": "0.1.0",
@@ -6281,6 +6783,12 @@
             {
               "version": "0.1.0",
               "rename": "gen_macros"
+            }
+          ],
+          "gen-platform": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_platform"
             }
           ],
           "gen-types": [
@@ -8553,6 +9061,12 @@
             "version": "0.3.14",
             "rename": "libc_errno"
           }
+        ],
+        "linux-raw-sys": [
+          {
+            "version": "0.12.1",
+            "rename": "linux_raw_sys"
+          }
         ]
       },
       "build_rust_crate_args": {
@@ -8578,6 +9092,12 @@
             {
               "version": "0.3.14",
               "rename": "libc_errno"
+            }
+          ],
+          "linux-raw-sys": [
+            {
+              "version": "0.12.1",
+              "rename": "linux_raw_sys"
             }
           ]
         },
@@ -12255,14 +12775,15 @@
   "workspace_members": [
     "gen-types-0.1.0",
     "gen-macros-0.1.0",
+    "gen-platform-0.1.0",
     "gen-cargo-0.1.0",
+    "gen-npm-0.1.0",
     "gen-helm-0.1.0",
     "gen-pip-0.1.0",
     "gen-gomod-0.1.0",
     "gen-ansible-0.1.0",
     "gen-poetry-0.1.0",
     "gen-swift-0.1.0",
-    "gen-npm-0.1.0",
     "gen-bundler-0.1.0",
     "gen-adapter-forge-0.1.0",
     "gen-polyglot-0.1.0",
@@ -12284,7 +12805,15 @@
       "default_bin": null,
       "repo": "pleme-io/gen"
     },
+    "gen-platform": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
     "gen-cargo": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-npm": {
       "default_bin": null,
       "repo": "pleme-io/gen"
     },
@@ -12309,10 +12838,6 @@
       "repo": "pleme-io/gen"
     },
     "gen-swift": {
-      "default_bin": null,
-      "repo": "pleme-io/gen"
-    },
-    "gen-npm": {
       "default_bin": null,
       "repo": "pleme-io/gen"
     },
@@ -13742,6 +14267,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -13816,6 +14351,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -14062,6 +14607,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -14136,6 +14691,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -14470,6 +15035,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -14574,6 +15149,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -14760,6 +15345,16 @@
             {
               "name": "gen_pip",
               "package_key": "gen-pip-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
               "kind": "normal",
               "features": [],
               "uses_default_features": true,
@@ -14968,6 +15563,16 @@
             {
               "name": "gen_pip",
               "package_key": "gen-pip-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
               "kind": "normal",
               "features": [],
               "uses_default_features": true,
@@ -15202,6 +15807,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -15276,6 +15891,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -15358,6 +15983,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -15432,6 +16067,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -15752,6 +16397,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -15836,6 +16491,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -15928,6 +16593,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -16002,6 +16677,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -16071,6 +16756,138 @@
           "build_dependencies": [],
           "features": []
         },
+        "gen-platform-0.1.0": {
+          "dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "inventory",
+              "package_key": "inventory-0.3.24",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "inventory",
+              "package_key": "inventory-0.3.24",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
         "gen-poetry-0.1.0": {
           "dependencies": [
             {
@@ -16082,6 +16899,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -16158,6 +16985,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -16416,6 +17253,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -16490,6 +17337,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -21485,6 +22342,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -21559,6 +22426,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -21805,6 +22682,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -21879,6 +22766,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -22213,6 +23110,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -22317,6 +23224,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -22503,6 +23420,16 @@
             {
               "name": "gen_pip",
               "package_key": "gen-pip-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
               "kind": "normal",
               "features": [],
               "uses_default_features": true,
@@ -22711,6 +23638,16 @@
             {
               "name": "gen_pip",
               "package_key": "gen-pip-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
               "kind": "normal",
               "features": [],
               "uses_default_features": true,
@@ -22945,6 +23882,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -23019,6 +23966,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -23101,6 +24058,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -23175,6 +24142,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -23495,6 +24472,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -23579,6 +24566,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -23671,6 +24668,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -23745,6 +24752,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -23814,6 +24831,138 @@
           "build_dependencies": [],
           "features": []
         },
+        "gen-platform-0.1.0": {
+          "dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "inventory",
+              "package_key": "inventory-0.3.24",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "inventory",
+              "package_key": "inventory-0.3.24",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
         "gen-poetry-0.1.0": {
           "dependencies": [
             {
@@ -23825,6 +24974,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -23901,6 +25060,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -24159,6 +25328,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -24233,6 +25412,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -29219,6 +30408,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -29293,6 +30492,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -29539,6 +30748,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -29613,6 +30832,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -29947,6 +31176,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -30051,6 +31290,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -30237,6 +31486,16 @@
             {
               "name": "gen_pip",
               "package_key": "gen-pip-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
               "kind": "normal",
               "features": [],
               "uses_default_features": true,
@@ -30445,6 +31704,16 @@
             {
               "name": "gen_pip",
               "package_key": "gen-pip-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
               "kind": "normal",
               "features": [],
               "uses_default_features": true,
@@ -30679,6 +31948,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -30753,6 +32032,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -30835,6 +32124,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -30909,6 +32208,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -31229,6 +32538,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -31313,6 +32632,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -31405,6 +32734,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -31479,6 +32818,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -31548,6 +32897,138 @@
           "build_dependencies": [],
           "features": []
         },
+        "gen-platform-0.1.0": {
+          "dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "inventory",
+              "package_key": "inventory-0.3.24",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "inventory",
+              "package_key": "inventory-0.3.24",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
         "gen-poetry-0.1.0": {
           "dependencies": [
             {
@@ -31559,6 +33040,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -31635,6 +33126,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -31893,6 +33394,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -31967,6 +33478,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -36944,6 +38465,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -37018,6 +38549,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -37264,6 +38805,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -37338,6 +38889,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -37672,6 +39233,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -37776,6 +39347,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -37962,6 +39543,16 @@
             {
               "name": "gen_pip",
               "package_key": "gen-pip-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
               "kind": "normal",
               "features": [],
               "uses_default_features": true,
@@ -38170,6 +39761,16 @@
             {
               "name": "gen_pip",
               "package_key": "gen-pip-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
               "kind": "normal",
               "features": [],
               "uses_default_features": true,
@@ -38404,6 +40005,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -38478,6 +40089,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -38560,6 +40181,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -38634,6 +40265,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -38954,6 +40595,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -39038,6 +40689,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -39130,6 +40791,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -39204,6 +40875,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -39273,6 +40954,138 @@
           "build_dependencies": [],
           "features": []
         },
+        "gen-platform-0.1.0": {
+          "dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "inventory",
+              "package_key": "inventory-0.3.24",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "inventory",
+              "package_key": "inventory-0.3.24",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
         "gen-poetry-0.1.0": {
           "dependencies": [
             {
@@ -39284,6 +41097,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -39360,6 +41183,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -39618,6 +41451,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -39692,6 +41535,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -44643,6 +46496,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -44717,6 +46580,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -44963,6 +46836,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -45037,6 +46920,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -45371,6 +47264,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -45475,6 +47378,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -45661,6 +47574,16 @@
             {
               "name": "gen_pip",
               "package_key": "gen-pip-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
               "kind": "normal",
               "features": [],
               "uses_default_features": true,
@@ -45869,6 +47792,16 @@
             {
               "name": "gen_pip",
               "package_key": "gen-pip-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
               "kind": "normal",
               "features": [],
               "uses_default_features": true,
@@ -46103,6 +48036,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -46177,6 +48120,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -46259,6 +48212,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -46333,6 +48296,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -46653,6 +48626,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -46737,6 +48720,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -46829,6 +48822,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -46903,6 +48906,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -46972,6 +48985,138 @@
           "build_dependencies": [],
           "features": []
         },
+        "gen-platform-0.1.0": {
+          "dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "inventory",
+              "package_key": "inventory-0.3.24",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "inventory",
+              "package_key": "inventory-0.3.24",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
         "gen-poetry-0.1.0": {
           "dependencies": [
             {
@@ -46983,6 +49128,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -47059,6 +49214,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -47317,6 +49482,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -47391,6 +49566,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -52342,6 +54527,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -52416,6 +54611,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -52662,6 +54867,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -52736,6 +54951,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -53070,6 +55295,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -53174,6 +55409,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -53360,6 +55605,16 @@
             {
               "name": "gen_pip",
               "package_key": "gen-pip-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
               "kind": "normal",
               "features": [],
               "uses_default_features": true,
@@ -53568,6 +55823,16 @@
             {
               "name": "gen_pip",
               "package_key": "gen-pip-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
               "kind": "normal",
               "features": [],
               "uses_default_features": true,
@@ -53802,6 +56067,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -53876,6 +56151,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -53958,6 +56243,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -54032,6 +56327,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -54352,6 +56657,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -54436,6 +56751,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -54528,6 +56853,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -54602,6 +56937,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -54671,6 +57016,138 @@
           "build_dependencies": [],
           "features": []
         },
+        "gen-platform-0.1.0": {
+          "dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "inventory",
+              "package_key": "inventory-0.3.24",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "inventory",
+              "package_key": "inventory-0.3.24",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
         "gen-poetry-0.1.0": {
           "dependencies": [
             {
@@ -54682,6 +57159,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -54758,6 +57245,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",
@@ -55016,6 +57513,16 @@
               "tree": "host"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -55090,6 +57597,16 @@
               "optional": false,
               "target": null,
               "tree": "host"
+            },
+            {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
             },
             {
               "name": "gen_types",

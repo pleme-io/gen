@@ -96,27 +96,24 @@ enum Cmd {
         path: Option<PathBuf>,
         /// Per-platform cfg() filtering. When passed, cargo's resolver
         /// drops dep edges whose cfg(target_os/vendor/arch/family/…)
-        /// don't match the given triple — substrate's lockfile-builder
-        /// can then consume the spec directly without Nix-side cfg
-        /// evaluation. Per the GEN TYPED-SPEC CONTRACT invariant I4.
+        /// don't match the given triple. Single-target output —
+        /// committed specs that use this are stuck on one target.
+        /// Prefer the default (multi-target) for committed specs and
+        /// the IFD auto-regen path; reserve --filter-platform for
+        /// per-CI-job artifact emission or debugging.
         ///
         /// Example: `--filter-platform=x86_64-unknown-linux-musl`.
-        /// Mutually exclusive with --multi-target (which auto-runs
-        /// per-target resolves for every fleet target).
-        #[arg(long, value_name = "TRIPLE", conflicts_with = "multi_target")]
+        /// Mutually exclusive with --single-target.
+        #[arg(long, value_name = "TRIPLE", conflicts_with = "single_target")]
         filter_platform: Option<String>,
-        /// Emit a multi-target spec that resolves dep edges for
-        /// EVERY fleet target (aarch64-apple-darwin, x86_64-darwin,
-        /// x86_64-unknown-linux-{gnu,musl}, aarch64-unknown-linux-
-        /// {gnu,musl}). Eliminates the gen-bootstrap chicken-and-egg:
-        /// the same committed Cargo.build-spec.json serves every
-        /// fleet host without re-running gen. Substrate's
-        /// lockfile-builder reads `target_resolves[currentTarget]`
-        /// instead of host-only per-crate edges.
-        ///
-        /// Schema v5+.
-        #[arg(long)]
-        multi_target: bool,
+        /// Opt OUT of multi-target emission (host-filtered single-
+        /// target spec). The default is multi-target — one spec
+        /// serves every fleet target, eliminating the gen-bootstrap
+        /// chicken-and-egg. Pass --single-target only when you
+        /// explicitly want a host-only spec (rare; usually wrong
+        /// for committed specs).
+        #[arg(long, conflicts_with = "filter_platform")]
+        single_target: bool,
     },
     /// Run gen build across every cargo workspace under <path>.
     /// Emits a typed sweep report (JSON|YAML). Use --write to persist
@@ -377,23 +374,27 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             };
             emit(&summary, cli.format)
         }
-        Cmd::Build { path, filter_platform, multi_target } => {
+        Cmd::Build { path, filter_platform, single_target } => {
             let root = resolve_root(path, cfg);
             // Atomic: regenerate every sidecar the substrate consumer
             // needs based on the adapter the workspace declares. Today
             // that's BuildSpec for cargo workspaces; future adapters
             // land here as they ship.
+            //
+            // Default is MULTI-TARGET (commits one spec for every fleet
+            // target — eliminates gen-bootstrap chicken-and-egg). Opt
+            // out only with --single-target or --filter-platform.
             let adapter = pick_adapter(&root, cfg)?;
             match adapter.as_str() {
                 "cargo" => {
-                    let out = if *multi_target {
-                        gen_cargo::build_spec::generate_multi_target_and_write(&root)
-                            .map_err(CliError::Cargo)?
-                    } else if let Some(triple) = filter_platform {
+                    let out = if let Some(triple) = filter_platform {
                         gen_cargo::build_spec::generate_for_target_and_write(&root, &triple)
                             .map_err(CliError::Cargo)?
-                    } else {
+                    } else if *single_target {
                         gen_cargo::build_spec::generate_and_write(&root)
+                            .map_err(CliError::Cargo)?
+                    } else {
+                        gen_cargo::build_spec::generate_multi_target_and_write(&root)
                             .map_err(CliError::Cargo)?
                     };
                     eprintln!("gen build: wrote {}", out.display());

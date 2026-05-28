@@ -485,16 +485,21 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         // crate. `target.name` already has the rustc-friendly form
         // (underscores). `src_path` honors `[lib].path` overrides.
         //
-        // Suppress lib_target emission ONLY when the lib is at the
-        // default `src/lib.rs` with the default rustc name (cargo's
-        // `<pkg-name>` with `-` → `_`). buildRustCrate's auto-discovery
-        // handles that case identically — including the proc-macro
-        // `crate-type = ["proc-macro", "rlib"]` dual that lets crates
-        // like tatara-lisp-derive co-locate non-proc-macro fn items
-        // with their macros. Emit lib_target whenever the crate
-        // actually overrides path or name (fnv, bzip2-sys,
-        // document-features, …) — there the auto-discover fails
-        // because src/lib.rs doesn't exist or the rustc name differs.
+        // Lib-target emission rules:
+        // - Workspace members (path sources): ALWAYS emit. lockfile-builder
+        //   uses src = workspaceSrc and prefixes lib_target.path with the
+        //   member's relative_path. Without lib_target, the default
+        //   `src/lib.rs` auto-discovery resolves against the workspace root
+        //   instead of the member subdir.
+        // - Non-path crates (registry/git) at default `src/lib.rs` with
+        //   default rustc name: suppress emission. buildRustCrate's
+        //   auto-discovery is identical to explicit args here — including
+        //   the proc-macro `crate-type = ["proc-macro", "rlib"]` dual that
+        //   lets crates like tatara-lisp-derive co-locate non-proc-macro
+        //   fn items with their macros (explicit libName + libPath would
+        //   force a proc-macro-only compile that rejects them).
+        // - Non-path crates with overridden path/name (fnv, bzip2-sys,
+        //   document-features, …): emit so buildRustCrate finds the lib.
         let lib_target = pkg
             .targets
             .iter()
@@ -511,7 +516,8 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 let path = strip_dir_prefix(&abs, &manifest_dir)?;
                 let default_name = pkg.name.as_str().replace('-', "_");
                 let default_path = "src/lib.rs";
-                if t.name == default_name && path == default_path {
+                let is_default = t.name == default_name && path == default_path;
+                if is_default && !is_member {
                     return None;
                 }
                 Some(LibTargetSpec {

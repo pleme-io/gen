@@ -886,7 +886,15 @@ fn prefetch_git_sha256(url: &str, rev: &str) -> std::io::Result<String> {
 }
 
 pub fn generate_and_write(root: &Path) -> Result<std::path::PathBuf> {
-    let spec = generate(root)?;
+    generate_for_target_and_write(root, host_target_triple())
+}
+
+/// Per-target variant of generate_and_write. Used by substrate's
+/// mkBuildSpec IFD when constructing per-platform specs for the I4
+/// invariant (cfg-conditional dep filtering); also the canonical
+/// fleet-CI entrypoint for cross-build spec emission.
+pub fn generate_for_target_and_write(root: &Path, target: &str) -> Result<std::path::PathBuf> {
+    let spec = generate_for_target(root, target)?;
     // Algorithmic guarantee: every emitted spec satisfies the
     // substrate-side invariants. Violations surface as typed errors
     // before the file lands on disk — operators never see a downstream

@@ -94,6 +94,16 @@ enum Cmd {
     /// invoke.
     Build {
         path: Option<PathBuf>,
+        /// Per-platform cfg() filtering. When passed, cargo's resolver
+        /// drops dep edges whose cfg(target_os/vendor/arch/family/…)
+        /// don't match the given triple — substrate's lockfile-builder
+        /// can then consume the spec directly without Nix-side cfg
+        /// evaluation. Per the GEN TYPED-SPEC CONTRACT invariant I4.
+        ///
+        /// Example: `--filter-platform=x86_64-unknown-linux-musl`.
+        /// Omit (default) to keep the unfiltered multi-platform spec.
+        #[arg(long, value_name = "TRIPLE")]
+        filter_platform: Option<String>,
     },
     /// Run gen build across every cargo workspace under <path>.
     /// Emits a typed sweep report (JSON|YAML). Use --write to persist
@@ -354,7 +364,7 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             };
             emit(&summary, cli.format)
         }
-        Cmd::Build { path } => {
+        Cmd::Build { path, filter_platform } => {
             let root = resolve_root(path, cfg);
             // Atomic: regenerate every sidecar the substrate consumer
             // needs based on the adapter the workspace declares. Today
@@ -363,8 +373,14 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             let adapter = pick_adapter(&root, cfg)?;
             match adapter.as_str() {
                 "cargo" => {
-                    let out = gen_cargo::build_spec::generate_and_write(&root)
-                        .map_err(CliError::Cargo)?;
+                    let out = match filter_platform {
+                        Some(triple) => {
+                            gen_cargo::build_spec::generate_for_target_and_write(&root, &triple)
+                                .map_err(CliError::Cargo)?
+                        }
+                        None => gen_cargo::build_spec::generate_and_write(&root)
+                            .map_err(CliError::Cargo)?,
+                    };
                     eprintln!("gen build: wrote {}", out.display());
                 }
                 other => {

@@ -475,6 +475,7 @@ pub fn convert_lockfile(raw: &CargoLock, lock_path: &Path) -> Result<Lockfile> {
                 source,
                 integrity,
                 resolved_dependencies,
+                links: None, // enriched at render time from Cargo.build-spec.json
             },
         );
     }

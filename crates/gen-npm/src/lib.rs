@@ -337,6 +337,7 @@ fn convert_npm_lock(raw: &raw::PackageLock) -> Lockfile {
                 source,
                 integrity: p.integrity.clone(),
                 resolved_dependencies: Vec::new(),
+                links: None,
             },
         );
     }
@@ -380,6 +381,7 @@ fn convert_pnpm_lock(raw: &raw::PnpmLock) -> Lockfile {
                 source,
                 integrity: p.resolution.as_ref().and_then(|r| r.integrity.clone()),
                 resolved_dependencies: Vec::new(),
+                links: None,
             },
         );
     }

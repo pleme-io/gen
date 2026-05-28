@@ -319,6 +319,7 @@ mod tests {
                 },
                 integrity: Some("sha256:abc".into()),
                 resolved_dependencies: vec![],
+                links: None,
             },
         );
         let lock = Lockfile {
@@ -367,5 +368,138 @@ mod tests {
             ("a".to_string(), NixValue::Int(2)),
         ]);
         assert_eq!(r(&v), r(&v.clone()));
+    }
+
+    /// Regression for the ring-0.17.14 / `*-sys` family build-script
+    /// assert-on-CARGO_MANIFEST_LINKS class. Without this, every
+    /// crate with `[package] links = "<symbol>"` panics in its
+    /// build.rs against an empty `CARGO_MANIFEST_LINKS` env var.
+    /// buildRustCrate forwards `links = "<symbol>"` verbatim to
+    /// CARGO_MANIFEST_LINKS — the contract this test guards.
+    #[test]
+    fn resolved_crate_renders_links_when_set() {
+        use gen_types::{
+            ContentHash, Lockfile, Manifest, Package, PackageId, PackageSource, Registry,
+            ResolvedPackage, Version, Workspace,
+        };
+        use indexmap::IndexMap;
+
+        let pkg = Package {
+            name: "demo".into(),
+            version: Version::new(0, 1, 0),
+            source: PackageSource::Path { path: "./crates/demo".into() },
+            registry: Registry::CratesIo,
+            dependencies: vec![],
+            features: vec![],
+            build_steps: vec![],
+            license: None,
+            description: None,
+            authors: vec![],
+            homepage: None,
+            repository: None,
+        };
+        let mut resolved = IndexMap::new();
+        resolved.insert(
+            "ring/0.17.14".to_string(),
+            ResolvedPackage {
+                id: PackageId {
+                    name: "ring".into(),
+                    version: Version::new(0, 17, 14),
+                    registry: Registry::CratesIo,
+                },
+                source: PackageSource::Registry {
+                    registry: Registry::CratesIo,
+                    registry_name: "ring".into(),
+                    integrity_hash: Some("sha256:a4689e6c2294".into()),
+                },
+                integrity: Some("sha256:a4689e6c2294".into()),
+                resolved_dependencies: vec![],
+                links: Some("ring_core_0_17_14_".into()),
+            },
+        );
+        let lock = Lockfile {
+            resolved,
+            content_addressed_hash: ContentHash::genesis(),
+        };
+        let m = Manifest::new(
+            "/x",
+            Workspace::single_package("/x", "cargo"),
+            vec![pkg],
+            Some(lock),
+        );
+
+        let full = render_workspace_to_cargo_nix(&m);
+        assert!(
+            full.contains("links = \"ring_core_0_17_14_\""),
+            "render must emit links = \"<symbol>\" so buildRustCrate sets CARGO_MANIFEST_LINKS:\n{full}"
+        );
+    }
+
+    /// Symmetric negative: links field absent → render must NOT
+    /// emit a `links = ""` attribute (which would be a worse bug
+    /// than omitting the field entirely).
+    #[test]
+    fn resolved_crate_skips_links_when_unset() {
+        use gen_types::{
+            ContentHash, Lockfile, Manifest, Package, PackageId, PackageSource, Registry,
+            ResolvedPackage, Version, Workspace,
+        };
+        use indexmap::IndexMap;
+
+        let pkg = Package {
+            name: "demo".into(),
+            version: Version::new(0, 1, 0),
+            source: PackageSource::Path { path: "./crates/demo".into() },
+            registry: Registry::CratesIo,
+            dependencies: vec![],
+            features: vec![],
+            build_steps: vec![],
+            license: None,
+            description: None,
+            authors: vec![],
+            homepage: None,
+            repository: None,
+        };
+        let mut resolved = IndexMap::new();
+        resolved.insert(
+            "serde/1.0.228".to_string(),
+            ResolvedPackage {
+                id: PackageId {
+                    name: "serde".into(),
+                    version: Version::new(1, 0, 228),
+                    registry: Registry::CratesIo,
+                },
+                source: PackageSource::Registry {
+                    registry: Registry::CratesIo,
+                    registry_name: "serde".into(),
+                    integrity_hash: Some("sha256:abc".into()),
+                },
+                integrity: Some("sha256:abc".into()),
+                resolved_dependencies: vec![],
+                links: None,
+            },
+        );
+        let lock = Lockfile {
+            resolved,
+            content_addressed_hash: ContentHash::genesis(),
+        };
+        let m = Manifest::new(
+            "/x",
+            Workspace::single_package("/x", "cargo"),
+            vec![pkg],
+            Some(lock),
+        );
+
+        let full = render_workspace_to_cargo_nix(&m);
+        // serde has no links declaration → no links attribute emitted.
+        let serde_block = full
+            .split("\"serde\" = rec")
+            .nth(1)
+            .expect("serde block present");
+        let serde_block = serde_block.split("};").next().unwrap_or("");
+        assert!(
+            !serde_block.contains("links ="),
+            "links attribute must be omitted when None:\n{serde_block}"
+        );
     }
 }

@@ -382,6 +382,17 @@ fn render_resolved_crate(r: &ResolvedPackage) -> NixValue {
         ));
     }
 
+    // Emit `links = "<symbol>"` when the consumer enriched the
+    // resolved package from Cargo.build-spec.json. buildRustCrate
+    // honours this verbatim and threads it through as
+    // CARGO_MANIFEST_LINKS at build-script invocation time — the
+    // env var ring/openssl-sys/bzip2-sys/libz-sys/… assert on.
+    // Without this branch the rendered Cargo.nix omits links and
+    // every *-sys / ring-class build.rs panics at the assert.
+    if let Some(links) = &r.links {
+        entries.push(entry("links", NixValue::str(links)));
+    }
+
     NixValue::AttrSet {
         recursive: true,
         entries,

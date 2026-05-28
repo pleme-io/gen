@@ -542,6 +542,7 @@ pub fn parse_gemfile_lock(text: &str) -> Lockfile {
                             },
                             integrity: None,
                             resolved_dependencies: Vec::new(),
+                            links: None,
                         },
                     );
                 }

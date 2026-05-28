@@ -365,7 +365,16 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             if adapter != "cargo" {
                 return Err(CliError::RenderNotImplementedForAdapter(adapter));
             }
-            let manifest = dispatch(&root, cfg)?;
+            let mut manifest = dispatch(&root, cfg)?;
+            // Enrich every ResolvedPackage with `links` from
+            // Cargo.build-spec.json (when present). Without this,
+            // buildRustCrate omits `links = "<symbol>"` and ring /
+            // openssl-sys / bzip2-sys / libsqlite3-sys / libz-sys / …
+            // build scripts assert-panic on the missing
+            // CARGO_MANIFEST_LINKS env var. The build-spec is the
+            // typed source of truth; this overlay is the only thing
+            // that gets the data into the Nix output.
+            enrich_manifest_with_build_spec(&root, &mut manifest);
             let text = gen_nix::render_workspace_to_cargo_nix(&manifest);
             if cfg.render.output_path.is_empty() {
                 println!("{text}");
@@ -808,6 +817,55 @@ enum CliError {
     RenderNotImplementedForAdapter(String),
     #[error("{0}")]
     Other(String),
+}
+
+/// Overlay `links` field from `Cargo.build-spec.json` onto every
+/// matching `ResolvedPackage` in the manifest. Silent no-op when the
+/// build-spec file is missing or unparseable — the renderer falls back
+/// to the existing (links-less) behaviour, matching gen's pre-fix
+/// state for crates whose consumers haven't run `gen lock-build` yet.
+///
+/// The build-spec is keyed by the same `{name}-{version}` package_key
+/// shape that gen-cargo uses internally, so lookup is exact.
+fn enrich_manifest_with_build_spec(
+    root: &std::path::Path,
+    manifest: &mut gen_types::Manifest,
+) {
+    let path = root.join("Cargo.build-spec.json");
+    let Ok(text) = std::fs::read_to_string(&path) else {
+        return;
+    };
+    let Ok(spec) = serde_json::from_str::<serde_json::Value>(&text) else {
+        return;
+    };
+    let Some(crates_obj) = spec.get("crates").and_then(|v| v.as_object()) else {
+        return;
+    };
+
+    // Build links lookup: package_key → links string. Only crates
+    // that DECLARE links get an entry.
+    let links_by_key: std::collections::HashMap<String, String> = crates_obj
+        .iter()
+        .filter_map(|(k, v)| {
+            v.get("links")
+                .and_then(|l| l.as_str())
+                .map(|s| (k.clone(), s.to_string()))
+        })
+        .collect();
+    if links_by_key.is_empty() {
+        return;
+    }
+
+    let lockfile = match &mut manifest.lockfile {
+        Some(l) => l,
+        None => return,
+    };
+    for r in lockfile.resolved.values_mut() {
+        let key = format!("{}-{}", r.id.name.as_str(), r.id.version);
+        if let Some(links) = links_by_key.get(&key) {
+            r.links = Some(links.clone());
+        }
+    }
 }
 
 /// Adapter dispatch — selects the matching parser based on the marker

@@ -118,6 +118,19 @@ pub struct ResolvedPackage {
     /// same lockfile.
     #[serde(default)]
     pub resolved_dependencies: Vec<PackageId>,
+    /// `[package] links = "<symbol>"` from the package's `Cargo.toml`.
+    /// Cargo sets `CARGO_MANIFEST_LINKS` from this value when invoking
+    /// the build script. Build scripts for `ring`, the `*-sys` family
+    /// (openssl-sys, bzip2-sys, libsqlite3-sys, …), and other native-
+    /// shim crates ASSERT on this env var matching the declared
+    /// `links`. Without this field threaded through the renderer the
+    /// emitted Nix derivation builds the build-script binary with an
+    /// empty `CARGO_MANIFEST_LINKS`, the assertion fires, and the
+    /// crate fails to build. Populated by the consumer (gen-cli)
+    /// from `Cargo.build-spec.json` at render time. Default-None so
+    /// existing lockfiles stay deserialisable.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub links: Option<String>,
 }
 
 /// Typed lockfile — content-addressed, deterministic.
@@ -183,6 +196,7 @@ mod tests {
                 },
                 integrity: Some("sha256:abc".into()),
                 resolved_dependencies: vec![],
+                links: None,
             },
         );
         let l = Lockfile {

@@ -8,8 +8,16 @@
         "relative_path": "crates/gen-types"
       },
       {
+        "name": "gen-macros",
+        "relative_path": "crates/gen-macros"
+      },
+      {
         "name": "gen-cargo",
         "relative_path": "crates/gen-cargo"
+      },
+      {
+        "name": "gen-helm",
+        "relative_path": "crates/gen-helm"
       },
       {
         "name": "gen-npm",
@@ -3116,6 +3124,16 @@
           "tree": "target"
         },
         {
+          "name": "gen_macros",
+          "package_key": "gen-macros-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "host"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -3202,6 +3220,16 @@
           "tree": "target"
         },
         {
+          "name": "gen_macros",
+          "package_key": "gen-macros-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "host"
+        },
+        {
           "name": "gen_types",
           "package_key": "gen-types-0.1.0",
           "kind": "normal",
@@ -3268,6 +3296,12 @@
       ],
       "build_dependencies": [],
       "crate_renames": {
+        "gen-macros": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_macros"
+          }
+        ],
         "gen-types": [
           {
             "version": "0.1.0",
@@ -3280,6 +3314,12 @@
         "version": "0.1.0",
         "edition": "2024",
         "crateRenames": {
+          "gen-macros": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_macros"
+            }
+          ],
           "gen-types": [
             {
               "version": "0.1.0",
@@ -3859,6 +3899,309 @@
         "libName": "gen_config",
         "libPath": "src/lib.rs",
         "preBuild": "export CARGO_CRATE_NAME=gen_config;"
+      }
+    },
+    "gen-helm-0.1.0": {
+      "name": "gen-helm",
+      "version": "0.1.0",
+      "edition": "2024",
+      "source": {
+        "kind": "path",
+        "relative_path": "crates/gen-helm"
+      },
+      "features": [],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": {
+        "name": "gen_helm",
+        "path": "src/lib.rs"
+      },
+      "dependencies": [
+        {
+          "name": "gen_macros",
+          "package_key": "gen-macros-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "host"
+        },
+        {
+          "name": "gen_types",
+          "package_key": "gen-types-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "indexmap",
+          "package_key": "indexmap-2.14.0",
+          "kind": "normal",
+          "features": [
+            "serde"
+          ],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde",
+          "package_key": "serde-1.0.228",
+          "kind": "normal",
+          "features": [
+            "derive"
+          ],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde_json",
+          "package_key": "serde_json-1.0.150",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "thiserror",
+          "package_key": "thiserror-2.0.18",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "runtime_dependencies": [
+        {
+          "name": "gen_macros",
+          "package_key": "gen-macros-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "host"
+        },
+        {
+          "name": "gen_types",
+          "package_key": "gen-types-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "indexmap",
+          "package_key": "indexmap-2.14.0",
+          "kind": "normal",
+          "features": [
+            "serde"
+          ],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde",
+          "package_key": "serde-1.0.228",
+          "kind": "normal",
+          "features": [
+            "derive"
+          ],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde_json",
+          "package_key": "serde_json-1.0.150",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "thiserror",
+          "package_key": "thiserror-2.0.18",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "build_dependencies": [],
+      "crate_renames": {
+        "gen-macros": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_macros"
+          }
+        ],
+        "gen-types": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_types"
+          }
+        ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-helm",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-macros": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_macros"
+            }
+          ],
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "libName": "gen_helm",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_helm;"
+      }
+    },
+    "gen-macros-0.1.0": {
+      "name": "gen-macros",
+      "version": "0.1.0",
+      "edition": "2024",
+      "source": {
+        "kind": "path",
+        "relative_path": "crates/gen-macros"
+      },
+      "features": [],
+      "proc_macro": true,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": {
+        "name": "gen_macros",
+        "path": "src/lib.rs"
+      },
+      "dependencies": [
+        {
+          "name": "proc_macro2",
+          "package_key": "proc-macro2-1.0.106",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "quote",
+          "package_key": "quote-1.0.45",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "syn",
+          "package_key": "syn-2.0.117",
+          "kind": "normal",
+          "features": [
+            "full",
+            "extra-traits"
+          ],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "runtime_dependencies": [
+        {
+          "name": "proc_macro2",
+          "package_key": "proc-macro2-1.0.106",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "quote",
+          "package_key": "quote-1.0.45",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "syn",
+          "package_key": "syn-2.0.117",
+          "kind": "normal",
+          "features": [
+            "full",
+            "extra-traits"
+          ],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "build_dependencies": [],
+      "crate_renames": {
+        "proc-macro2": [
+          {
+            "version": "1.0.106",
+            "rename": "proc_macro2"
+          }
+        ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-macros",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "proc-macro2": [
+            {
+              "version": "1.0.106",
+              "rename": "proc_macro2"
+            }
+          ]
+        },
+        "release": true,
+        "procMacro": true,
+        "libName": "gen_macros",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_macros;"
       }
     },
     "gen-nix-0.1.0": {
@@ -4946,6 +5289,34 @@
         "release": true,
         "build": "build.rs",
         "preBuild": "export CARGO_CRATE_NAME=getrandom;"
+      }
+    },
+    "glob-0.3.3": {
+      "name": "glob",
+      "version": "0.3.3",
+      "edition": "2015",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/glob/glob-0.3.3.crate",
+        "sha256": "0cc23270f6e1808e30a928bdc84dea0b9b4136a8bc82338574f23baf47bbd280",
+        "name_with_ext": "glob-0.3.3.tar.gz"
+      },
+      "features": [],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "dependencies": [],
+      "runtime_dependencies": [],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "glob",
+        "version": "0.3.3",
+        "edition": "2015",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=glob;"
       }
     },
     "hashbrown-0.17.1": {
@@ -7361,6 +7732,65 @@
         "preBuild": "export CARGO_CRATE_NAME=serde_spanned;"
       }
     },
+    "serde_spanned-1.1.1": {
+      "name": "serde_spanned",
+      "version": "1.1.1",
+      "edition": "2024",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/serde_spanned/serde_spanned-1.1.1.crate",
+        "sha256": "6662b5879511e06e8999a8a235d848113e942c9124f211511b16466ee2995f26",
+        "name_with_ext": "serde_spanned-1.1.1.tar.gz"
+      },
+      "features": [
+        "alloc",
+        "serde",
+        "std"
+      ],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "dependencies": [
+        {
+          "name": "serde_core",
+          "package_key": "serde_core-1.0.228",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": true,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "runtime_dependencies": [
+        {
+          "name": "serde_core",
+          "package_key": "serde_core-1.0.228",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": true,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "serde_spanned",
+        "version": "1.1.1",
+        "edition": "2024",
+        "features": [
+          "alloc",
+          "serde",
+          "std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=serde_spanned;"
+      }
+    },
     "serde_yaml-0.9.34+deprecated": {
       "name": "serde_yaml",
       "version": "0.9.34+deprecated",
@@ -7967,6 +8397,35 @@
         "preBuild": "export CARGO_CRATE_NAME=syn;"
       }
     },
+    "target-triple-1.0.0": {
+      "name": "target-triple",
+      "version": "1.0.0",
+      "edition": "2021",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/target-triple/target-triple-1.0.0.crate",
+        "sha256": "591ef38edfb78ca4771ee32cf494cb8771944bee237a9b91fc9c1424ac4b777b",
+        "name_with_ext": "target-triple-1.0.0.tar.gz"
+      },
+      "features": [],
+      "proc_macro": false,
+      "build_script": "build.rs",
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "dependencies": [],
+      "runtime_dependencies": [],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "target-triple",
+        "version": "1.0.0",
+        "edition": "2021",
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=target_triple;"
+      }
+    },
     "tempfile-3.27.0": {
       "name": "tempfile",
       "version": "3.27.0",
@@ -8090,6 +8549,34 @@
         ],
         "release": true,
         "preBuild": "export CARGO_CRATE_NAME=tempfile;"
+      }
+    },
+    "termcolor-1.4.1": {
+      "name": "termcolor",
+      "version": "1.4.1",
+      "edition": "2018",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/termcolor/termcolor-1.4.1.crate",
+        "sha256": "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755",
+        "name_with_ext": "termcolor-1.4.1.tar.gz"
+      },
+      "features": [],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "dependencies": [],
+      "runtime_dependencies": [],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "termcolor",
+        "version": "1.4.1",
+        "edition": "2018",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=termcolor;"
       }
     },
     "thiserror-1.0.69": {
@@ -8574,6 +9061,209 @@
         "preBuild": "export CARGO_CRATE_NAME=toml;"
       }
     },
+    "toml-1.1.2+spec-1.1.0": {
+      "name": "toml",
+      "version": "1.1.2+spec-1.1.0",
+      "edition": "2024",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/toml/toml-1.1.2+spec-1.1.0.crate",
+        "sha256": "81f3d15e84cbcd896376e6730314d59fb5a87f31e4b038454184435cd57defee",
+        "name_with_ext": "toml-1.1.2+spec-1.1.0.tar.gz"
+      },
+      "features": [
+        "default",
+        "display",
+        "parse",
+        "serde",
+        "std"
+      ],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "dependencies": [
+        {
+          "name": "indexmap",
+          "package_key": "indexmap-2.14.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": true,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde_core",
+          "package_key": "serde_core-1.0.228",
+          "kind": "normal",
+          "features": [
+            "alloc"
+          ],
+          "uses_default_features": false,
+          "optional": true,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde_spanned",
+          "package_key": "serde_spanned-1.1.1",
+          "kind": "normal",
+          "features": [
+            "alloc"
+          ],
+          "uses_default_features": false,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "toml_datetime",
+          "package_key": "toml_datetime-1.1.1+spec-1.1.0",
+          "kind": "normal",
+          "features": [
+            "alloc"
+          ],
+          "uses_default_features": false,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "toml_parser",
+          "package_key": "toml_parser-1.1.2+spec-1.1.0",
+          "kind": "normal",
+          "features": [
+            "alloc"
+          ],
+          "uses_default_features": false,
+          "optional": true,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "toml_writer",
+          "package_key": "toml_writer-1.1.1+spec-1.1.0",
+          "kind": "normal",
+          "features": [
+            "alloc"
+          ],
+          "uses_default_features": false,
+          "optional": true,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "winnow",
+          "package_key": "winnow-1.0.3",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": true,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "runtime_dependencies": [
+        {
+          "name": "indexmap",
+          "package_key": "indexmap-2.14.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": true,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde_core",
+          "package_key": "serde_core-1.0.228",
+          "kind": "normal",
+          "features": [
+            "alloc"
+          ],
+          "uses_default_features": false,
+          "optional": true,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde_spanned",
+          "package_key": "serde_spanned-1.1.1",
+          "kind": "normal",
+          "features": [
+            "alloc"
+          ],
+          "uses_default_features": false,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "toml_datetime",
+          "package_key": "toml_datetime-1.1.1+spec-1.1.0",
+          "kind": "normal",
+          "features": [
+            "alloc"
+          ],
+          "uses_default_features": false,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "toml_parser",
+          "package_key": "toml_parser-1.1.2+spec-1.1.0",
+          "kind": "normal",
+          "features": [
+            "alloc"
+          ],
+          "uses_default_features": false,
+          "optional": true,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "toml_writer",
+          "package_key": "toml_writer-1.1.1+spec-1.1.0",
+          "kind": "normal",
+          "features": [
+            "alloc"
+          ],
+          "uses_default_features": false,
+          "optional": true,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "winnow",
+          "package_key": "winnow-1.0.3",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": true,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "toml",
+        "version": "1.1.2+spec-1.1.0",
+        "edition": "2024",
+        "features": [
+          "default",
+          "display",
+          "parse",
+          "serde",
+          "std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=toml;"
+      }
+    },
     "toml_datetime-0.6.11": {
       "name": "toml_datetime",
       "version": "0.6.11",
@@ -8624,6 +9314,65 @@
         "edition": "2021",
         "features": [
           "serde"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=toml_datetime;"
+      }
+    },
+    "toml_datetime-1.1.1+spec-1.1.0": {
+      "name": "toml_datetime",
+      "version": "1.1.1+spec-1.1.0",
+      "edition": "2024",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/toml_datetime/toml_datetime-1.1.1+spec-1.1.0.crate",
+        "sha256": "3165f65f62e28e0115a00b2ebdd37eb6f3b641855f9d636d3cd4103767159ad7",
+        "name_with_ext": "toml_datetime-1.1.1+spec-1.1.0.tar.gz"
+      },
+      "features": [
+        "alloc",
+        "serde",
+        "std"
+      ],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "dependencies": [
+        {
+          "name": "serde_core",
+          "package_key": "serde_core-1.0.228",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": true,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "runtime_dependencies": [
+        {
+          "name": "serde_core",
+          "package_key": "serde_core-1.0.228",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": true,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "toml_datetime",
+        "version": "1.1.1+spec-1.1.0",
+        "edition": "2024",
+        "features": [
+          "alloc",
+          "serde",
+          "std"
         ],
         "release": true,
         "preBuild": "export CARGO_CRATE_NAME=toml_datetime;"
@@ -8796,6 +9545,63 @@
         "preBuild": "export CARGO_CRATE_NAME=toml_edit;"
       }
     },
+    "toml_parser-1.1.2+spec-1.1.0": {
+      "name": "toml_parser",
+      "version": "1.1.2+spec-1.1.0",
+      "edition": "2024",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/toml_parser/toml_parser-1.1.2+spec-1.1.0.crate",
+        "sha256": "a2abe9b86193656635d2411dc43050282ca48aa31c2451210f4202550afb7526",
+        "name_with_ext": "toml_parser-1.1.2+spec-1.1.0.tar.gz"
+      },
+      "features": [
+        "alloc",
+        "std"
+      ],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "dependencies": [
+        {
+          "name": "winnow",
+          "package_key": "winnow-1.0.3",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "runtime_dependencies": [
+        {
+          "name": "winnow",
+          "package_key": "winnow-1.0.3",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "toml_parser",
+        "version": "1.1.2+spec-1.1.0",
+        "edition": "2024",
+        "features": [
+          "alloc",
+          "std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=toml_parser;"
+      }
+    },
     "toml_write-0.1.2": {
       "name": "toml_write",
       "version": "0.1.2",
@@ -8831,6 +9637,41 @@
         ],
         "release": true,
         "preBuild": "export CARGO_CRATE_NAME=toml_write;"
+      }
+    },
+    "toml_writer-1.1.1+spec-1.1.0": {
+      "name": "toml_writer",
+      "version": "1.1.1+spec-1.1.0",
+      "edition": "2024",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/toml_writer/toml_writer-1.1.1+spec-1.1.0.crate",
+        "sha256": "756daf9b1013ebe47a8776667b466417e2d4c5679d441c26230efd9ef78692db",
+        "name_with_ext": "toml_writer-1.1.1+spec-1.1.0.tar.gz"
+      },
+      "features": [
+        "alloc",
+        "std"
+      ],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "dependencies": [],
+      "runtime_dependencies": [],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "toml_writer",
+        "version": "1.1.1+spec-1.1.0",
+        "edition": "2024",
+        "features": [
+          "alloc",
+          "std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=toml_writer;"
       }
     },
     "tracing-0.1.44": {
@@ -9152,6 +9993,191 @@
         "preBuild": "export CARGO_CRATE_NAME=tracing_core;"
       }
     },
+    "trybuild-1.0.116": {
+      "name": "trybuild",
+      "version": "1.0.116",
+      "edition": "2021",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/trybuild/trybuild-1.0.116.crate",
+        "sha256": "47c635f0191bd3a2941013e5062667100969f8c4e9cd787c14f977265d73616e",
+        "name_with_ext": "trybuild-1.0.116.tar.gz"
+      },
+      "features": [],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "dependencies": [
+        {
+          "name": "glob",
+          "package_key": "glob-0.3.3",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde",
+          "package_key": "serde-1.0.228",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde_derive",
+          "package_key": "serde_derive-1.0.228",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "host"
+        },
+        {
+          "name": "serde_json",
+          "package_key": "serde_json-1.0.150",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "target_triple",
+          "package_key": "target-triple-1.0.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "termcolor",
+          "package_key": "termcolor-1.4.1",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "toml",
+          "package_key": "toml-1.1.2+spec-1.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "runtime_dependencies": [
+        {
+          "name": "glob",
+          "package_key": "glob-0.3.3",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde",
+          "package_key": "serde-1.0.228",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "serde_derive",
+          "package_key": "serde_derive-1.0.228",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "host"
+        },
+        {
+          "name": "serde_json",
+          "package_key": "serde_json-1.0.150",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "target_triple",
+          "package_key": "target-triple-1.0.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "termcolor",
+          "package_key": "termcolor-1.4.1",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "toml",
+          "package_key": "toml-1.1.2+spec-1.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "build_dependencies": [],
+      "crate_renames": {
+        "target-triple": [
+          {
+            "version": "1.0.0",
+            "rename": "target_triple"
+          }
+        ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "trybuild",
+        "version": "1.0.116",
+        "edition": "2021",
+        "crateRenames": {
+          "target-triple": [
+            {
+              "version": "1.0.0",
+              "rename": "target_triple"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=trybuild;"
+      }
+    },
     "uncased-0.9.10": {
       "name": "uncased",
       "version": "0.9.10",
@@ -9460,6 +10486,34 @@
         "preBuild": "export CARGO_CRATE_NAME=winnow;"
       }
     },
+    "winnow-1.0.3": {
+      "name": "winnow",
+      "version": "1.0.3",
+      "edition": "2021",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/winnow/winnow-1.0.3.crate",
+        "sha256": "0592e1c9d151f854e6fd382574c3a0855250e1d9b2f99d9281c6e6391af352f1",
+        "name_with_ext": "winnow-1.0.3.tar.gz"
+      },
+      "features": [],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "dependencies": [],
+      "runtime_dependencies": [],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "winnow",
+        "version": "1.0.3",
+        "edition": "2021",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=winnow;"
+      }
+    },
     "yansi-1.0.1": {
       "name": "yansi",
       "version": "1.0.1",
@@ -9756,7 +10810,9 @@
   "root_crate": "gen-types-0.1.0",
   "workspace_members": [
     "gen-types-0.1.0",
+    "gen-macros-0.1.0",
     "gen-cargo-0.1.0",
+    "gen-helm-0.1.0",
     "gen-npm-0.1.0",
     "gen-bundler-0.1.0",
     "gen-adapter-forge-0.1.0",
@@ -9775,7 +10831,15 @@
       "default_bin": null,
       "repo": "pleme-io/gen"
     },
+    "gen-macros": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
     "gen-cargo": {
+      "default_bin": null,
+      "repo": "pleme-io/gen"
+    },
+    "gen-helm": {
       "default_bin": null,
       "repo": "pleme-io/gen"
     },
@@ -11731,6 +12795,16 @@
               "tree": "target"
             },
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -11815,6 +12889,16 @@
               "optional": false,
               "target": null,
               "tree": "target"
+            },
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
             },
             {
               "name": "gen_types",
@@ -12291,6 +13375,216 @@
               "package_key": "shikumi-0.1.0",
               "kind": "normal",
               "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "gen-helm-0.1.0": {
+          "dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [
+                "serde"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [
+                "serde"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "gen-macros-0.1.0": {
+          "dependencies": [
+            {
+              "name": "proc_macro2",
+              "package_key": "proc-macro2-1.0.106",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "quote",
+              "package_key": "quote-1.0.45",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "syn",
+              "package_key": "syn-2.0.117",
+              "kind": "normal",
+              "features": [
+                "full",
+                "extra-traits"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "proc_macro2",
+              "package_key": "proc-macro2-1.0.106",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "quote",
+              "package_key": "quote-1.0.45",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "syn",
+              "package_key": "syn-2.0.117",
+              "kind": "normal",
+              "features": [
+                "full",
+                "extra-traits"
+              ],
               "uses_default_features": true,
               "optional": false,
               "target": null,
@@ -13101,6 +14395,12 @@
               "tree": "target"
             }
           ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "glob-0.3.3": {
+          "dependencies": [],
+          "runtime_dependencies": [],
           "build_dependencies": [],
           "features": []
         },
@@ -14511,6 +15811,38 @@
             "serde"
           ]
         },
+        "serde_spanned-1.1.1": {
+          "dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "serde",
+            "std"
+          ]
+        },
         "serde_yaml-0.9.34+deprecated": {
           "dependencies": [
             {
@@ -14919,6 +16251,12 @@
             "visit-mut"
           ]
         },
+        "target-triple-1.0.0": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
+        },
         "tempfile-3.27.0": {
           "dependencies": [
             {
@@ -15017,6 +16355,12 @@
             "default",
             "getrandom"
           ]
+        },
+        "termcolor-1.4.1": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-1.0.69": {
           "dependencies": [
@@ -15317,6 +16661,180 @@
             "parse"
           ]
         },
+        "toml-1.1.2+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_spanned",
+              "package_key": "serde_spanned-1.1.1",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_datetime",
+              "package_key": "toml_datetime-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_parser",
+              "package_key": "toml_parser-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_writer",
+              "package_key": "toml_writer-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_spanned",
+              "package_key": "serde_spanned-1.1.1",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_datetime",
+              "package_key": "toml_datetime-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_parser",
+              "package_key": "toml_parser-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_writer",
+              "package_key": "toml_writer-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "display",
+            "parse",
+            "serde",
+            "std"
+          ]
+        },
         "toml_datetime-0.6.11": {
           "dependencies": [
             {
@@ -15345,6 +16863,38 @@
           "build_dependencies": [],
           "features": [
             "serde"
+          ]
+        },
+        "toml_datetime-1.1.1+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "serde",
+            "std"
           ]
         },
         "toml_edit-0.22.27": {
@@ -15487,6 +17037,37 @@
             "serde"
           ]
         },
+        "toml_parser-1.1.2+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
         "toml_write-0.1.2": {
           "dependencies": [],
           "runtime_dependencies": [],
@@ -15494,6 +17075,15 @@
           "features": [
             "alloc",
             "default",
+            "std"
+          ]
+        },
+        "toml_writer-1.1.1+spec-1.1.0": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
             "std"
           ]
         },
@@ -15685,6 +17275,154 @@
             "std"
           ]
         },
+        "trybuild-1.0.116": {
+          "dependencies": [
+            {
+              "name": "glob",
+              "package_key": "glob-0.3.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_derive",
+              "package_key": "serde_derive-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "target_triple",
+              "package_key": "target-triple-1.0.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "termcolor",
+              "package_key": "termcolor-1.4.1",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml",
+              "package_key": "toml-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "glob",
+              "package_key": "glob-0.3.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_derive",
+              "package_key": "serde_derive-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "target_triple",
+              "package_key": "target-triple-1.0.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "termcolor",
+              "package_key": "termcolor-1.4.1",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml",
+              "package_key": "toml-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
         "uncased-0.9.10": {
           "dependencies": [
             {
@@ -15801,6 +17539,12 @@
             "default",
             "std"
           ]
+        },
+        "winnow-1.0.3": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
         },
         "yansi-1.0.1": {
           "dependencies": [],
@@ -17748,6 +19492,16 @@
               "tree": "target"
             },
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -17832,6 +19586,16 @@
               "optional": false,
               "target": null,
               "tree": "target"
+            },
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
             },
             {
               "name": "gen_types",
@@ -18308,6 +20072,216 @@
               "package_key": "shikumi-0.1.0",
               "kind": "normal",
               "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "gen-helm-0.1.0": {
+          "dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [
+                "serde"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [
+                "serde"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "gen-macros-0.1.0": {
+          "dependencies": [
+            {
+              "name": "proc_macro2",
+              "package_key": "proc-macro2-1.0.106",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "quote",
+              "package_key": "quote-1.0.45",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "syn",
+              "package_key": "syn-2.0.117",
+              "kind": "normal",
+              "features": [
+                "full",
+                "extra-traits"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "proc_macro2",
+              "package_key": "proc-macro2-1.0.106",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "quote",
+              "package_key": "quote-1.0.45",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "syn",
+              "package_key": "syn-2.0.117",
+              "kind": "normal",
+              "features": [
+                "full",
+                "extra-traits"
+              ],
               "uses_default_features": true,
               "optional": false,
               "target": null,
@@ -19118,6 +21092,12 @@
               "tree": "target"
             }
           ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "glob-0.3.3": {
+          "dependencies": [],
+          "runtime_dependencies": [],
           "build_dependencies": [],
           "features": []
         },
@@ -20528,6 +22508,38 @@
             "serde"
           ]
         },
+        "serde_spanned-1.1.1": {
+          "dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "serde",
+            "std"
+          ]
+        },
         "serde_yaml-0.9.34+deprecated": {
           "dependencies": [
             {
@@ -20936,6 +22948,12 @@
             "visit-mut"
           ]
         },
+        "target-triple-1.0.0": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
+        },
         "tempfile-3.27.0": {
           "dependencies": [
             {
@@ -21034,6 +23052,12 @@
             "default",
             "getrandom"
           ]
+        },
+        "termcolor-1.4.1": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-1.0.69": {
           "dependencies": [
@@ -21334,6 +23358,180 @@
             "parse"
           ]
         },
+        "toml-1.1.2+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_spanned",
+              "package_key": "serde_spanned-1.1.1",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_datetime",
+              "package_key": "toml_datetime-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_parser",
+              "package_key": "toml_parser-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_writer",
+              "package_key": "toml_writer-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_spanned",
+              "package_key": "serde_spanned-1.1.1",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_datetime",
+              "package_key": "toml_datetime-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_parser",
+              "package_key": "toml_parser-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_writer",
+              "package_key": "toml_writer-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "display",
+            "parse",
+            "serde",
+            "std"
+          ]
+        },
         "toml_datetime-0.6.11": {
           "dependencies": [
             {
@@ -21362,6 +23560,38 @@
           "build_dependencies": [],
           "features": [
             "serde"
+          ]
+        },
+        "toml_datetime-1.1.1+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "serde",
+            "std"
           ]
         },
         "toml_edit-0.22.27": {
@@ -21504,6 +23734,37 @@
             "serde"
           ]
         },
+        "toml_parser-1.1.2+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
         "toml_write-0.1.2": {
           "dependencies": [],
           "runtime_dependencies": [],
@@ -21511,6 +23772,15 @@
           "features": [
             "alloc",
             "default",
+            "std"
+          ]
+        },
+        "toml_writer-1.1.1+spec-1.1.0": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
             "std"
           ]
         },
@@ -21702,6 +23972,154 @@
             "std"
           ]
         },
+        "trybuild-1.0.116": {
+          "dependencies": [
+            {
+              "name": "glob",
+              "package_key": "glob-0.3.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_derive",
+              "package_key": "serde_derive-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "target_triple",
+              "package_key": "target-triple-1.0.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "termcolor",
+              "package_key": "termcolor-1.4.1",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml",
+              "package_key": "toml-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "glob",
+              "package_key": "glob-0.3.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_derive",
+              "package_key": "serde_derive-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "target_triple",
+              "package_key": "target-triple-1.0.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "termcolor",
+              "package_key": "termcolor-1.4.1",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml",
+              "package_key": "toml-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
         "uncased-0.9.10": {
           "dependencies": [
             {
@@ -21818,6 +24236,12 @@
             "default",
             "std"
           ]
+        },
+        "winnow-1.0.3": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
         },
         "yansi-1.0.1": {
           "dependencies": [],
@@ -23756,6 +26180,16 @@
               "tree": "target"
             },
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -23840,6 +26274,16 @@
               "optional": false,
               "target": null,
               "tree": "target"
+            },
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
             },
             {
               "name": "gen_types",
@@ -24316,6 +26760,216 @@
               "package_key": "shikumi-0.1.0",
               "kind": "normal",
               "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "gen-helm-0.1.0": {
+          "dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [
+                "serde"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [
+                "serde"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "gen-macros-0.1.0": {
+          "dependencies": [
+            {
+              "name": "proc_macro2",
+              "package_key": "proc-macro2-1.0.106",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "quote",
+              "package_key": "quote-1.0.45",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "syn",
+              "package_key": "syn-2.0.117",
+              "kind": "normal",
+              "features": [
+                "full",
+                "extra-traits"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "proc_macro2",
+              "package_key": "proc-macro2-1.0.106",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "quote",
+              "package_key": "quote-1.0.45",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "syn",
+              "package_key": "syn-2.0.117",
+              "kind": "normal",
+              "features": [
+                "full",
+                "extra-traits"
+              ],
               "uses_default_features": true,
               "optional": false,
               "target": null,
@@ -25126,6 +27780,12 @@
               "tree": "target"
             }
           ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "glob-0.3.3": {
+          "dependencies": [],
+          "runtime_dependencies": [],
           "build_dependencies": [],
           "features": []
         },
@@ -26527,6 +29187,38 @@
             "serde"
           ]
         },
+        "serde_spanned-1.1.1": {
+          "dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "serde",
+            "std"
+          ]
+        },
         "serde_yaml-0.9.34+deprecated": {
           "dependencies": [
             {
@@ -26935,6 +29627,12 @@
             "visit-mut"
           ]
         },
+        "target-triple-1.0.0": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
+        },
         "tempfile-3.27.0": {
           "dependencies": [
             {
@@ -27033,6 +29731,12 @@
             "default",
             "getrandom"
           ]
+        },
+        "termcolor-1.4.1": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-1.0.69": {
           "dependencies": [
@@ -27333,6 +30037,180 @@
             "parse"
           ]
         },
+        "toml-1.1.2+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_spanned",
+              "package_key": "serde_spanned-1.1.1",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_datetime",
+              "package_key": "toml_datetime-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_parser",
+              "package_key": "toml_parser-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_writer",
+              "package_key": "toml_writer-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_spanned",
+              "package_key": "serde_spanned-1.1.1",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_datetime",
+              "package_key": "toml_datetime-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_parser",
+              "package_key": "toml_parser-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_writer",
+              "package_key": "toml_writer-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "display",
+            "parse",
+            "serde",
+            "std"
+          ]
+        },
         "toml_datetime-0.6.11": {
           "dependencies": [
             {
@@ -27361,6 +30239,38 @@
           "build_dependencies": [],
           "features": [
             "serde"
+          ]
+        },
+        "toml_datetime-1.1.1+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "serde",
+            "std"
           ]
         },
         "toml_edit-0.22.27": {
@@ -27503,6 +30413,37 @@
             "serde"
           ]
         },
+        "toml_parser-1.1.2+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
         "toml_write-0.1.2": {
           "dependencies": [],
           "runtime_dependencies": [],
@@ -27510,6 +30451,15 @@
           "features": [
             "alloc",
             "default",
+            "std"
+          ]
+        },
+        "toml_writer-1.1.1+spec-1.1.0": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
             "std"
           ]
         },
@@ -27701,6 +30651,154 @@
             "std"
           ]
         },
+        "trybuild-1.0.116": {
+          "dependencies": [
+            {
+              "name": "glob",
+              "package_key": "glob-0.3.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_derive",
+              "package_key": "serde_derive-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "target_triple",
+              "package_key": "target-triple-1.0.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "termcolor",
+              "package_key": "termcolor-1.4.1",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml",
+              "package_key": "toml-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "glob",
+              "package_key": "glob-0.3.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_derive",
+              "package_key": "serde_derive-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "target_triple",
+              "package_key": "target-triple-1.0.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "termcolor",
+              "package_key": "termcolor-1.4.1",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml",
+              "package_key": "toml-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
         "uncased-0.9.10": {
           "dependencies": [
             {
@@ -27817,6 +30915,12 @@
             "default",
             "std"
           ]
+        },
+        "winnow-1.0.3": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
         },
         "yansi-1.0.1": {
           "dependencies": [],
@@ -29755,6 +32859,16 @@
               "tree": "target"
             },
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -29839,6 +32953,16 @@
               "optional": false,
               "target": null,
               "tree": "target"
+            },
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
             },
             {
               "name": "gen_types",
@@ -30315,6 +33439,216 @@
               "package_key": "shikumi-0.1.0",
               "kind": "normal",
               "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "gen-helm-0.1.0": {
+          "dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [
+                "serde"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [
+                "serde"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "gen-macros-0.1.0": {
+          "dependencies": [
+            {
+              "name": "proc_macro2",
+              "package_key": "proc-macro2-1.0.106",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "quote",
+              "package_key": "quote-1.0.45",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "syn",
+              "package_key": "syn-2.0.117",
+              "kind": "normal",
+              "features": [
+                "full",
+                "extra-traits"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "proc_macro2",
+              "package_key": "proc-macro2-1.0.106",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "quote",
+              "package_key": "quote-1.0.45",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "syn",
+              "package_key": "syn-2.0.117",
+              "kind": "normal",
+              "features": [
+                "full",
+                "extra-traits"
+              ],
               "uses_default_features": true,
               "optional": false,
               "target": null,
@@ -31125,6 +34459,12 @@
               "tree": "target"
             }
           ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "glob-0.3.3": {
+          "dependencies": [],
+          "runtime_dependencies": [],
           "build_dependencies": [],
           "features": []
         },
@@ -32526,6 +35866,38 @@
             "serde"
           ]
         },
+        "serde_spanned-1.1.1": {
+          "dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "serde",
+            "std"
+          ]
+        },
         "serde_yaml-0.9.34+deprecated": {
           "dependencies": [
             {
@@ -32934,6 +36306,12 @@
             "visit-mut"
           ]
         },
+        "target-triple-1.0.0": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
+        },
         "tempfile-3.27.0": {
           "dependencies": [
             {
@@ -33032,6 +36410,12 @@
             "default",
             "getrandom"
           ]
+        },
+        "termcolor-1.4.1": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-1.0.69": {
           "dependencies": [
@@ -33332,6 +36716,180 @@
             "parse"
           ]
         },
+        "toml-1.1.2+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_spanned",
+              "package_key": "serde_spanned-1.1.1",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_datetime",
+              "package_key": "toml_datetime-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_parser",
+              "package_key": "toml_parser-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_writer",
+              "package_key": "toml_writer-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_spanned",
+              "package_key": "serde_spanned-1.1.1",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_datetime",
+              "package_key": "toml_datetime-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_parser",
+              "package_key": "toml_parser-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_writer",
+              "package_key": "toml_writer-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "display",
+            "parse",
+            "serde",
+            "std"
+          ]
+        },
         "toml_datetime-0.6.11": {
           "dependencies": [
             {
@@ -33360,6 +36918,38 @@
           "build_dependencies": [],
           "features": [
             "serde"
+          ]
+        },
+        "toml_datetime-1.1.1+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "serde",
+            "std"
           ]
         },
         "toml_edit-0.22.27": {
@@ -33502,6 +37092,37 @@
             "serde"
           ]
         },
+        "toml_parser-1.1.2+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
         "toml_write-0.1.2": {
           "dependencies": [],
           "runtime_dependencies": [],
@@ -33509,6 +37130,15 @@
           "features": [
             "alloc",
             "default",
+            "std"
+          ]
+        },
+        "toml_writer-1.1.1+spec-1.1.0": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
             "std"
           ]
         },
@@ -33700,6 +37330,154 @@
             "std"
           ]
         },
+        "trybuild-1.0.116": {
+          "dependencies": [
+            {
+              "name": "glob",
+              "package_key": "glob-0.3.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_derive",
+              "package_key": "serde_derive-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "target_triple",
+              "package_key": "target-triple-1.0.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "termcolor",
+              "package_key": "termcolor-1.4.1",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml",
+              "package_key": "toml-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "glob",
+              "package_key": "glob-0.3.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_derive",
+              "package_key": "serde_derive-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "target_triple",
+              "package_key": "target-triple-1.0.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "termcolor",
+              "package_key": "termcolor-1.4.1",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml",
+              "package_key": "toml-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
         "uncased-0.9.10": {
           "dependencies": [
             {
@@ -33816,6 +37594,12 @@
             "default",
             "std"
           ]
+        },
+        "winnow-1.0.3": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
         },
         "yansi-1.0.1": {
           "dependencies": [],
@@ -35728,6 +39512,16 @@
               "tree": "target"
             },
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -35812,6 +39606,16 @@
               "optional": false,
               "target": null,
               "tree": "target"
+            },
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
             },
             {
               "name": "gen_types",
@@ -36288,6 +40092,216 @@
               "package_key": "shikumi-0.1.0",
               "kind": "normal",
               "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "gen-helm-0.1.0": {
+          "dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [
+                "serde"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [
+                "serde"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "gen-macros-0.1.0": {
+          "dependencies": [
+            {
+              "name": "proc_macro2",
+              "package_key": "proc-macro2-1.0.106",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "quote",
+              "package_key": "quote-1.0.45",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "syn",
+              "package_key": "syn-2.0.117",
+              "kind": "normal",
+              "features": [
+                "full",
+                "extra-traits"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "proc_macro2",
+              "package_key": "proc-macro2-1.0.106",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "quote",
+              "package_key": "quote-1.0.45",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "syn",
+              "package_key": "syn-2.0.117",
+              "kind": "normal",
+              "features": [
+                "full",
+                "extra-traits"
+              ],
               "uses_default_features": true,
               "optional": false,
               "target": null,
@@ -37098,6 +41112,12 @@
               "tree": "target"
             }
           ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "glob-0.3.3": {
+          "dependencies": [],
+          "runtime_dependencies": [],
           "build_dependencies": [],
           "features": []
         },
@@ -38499,6 +42519,38 @@
             "serde"
           ]
         },
+        "serde_spanned-1.1.1": {
+          "dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "serde",
+            "std"
+          ]
+        },
         "serde_yaml-0.9.34+deprecated": {
           "dependencies": [
             {
@@ -38907,6 +42959,12 @@
             "visit-mut"
           ]
         },
+        "target-triple-1.0.0": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
+        },
         "tempfile-3.27.0": {
           "dependencies": [
             {
@@ -39005,6 +43063,12 @@
             "default",
             "getrandom"
           ]
+        },
+        "termcolor-1.4.1": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-1.0.69": {
           "dependencies": [
@@ -39305,6 +43369,180 @@
             "parse"
           ]
         },
+        "toml-1.1.2+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_spanned",
+              "package_key": "serde_spanned-1.1.1",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_datetime",
+              "package_key": "toml_datetime-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_parser",
+              "package_key": "toml_parser-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_writer",
+              "package_key": "toml_writer-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_spanned",
+              "package_key": "serde_spanned-1.1.1",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_datetime",
+              "package_key": "toml_datetime-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_parser",
+              "package_key": "toml_parser-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_writer",
+              "package_key": "toml_writer-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "display",
+            "parse",
+            "serde",
+            "std"
+          ]
+        },
         "toml_datetime-0.6.11": {
           "dependencies": [
             {
@@ -39333,6 +43571,38 @@
           "build_dependencies": [],
           "features": [
             "serde"
+          ]
+        },
+        "toml_datetime-1.1.1+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "serde",
+            "std"
           ]
         },
         "toml_edit-0.22.27": {
@@ -39475,6 +43745,37 @@
             "serde"
           ]
         },
+        "toml_parser-1.1.2+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
         "toml_write-0.1.2": {
           "dependencies": [],
           "runtime_dependencies": [],
@@ -39482,6 +43783,15 @@
           "features": [
             "alloc",
             "default",
+            "std"
+          ]
+        },
+        "toml_writer-1.1.1+spec-1.1.0": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
             "std"
           ]
         },
@@ -39673,6 +43983,154 @@
             "std"
           ]
         },
+        "trybuild-1.0.116": {
+          "dependencies": [
+            {
+              "name": "glob",
+              "package_key": "glob-0.3.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_derive",
+              "package_key": "serde_derive-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "target_triple",
+              "package_key": "target-triple-1.0.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "termcolor",
+              "package_key": "termcolor-1.4.1",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml",
+              "package_key": "toml-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "glob",
+              "package_key": "glob-0.3.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_derive",
+              "package_key": "serde_derive-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "target_triple",
+              "package_key": "target-triple-1.0.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "termcolor",
+              "package_key": "termcolor-1.4.1",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml",
+              "package_key": "toml-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
         "uncased-0.9.10": {
           "dependencies": [
             {
@@ -39789,6 +44247,12 @@
             "default",
             "std"
           ]
+        },
+        "winnow-1.0.3": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
         },
         "yansi-1.0.1": {
           "dependencies": [],
@@ -41701,6 +46165,16 @@
               "tree": "target"
             },
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_types",
               "package_key": "gen-types-0.1.0",
               "kind": "normal",
@@ -41785,6 +46259,16 @@
               "optional": false,
               "target": null,
               "tree": "target"
+            },
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
             },
             {
               "name": "gen_types",
@@ -42261,6 +46745,216 @@
               "package_key": "shikumi-0.1.0",
               "kind": "normal",
               "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "gen-helm-0.1.0": {
+          "dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [
+                "serde"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [
+                "serde"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [
+                "derive"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "thiserror",
+              "package_key": "thiserror-2.0.18",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "gen-macros-0.1.0": {
+          "dependencies": [
+            {
+              "name": "proc_macro2",
+              "package_key": "proc-macro2-1.0.106",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "quote",
+              "package_key": "quote-1.0.45",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "syn",
+              "package_key": "syn-2.0.117",
+              "kind": "normal",
+              "features": [
+                "full",
+                "extra-traits"
+              ],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "proc_macro2",
+              "package_key": "proc-macro2-1.0.106",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "quote",
+              "package_key": "quote-1.0.45",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "syn",
+              "package_key": "syn-2.0.117",
+              "kind": "normal",
+              "features": [
+                "full",
+                "extra-traits"
+              ],
               "uses_default_features": true,
               "optional": false,
               "target": null,
@@ -43071,6 +47765,12 @@
               "tree": "target"
             }
           ],
+          "build_dependencies": [],
+          "features": []
+        },
+        "glob-0.3.3": {
+          "dependencies": [],
+          "runtime_dependencies": [],
           "build_dependencies": [],
           "features": []
         },
@@ -44472,6 +49172,38 @@
             "serde"
           ]
         },
+        "serde_spanned-1.1.1": {
+          "dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "serde",
+            "std"
+          ]
+        },
         "serde_yaml-0.9.34+deprecated": {
           "dependencies": [
             {
@@ -44880,6 +49612,12 @@
             "visit-mut"
           ]
         },
+        "target-triple-1.0.0": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
+        },
         "tempfile-3.27.0": {
           "dependencies": [
             {
@@ -44978,6 +49716,12 @@
             "default",
             "getrandom"
           ]
+        },
+        "termcolor-1.4.1": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
         },
         "thiserror-1.0.69": {
           "dependencies": [
@@ -45278,6 +50022,180 @@
             "parse"
           ]
         },
+        "toml-1.1.2+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_spanned",
+              "package_key": "serde_spanned-1.1.1",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_datetime",
+              "package_key": "toml_datetime-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_parser",
+              "package_key": "toml_parser-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_writer",
+              "package_key": "toml_writer-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "indexmap",
+              "package_key": "indexmap-2.14.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_spanned",
+              "package_key": "serde_spanned-1.1.1",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_datetime",
+              "package_key": "toml_datetime-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_parser",
+              "package_key": "toml_parser-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml_writer",
+              "package_key": "toml_writer-1.1.1+spec-1.1.0",
+              "kind": "normal",
+              "features": [
+                "alloc"
+              ],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "default",
+            "display",
+            "parse",
+            "serde",
+            "std"
+          ]
+        },
         "toml_datetime-0.6.11": {
           "dependencies": [
             {
@@ -45306,6 +50224,38 @@
           "build_dependencies": [],
           "features": [
             "serde"
+          ]
+        },
+        "toml_datetime-1.1.1+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "serde_core",
+              "package_key": "serde_core-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": true,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "serde",
+            "std"
           ]
         },
         "toml_edit-0.22.27": {
@@ -45448,6 +50398,37 @@
             "serde"
           ]
         },
+        "toml_parser-1.1.2+spec-1.1.0": {
+          "dependencies": [
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "winnow",
+              "package_key": "winnow-1.0.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
         "toml_write-0.1.2": {
           "dependencies": [],
           "runtime_dependencies": [],
@@ -45455,6 +50436,15 @@
           "features": [
             "alloc",
             "default",
+            "std"
+          ]
+        },
+        "toml_writer-1.1.1+spec-1.1.0": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": [
+            "alloc",
             "std"
           ]
         },
@@ -45646,6 +50636,154 @@
             "std"
           ]
         },
+        "trybuild-1.0.116": {
+          "dependencies": [
+            {
+              "name": "glob",
+              "package_key": "glob-0.3.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_derive",
+              "package_key": "serde_derive-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "target_triple",
+              "package_key": "target-triple-1.0.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "termcolor",
+              "package_key": "termcolor-1.4.1",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml",
+              "package_key": "toml-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "runtime_dependencies": [
+            {
+              "name": "glob",
+              "package_key": "glob-0.3.3",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde",
+              "package_key": "serde-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "serde_derive",
+              "package_key": "serde_derive-1.0.228",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
+              "name": "serde_json",
+              "package_key": "serde_json-1.0.150",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "target_triple",
+              "package_key": "target-triple-1.0.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "termcolor",
+              "package_key": "termcolor-1.4.1",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "toml",
+              "package_key": "toml-1.1.2+spec-1.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            }
+          ],
+          "build_dependencies": [],
+          "features": []
+        },
         "uncased-0.9.10": {
           "dependencies": [
             {
@@ -45762,6 +50900,12 @@
             "default",
             "std"
           ]
+        },
+        "winnow-1.0.3": {
+          "dependencies": [],
+          "runtime_dependencies": [],
+          "build_dependencies": [],
+          "features": []
         },
         "yansi-1.0.1": {
           "dependencies": [],

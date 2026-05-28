@@ -350,6 +350,7 @@ mod tests {
     }
 
     fn dep(name: &str, key: &str, kind: DepKind) -> CrateDepSpec {
+        use crate::build_spec::BuildTree;
         CrateDepSpec {
             name: name.into(),
             package_key: key.into(),
@@ -358,6 +359,9 @@ mod tests {
             uses_default_features: true,
             optional: false,
             target: None,
+            // Test fixture: default to Target (no proc_macro / no build kind).
+            // Real population happens in build_spec.rs at edge construction.
+            tree: BuildTree::Target,
         }
     }
 

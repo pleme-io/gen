@@ -16,6 +16,18 @@ use clap::{Parser, Subcommand, ValueEnum};
 use gen_config::GenConfig;
 use shikumi::{ConfigTier, TieredConfig};
 
+// Force-link every adapter crate so its `inventory::submit!` runs
+// at static-init time and gen-cli can discover the adapter via
+// `gen_types::registered_adapters()`. Without these uses, Cargo's
+// linker would drop the modules and the inventory iter would return
+// an incomplete set. Each new adapter scaffolded via
+// `gen scaffold-adapter` adds one line here.
+#[allow(unused_imports)]
+use {
+    gen_ansible as _, gen_bundler as _, gen_cargo as _, gen_gomod as _, gen_helm as _,
+    gen_npm as _, gen_pip as _, gen_poetry as _, gen_swift as _,
+};
+
 #[derive(Parser, Debug)]
 #[command(name = "gen", version, about = "universal package-manager engine — operator CLI")]
 struct Cli {
@@ -519,41 +531,26 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             Ok(())
         }
         Cmd::Quirks { adapter } => {
-            // Operator-visible introspection of every adapter's typed
-            // quirk registry. The CargoAdapter exposes the CrateQuirk
-            // registry via the Adapter::quirks_registry surface; future
-            // npm + bundler adapters expose their own typed shapes via
-            // the same trait method. One verb, every ecosystem.
+            // Distributed-slice introspection: every adapter
+            // registers via `inventory::submit!` in its own crate;
+            // gen-cli iterates the registered set without naming any
+            // of them. Adding a new ecosystem requires zero edits
+            // here — the new crate's `inventory::submit!` line is
+            // sufficient.
             #[derive(serde::Serialize)]
             struct AdapterQuirks<'a> {
                 adapter: &'a str,
                 entries: Vec<gen_types::AdapterQuirkEntry>,
             }
-            let mut out: Vec<AdapterQuirks> = Vec::new();
-            // Cargo
-            let cargo = gen_cargo::adapter::CargoAdapter;
-            if adapter.as_deref().map(|a| a == "cargo").unwrap_or(true) {
-                out.push(AdapterQuirks {
-                    adapter: "cargo",
-                    entries: gen_types::Adapter::quirks_registry(&cargo),
-                });
-            }
-            // npm + bundler: stubs return empty Vec via default impl.
-            // Surface them so operators see what's available.
-            if adapter.as_deref().map(|a| a == "npm").unwrap_or(true) {
-                let npm = gen_npm::adapter::NpmAdapter;
-                out.push(AdapterQuirks {
-                    adapter: "npm",
-                    entries: gen_types::Adapter::quirks_registry(&npm),
-                });
-            }
-            if adapter.as_deref().map(|a| a == "bundler").unwrap_or(true) {
-                let bundler = gen_bundler::adapter::BundlerAdapter;
-                out.push(AdapterQuirks {
-                    adapter: "bundler",
-                    entries: gen_types::Adapter::quirks_registry(&bundler),
-                });
-            }
+            let filter = adapter.as_deref();
+            let out: Vec<AdapterQuirks> = gen_types::registered_adapters()
+                .iter()
+                .filter(|a| filter.map(|f| a.name() == f).unwrap_or(true))
+                .map(|a| AdapterQuirks {
+                    adapter: a.name(),
+                    entries: a.quirks_registry(),
+                })
+                .collect();
             emit(&out, cli.format)
         }
     }
@@ -809,6 +806,10 @@ serde = {{ workspace = true }}
 serde_json = {{ workspace = true }}
 indexmap = {{ workspace = true }}
 thiserror = {{ workspace = true }}
+inventory = {{ workspace = true }}
+
+[dev-dependencies]
+indexmap = {{ workspace = true }}
 "#,
         snake = name.replace('-', "_"),
     );
@@ -1019,9 +1020,71 @@ impl Adapter for {pascal}Adapter {{
 pub fn ctx_for(workspace_root: PathBuf) -> AdapterCtx {{
     AdapterCtx {{ workspace_root, target: None }}
 }}
+
+// Distributed-slice registration. gen-cli discovers this adapter
+// at link time via the inventory iter — no per-adapter edit to
+// gen-cli when this crate ships.
+inventory::submit! {{
+    gen_types::AdapterRegistration {{
+        make: || Box::new({pascal}Adapter),
+        name: "{name}",
+    }}
+}}
 "#,
     );
     fs::write(crate_dir.join("src/adapter.rs"), adapter_rs)?;
+    let tests_dir = crate_dir.join("tests");
+    fs::create_dir_all(&tests_dir)?;
+    let trait_surface_test = format!(
+        r#"//! Trait-surface smoke tests for the scaffolded gen-{name} adapter.
+//! Auto-emitted by `gen scaffold-adapter` — the four universal trait
+//! surfaces (Adapter / Spec / QuirkRegistry / Invariants) must compile
+//! + behave consistently from the day the crate is scaffolded.
+
+use gen_{snake}::adapter::{pascal}Adapter;
+use gen_{snake}::invariants::{pascal}Invariants;
+use gen_{snake}::quirks::{pascal}Quirks;
+use gen_types::{{Adapter, Invariants, QuirkRegistry}};
+
+#[test]
+fn adapter_name_matches_ecosystem() {{
+    let a = {pascal}Adapter;
+    assert_eq!(a.name(), "{name}");
+    assert_eq!(a.manifest_files(), &["{manifest}"]);
+}}
+
+#[test]
+fn empty_quirk_registry_is_callable() {{
+    let names = <{pascal}Quirks as QuirkRegistry>::registered_names();
+    assert!(names.is_empty());
+    let q = <{pascal}Quirks as QuirkRegistry>::for_package("anything");
+    assert!(q.is_empty());
+}}
+
+#[test]
+fn adapter_exposes_quirks_via_default_envelope() {{
+    let a = {pascal}Adapter;
+    let entries = a.quirks_registry();
+    assert!(entries.is_empty());
+}}
+
+#[test]
+fn invariants_run_clean_against_minimal_spec() {{
+    use gen_{snake}::build_spec::BuildSpec;
+    use indexmap::IndexMap;
+    let spec = BuildSpec {{
+        version: gen_{snake}::build_spec::SCHEMA_VERSION,
+        packages: IndexMap::new(),
+        root_package: String::new(),
+        workspace_members: vec![],
+    }};
+    let violations = <{pascal}Invariants as Invariants>::check(&spec);
+    assert!(violations.is_empty(), "minimal spec violated: {{violations:?}}");
+}}
+"#,
+        snake = name.replace('-', "_"),
+    );
+    fs::write(tests_dir.join("trait_surface.rs"), trait_surface_test)?;
     Ok(())
 }
 

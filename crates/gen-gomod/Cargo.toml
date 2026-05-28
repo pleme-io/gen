@@ -1,6 +1,6 @@
 [package]
-name = "gen-helm"
-description = "gen — helm adapter. Parses Chart.yaml + lockfile into a typed gen_types::Spec emission. One of N adapters that share the typed core via Spec/QuirkRegistry/Invariants traits."
+name = "gen-gomod"
+description = "gen — gomod adapter. Parses go.mod + lockfile into a typed gen_types::Spec emission. One of N adapters that share the typed core via Spec/QuirkRegistry/Invariants traits."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -10,7 +10,7 @@ repository.workspace = true
 authors.workspace = true
 
 [lib]
-name = "gen_helm"
+name = "gen_gomod"
 path = "src/lib.rs"
 
 [lints]

@@ -296,3 +296,52 @@ pub enum AdapterError {
     #[error("internal: {0}")]
     Internal(String),
 }
+
+/// Inventory entry registered by every adapter crate. gen-cli's
+/// `quirks` / `adapters` / future cross-ecosystem verbs iterate
+/// this distributed slice to discover every adapter at link time —
+/// no hard-coded match arms, no per-ecosystem edits to gen-cli when
+/// a new adapter lands.
+///
+/// Adapters register via `inventory::submit!`. See
+/// `gen-cargo::adapter` for the canonical example.
+pub struct AdapterRegistration {
+    /// Constructs a fresh instance of the adapter. `&dyn Adapter`
+    /// can be obtained by `(&*reg.make())`.
+    pub make: fn() -> Box<dyn Adapter>,
+    /// Adapter name (mirror of `Adapter::name`). Allows filtering
+    /// without instantiating the adapter — used by
+    /// `gen quirks --adapter <name>`.
+    pub name: &'static str,
+}
+
+inventory::collect!(AdapterRegistration);
+
+/// Iterate every adapter the binary was linked against. Returns
+/// freshly-constructed instances so callers can hold them
+/// independently. Per-call O(N) — N = number of linked adapters,
+/// typically small (3-20).
+#[must_use]
+pub fn registered_adapters() -> Vec<Box<dyn Adapter>> {
+    inventory::iter::<AdapterRegistration>()
+        .map(|r| (r.make)())
+        .collect()
+}
+
+/// Get one adapter by name, freshly constructed. Returns None if
+/// no adapter registered under that name.
+#[must_use]
+pub fn adapter_by_name(name: &str) -> Option<Box<dyn Adapter>> {
+    inventory::iter::<AdapterRegistration>()
+        .find(|r| r.name == name)
+        .map(|r| (r.make)())
+}
+
+/// Every registered adapter's name. Used for `gen adapters` listing
+/// + introspection without constructing the adapters.
+#[must_use]
+pub fn registered_adapter_names() -> Vec<&'static str> {
+    inventory::iter::<AdapterRegistration>()
+        .map(|r| r.name)
+        .collect()
+}

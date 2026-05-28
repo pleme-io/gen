@@ -70,3 +70,10 @@ pub fn ctx_for(workspace_root: PathBuf) -> AdapterCtx {
         target: None,
     }
 }
+
+inventory::submit! {
+    gen_types::AdapterRegistration {
+        make: || Box::new(NpmAdapter),
+        name: "npm",
+    }
+}

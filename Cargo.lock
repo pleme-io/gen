@@ -359,6 +359,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "gen-ansible"
+version = "0.1.0"
+dependencies = [
+ "gen-macros",
+ "gen-types",
+ "indexmap",
+ "inventory",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "gen-bazel"
 version = "0.1.0"
 dependencies = [
@@ -383,6 +396,7 @@ version = "0.1.0"
 dependencies = [
  "gen-types",
  "indexmap",
+ "inventory",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
@@ -419,6 +433,7 @@ dependencies = [
  "gen-macros",
  "gen-types",
  "indexmap",
+ "inventory",
  "serde",
  "serde_json",
  "tempfile",
@@ -431,12 +446,18 @@ name = "gen-cli"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "gen-ansible",
  "gen-bundler",
  "gen-cache-attic",
  "gen-cargo",
  "gen-config",
+ "gen-gomod",
+ "gen-helm",
  "gen-nix",
  "gen-npm",
+ "gen-pip",
+ "gen-poetry",
+ "gen-swift",
  "gen-types",
  "indexmap",
  "serde",
@@ -458,12 +479,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "gen-gomod"
+version = "0.1.0"
+dependencies = [
+ "gen-macros",
+ "gen-types",
+ "indexmap",
+ "inventory",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "gen-helm"
 version = "0.1.0"
 dependencies = [
  "gen-macros",
  "gen-types",
  "indexmap",
+ "inventory",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
@@ -504,9 +539,36 @@ version = "0.1.0"
 dependencies = [
  "gen-types",
  "indexmap",
+ "inventory",
  "serde",
  "serde_json",
  "serde_yaml",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "gen-pip"
+version = "0.1.0"
+dependencies = [
+ "gen-macros",
+ "gen-types",
+ "indexmap",
+ "inventory",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "gen-poetry"
+version = "0.1.0"
+dependencies = [
+ "gen-macros",
+ "gen-types",
+ "indexmap",
+ "inventory",
+ "serde",
+ "serde_json",
  "thiserror 2.0.18",
 ]
 
@@ -526,12 +588,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "gen-swift"
+version = "0.1.0"
+dependencies = [
+ "gen-macros",
+ "gen-types",
+ "indexmap",
+ "inventory",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "gen-types"
 version = "0.1.0"
 dependencies = [
  "blake3",
  "chrono",
  "indexmap",
+ "inventory",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
@@ -643,6 +719,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e05c02b5e89bff3b946cedeca278abc628fe811e604f027c45a8aa3cf793d0eb"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "inventory"
+version = "0.3.24"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4f0c30c76f2f4ccee3fe55a2435f691ca00c0e4bd87abe4f4a851b1d4dac39b"
+dependencies = [
+ "rustversion",
 ]
 
 [[package]]

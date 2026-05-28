@@ -48,7 +48,8 @@ pub mod version;
 pub mod workspace;
 
 pub use adapter::{
-    Adapter, AdapterCtx, AdapterError, AdapterQuirkEntry, AdapterResult,
+    adapter_by_name, registered_adapter_names, registered_adapters, Adapter, AdapterCtx,
+    AdapterError, AdapterQuirkEntry, AdapterRegistration, AdapterResult,
     BuildSpec as AdapterBuildSpec, ConfirmReport, DepChange, DepEdge, DependencyBump, DiffRef,
     DiffReport, InvariantBreak, LockOutcome, Plan, PlanIntent, PlanWarning, PlanWarningSeverity,
     Sbom, SbomFormat,

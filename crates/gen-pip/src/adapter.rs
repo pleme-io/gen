@@ -1,6 +1,6 @@
-//! `HelmAdapter` — gen-helm's implementation of the canonical
+//! `PipAdapter` — gen-pip's implementation of the canonical
 //! `gen_types::Adapter` trait. Stub-level today; every verb
-//! returns `Unsupported` until the helm-side parser lands.
+//! returns `Unsupported` until the pip-side parser lands.
 
 use std::path::PathBuf;
 
@@ -9,39 +9,39 @@ use gen_types::{
     LockOutcome, Plan, PlanIntent, Sbom, SbomFormat,
 };
 
-pub struct HelmAdapter;
+pub struct PipAdapter;
 
-impl Adapter for HelmAdapter {
-    fn name(&self) -> &'static str { "helm" }
-    fn manifest_files(&self) -> &'static [&'static str] { &["Chart.yaml"] }
+impl Adapter for PipAdapter {
+    fn name(&self) -> &'static str { "pip" }
+    fn manifest_files(&self) -> &'static [&'static str] { &["pyproject.toml"] }
 
     fn lock(&self, _ctx: &AdapterCtx) -> AdapterResult<LockOutcome> {
-        Err(AdapterError::Unsupported("helm lock not implemented".into()))
+        Err(AdapterError::Unsupported("pip lock not implemented".into()))
     }
 
     fn build(&self, _ctx: &AdapterCtx) -> AdapterResult<gen_types::AdapterBuildSpec> {
-        Err(AdapterError::Unsupported("helm build not implemented".into()))
+        Err(AdapterError::Unsupported("pip build not implemented".into()))
     }
 
     fn plan(&self, _ctx: &AdapterCtx, _intent: &PlanIntent) -> AdapterResult<Plan> {
-        Err(AdapterError::Unsupported("helm plan not implemented".into()))
+        Err(AdapterError::Unsupported("pip plan not implemented".into()))
     }
 
     fn confirm(&self, _ctx: &AdapterCtx) -> AdapterResult<ConfirmReport> {
-        Err(AdapterError::Unsupported("helm confirm not implemented".into()))
+        Err(AdapterError::Unsupported("pip confirm not implemented".into()))
     }
 
     fn diff(&self, _ctx: &AdapterCtx, _against: &DiffRef) -> AdapterResult<DiffReport> {
-        Err(AdapterError::Unsupported("helm diff not implemented".into()))
+        Err(AdapterError::Unsupported("pip diff not implemented".into()))
     }
 
     fn sbom(&self, _ctx: &AdapterCtx, _format: SbomFormat) -> AdapterResult<Sbom> {
-        Err(AdapterError::Unsupported("helm sbom not implemented".into()))
+        Err(AdapterError::Unsupported("pip sbom not implemented".into()))
     }
 
     fn quirks_registry(&self) -> Vec<gen_types::AdapterQuirkEntry> {
         use gen_types::QuirkRegistry;
-        <crate::quirks::HelmQuirks as QuirkRegistry>::registry()
+        <crate::quirks::PipQuirks as QuirkRegistry>::registry()
             .into_iter()
             .map(|(p, qs)| gen_types::AdapterQuirkEntry {
                 package: p.to_string(),
@@ -60,7 +60,7 @@ pub fn ctx_for(workspace_root: PathBuf) -> AdapterCtx {
 // gen-cli when this crate ships.
 inventory::submit! {
     gen_types::AdapterRegistration {
-        make: || Box::new(HelmAdapter),
-        name: "helm",
+        make: || Box::new(PipAdapter),
+        name: "pip",
     }
 }

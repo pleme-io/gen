@@ -199,3 +199,14 @@ fn violation_locus(v: &crate::invariants::Violation) -> (&'static str, Option<St
         }
     }
 }
+
+// Distributed-slice registration. gen-cli (and any future
+// cross-ecosystem tool) discovers cargo via the inventory iter
+// without naming it; one line per adapter, zero edits to gen-cli
+// when the next ecosystem lands.
+inventory::submit! {
+    gen_types::AdapterRegistration {
+        make: || Box::new(CargoAdapter),
+        name: "cargo",
+    }
+}

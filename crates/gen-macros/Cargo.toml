@@ -1,0 +1,24 @@
+[package]
+name = "gen-macros"
+description = "Proc-macros for the gen ecosystem intake pattern. Today: #[derive(SpecShape)] and #[derive(QuirkRegistry)] — auto-implement the universal gen_types traits from typed Rust structs/enums. Per the ECOSYSTEM-INTAKE.md contract (Pillar 12: generation over composition)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+proc-macro = true
+
+[lints]
+workspace = true
+
+[dependencies]
+syn = { version = "2", features = ["full", "extra-traits"] }
+quote = "1"
+proc-macro2 = "1"
+
+[dev-dependencies]
+trybuild = "1"

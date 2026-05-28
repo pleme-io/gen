@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
     "crates/gen-types",
+    "crates/gen-macros",
     "crates/gen-cargo",
     "crates/gen-npm",
     "crates/gen-bundler",

@@ -59,6 +59,22 @@ impl Adapter for BundlerAdapter {
             "bundler sbom not implemented yet (M2)".to_string(),
         ))
     }
+
+    /// Expose the typed BundlerQuirk registry through the
+    /// adapter-agnostic envelope.
+    fn quirks_registry(&self) -> Vec<gen_types::AdapterQuirkEntry> {
+        use gen_types::QuirkRegistry;
+        <crate::quirks::BundlerQuirks as QuirkRegistry>::registry()
+            .into_iter()
+            .map(|(p, qs)| gen_types::AdapterQuirkEntry {
+                package: p.to_string(),
+                quirks: qs
+                    .into_iter()
+                    .filter_map(|q| serde_json::to_value(&q).ok())
+                    .collect(),
+            })
+            .collect()
+    }
 }
 
 #[must_use]

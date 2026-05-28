@@ -9,7 +9,10 @@
 //! declarative shape this parser covers.
 
 pub mod adapter;
+pub mod build_spec;
 pub mod error;
+pub mod invariants;
+pub mod quirks;
 
 pub use adapter::{ctx_for, BundlerAdapter};
 pub use error::{BundlerError, Result};

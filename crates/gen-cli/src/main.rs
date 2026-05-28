@@ -101,9 +101,22 @@ enum Cmd {
         /// evaluation. Per the GEN TYPED-SPEC CONTRACT invariant I4.
         ///
         /// Example: `--filter-platform=x86_64-unknown-linux-musl`.
-        /// Omit (default) to keep the unfiltered multi-platform spec.
-        #[arg(long, value_name = "TRIPLE")]
+        /// Mutually exclusive with --multi-target (which auto-runs
+        /// per-target resolves for every fleet target).
+        #[arg(long, value_name = "TRIPLE", conflicts_with = "multi_target")]
         filter_platform: Option<String>,
+        /// Emit a multi-target spec that resolves dep edges for
+        /// EVERY fleet target (aarch64-apple-darwin, x86_64-darwin,
+        /// x86_64-unknown-linux-{gnu,musl}, aarch64-unknown-linux-
+        /// {gnu,musl}). Eliminates the gen-bootstrap chicken-and-egg:
+        /// the same committed Cargo.build-spec.json serves every
+        /// fleet host without re-running gen. Substrate's
+        /// lockfile-builder reads `target_resolves[currentTarget]`
+        /// instead of host-only per-crate edges.
+        ///
+        /// Schema v5+.
+        #[arg(long)]
+        multi_target: bool,
     },
     /// Run gen build across every cargo workspace under <path>.
     /// Emits a typed sweep report (JSON|YAML). Use --write to persist
@@ -364,7 +377,7 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             };
             emit(&summary, cli.format)
         }
-        Cmd::Build { path, filter_platform } => {
+        Cmd::Build { path, filter_platform, multi_target } => {
             let root = resolve_root(path, cfg);
             // Atomic: regenerate every sidecar the substrate consumer
             // needs based on the adapter the workspace declares. Today
@@ -373,13 +386,15 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             let adapter = pick_adapter(&root, cfg)?;
             match adapter.as_str() {
                 "cargo" => {
-                    let out = match filter_platform {
-                        Some(triple) => {
-                            gen_cargo::build_spec::generate_for_target_and_write(&root, &triple)
-                                .map_err(CliError::Cargo)?
-                        }
-                        None => gen_cargo::build_spec::generate_and_write(&root)
-                            .map_err(CliError::Cargo)?,
+                    let out = if *multi_target {
+                        gen_cargo::build_spec::generate_multi_target_and_write(&root)
+                            .map_err(CliError::Cargo)?
+                    } else if let Some(triple) = filter_platform {
+                        gen_cargo::build_spec::generate_for_target_and_write(&root, &triple)
+                            .map_err(CliError::Cargo)?
+                    } else {
+                        gen_cargo::build_spec::generate_and_write(&root)
+                            .map_err(CliError::Cargo)?
                     };
                     eprintln!("gen build: wrote {}", out.display());
                 }

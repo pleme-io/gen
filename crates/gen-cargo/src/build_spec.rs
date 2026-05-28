@@ -26,7 +26,7 @@ use crate::error::{CargoError, Result};
 ///     kwargs); + `links` + universal `preBuild`. Substrate's
 ///     lockfile-builder asserts on this version — older specs MUST
 ///     be regenerated via `gen build .` (no silent fallback).
-pub const SCHEMA_VERSION: u32 = 4;
+pub const SCHEMA_VERSION: u32 = 5;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BuildSpec {
@@ -43,6 +43,36 @@ pub struct BuildSpec {
     /// `cargo metadata`'s package.repository + targets without forcing
     /// Nix to re-parse Cargo.toml.
     pub flake_metadata: IndexMap<String, MemberFlakeMetadata>,
+    /// Schema v5+: per-target resolved dep edges. When present,
+    /// substrate's lockfile-builder reads dependencies from
+    /// `target_resolves[currentTarget]` instead of the per-crate
+    /// fields. Eliminates the gen-bootstrap chicken-and-egg —
+    /// one committed spec serves every fleet target, no Nix-side
+    /// cfg evaluation needed (cargo's resolver does cfg per-target,
+    /// once per target, at spec-emission time).
+    ///
+    /// Old shape (top-level runtime_dependencies / build_dependencies
+    /// on CrateSpec) is kept for backward compatibility. Substrate
+    /// falls back when target_resolves is None.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub target_resolves: Option<IndexMap<String, TargetResolve>>,
+}
+
+/// Per-target resolved dep edges for every crate in the workspace's
+/// resolve graph. Substrate's lockfile-builder picks the entry that
+/// matches the build's `targetTriple`.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TargetResolve {
+    /// Per-crate edge sets for this target. Keyed by the same
+    /// `<name>-<version>` key as BuildSpec.crates.
+    pub crates: IndexMap<String, CrateTargetEdges>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct CrateTargetEdges {
+    pub dependencies: Vec<CrateDepSpec>,
+    pub runtime_dependencies: Vec<CrateDepSpec>,
+    pub build_dependencies: Vec<CrateDepSpec>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -355,6 +385,85 @@ fn host_target_triple() -> &'static str {
 /// explicit host-filter default; the multi-target fix is #25.
 pub fn generate(root: &Path) -> Result<BuildSpec> {
     generate_for_target(root, host_target_triple())
+}
+
+/// Canonical fleet targets — pleme-io's primary distribution surfaces.
+/// These are the targets `generate_multi_target` resolves dep edges
+/// for. New targets land here when the fleet adds an arch.
+pub const FLEET_TARGETS: &[&str] = &[
+    "aarch64-apple-darwin",
+    "x86_64-apple-darwin",
+    "x86_64-unknown-linux-gnu",
+    "x86_64-unknown-linux-musl",
+    "aarch64-unknown-linux-gnu",
+    "aarch64-unknown-linux-musl",
+];
+
+/// Generates a single BuildSpec containing per-target dep resolves
+/// for every fleet target. `cargo metadata` runs once per target via
+/// `generate_for_target`; the union populates the spec's
+/// `target_resolves` field; crate-level fields (per-crate runtime_/
+/// build_dependencies) retain the operator's HOST target for
+/// backward-compat (substrate falls back to them when
+/// `target_resolves[currentTarget]` is missing).
+///
+/// This is the right shape for committed `Cargo.build-spec.json`:
+/// one spec serves every fleet target without re-running gen. The
+/// gen-bootstrap chicken-and-egg (gen's own committed spec being
+/// host-filtered, blocking cross-platform build of gen-cli) ends here.
+pub fn generate_multi_target(root: &Path) -> Result<BuildSpec> {
+    // Per-target specs, indexed by target triple.
+    let mut per_target: IndexMap<String, BuildSpec> = IndexMap::new();
+    for target in FLEET_TARGETS {
+        eprintln!("gen build: resolving for {}", target);
+        let spec = generate_for_target(root, target)?;
+        per_target.insert(target.to_string(), spec);
+    }
+
+    // Pick the host target's spec as the BASE (crate-level fields,
+    // backward-compat). Falls back to the first target if host isn't
+    // in FLEET_TARGETS.
+    let host = host_target_triple();
+    let (_, mut base) = per_target
+        .iter()
+        .find(|(t, _)| *t == host)
+        .map(|(t, s)| (t.clone(), s.clone()))
+        .unwrap_or_else(|| {
+            per_target
+                .iter()
+                .next()
+                .map(|(t, s)| (t.clone(), s.clone()))
+                .expect("FLEET_TARGETS must be non-empty")
+        });
+
+    // Union the crates universe across all per-target specs. Per-target
+    // resolves may include crates that the host resolve omits (e.g.
+    // mio on linux-only paths that don't apply to darwin).
+    for spec in per_target.values() {
+        for (key, crate_spec) in &spec.crates {
+            base.crates.entry(key.clone()).or_insert_with(|| crate_spec.clone());
+        }
+    }
+
+    // Populate target_resolves with each target's per-crate edges.
+    let mut resolves: IndexMap<String, TargetResolve> = IndexMap::new();
+    for (target, spec) in &per_target {
+        let mut crates: IndexMap<String, CrateTargetEdges> = IndexMap::new();
+        for (key, crate_spec) in &spec.crates {
+            crates.insert(
+                key.clone(),
+                CrateTargetEdges {
+                    dependencies: crate_spec.dependencies.clone(),
+                    runtime_dependencies: crate_spec.runtime_dependencies.clone(),
+                    build_dependencies: crate_spec.build_dependencies.clone(),
+                },
+            );
+        }
+        resolves.insert(target.clone(), TargetResolve { crates });
+    }
+    base.target_resolves = Some(resolves);
+
+    Ok(base)
 }
 
 /// Generate the BuildSpec for an explicit target triple. Used by
@@ -893,6 +1002,10 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         root_crate,
         workspace_members: workspace_member_keys,
         flake_metadata,
+        // Single-target emission: target_resolves is None.
+        // generate_multi_target populates it; this single-target path
+        // leaves it absent so substrate falls back to per-crate edges.
+        target_resolves: None,
     })
 }
 
@@ -960,6 +1073,36 @@ fn prefetch_git_sha256(url: &str, rev: &str) -> std::io::Result<String> {
 
 pub fn generate_and_write(root: &Path) -> Result<std::path::PathBuf> {
     generate_for_target_and_write(root, host_target_triple())
+}
+
+/// Multi-target emission: write a spec that covers every fleet target
+/// (FLEET_TARGETS). One committed spec, every target's resolves
+/// available — gen-bootstrap chicken-and-egg permanently resolved.
+pub fn generate_multi_target_and_write(root: &Path) -> Result<std::path::PathBuf> {
+    let spec = generate_multi_target(root)?;
+    if let Err(violations) = crate::invariants::assert_well_formed(&spec) {
+        return Err(CargoError::Io {
+            path: root.to_path_buf(),
+            source: std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!(
+                    "gen build (multi-target): spec violates algorithmic invariants ({} issues):\n{}",
+                    violations.len(),
+                    serde_json::to_string_pretty(&violations).unwrap_or_default()
+                ),
+            ),
+        });
+    }
+    let out = root.join("Cargo.build-spec.json");
+    let body = serde_json::to_string_pretty(&spec).map_err(|e| CargoError::Io {
+        path: out.clone(),
+        source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+    })?;
+    std::fs::write(&out, body).map_err(|source| CargoError::Io {
+        path: out.clone(),
+        source,
+    })?;
+    Ok(out)
 }
 
 /// Per-target variant of generate_and_write. Used by substrate's

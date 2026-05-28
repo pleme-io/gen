@@ -494,6 +494,129 @@ pub fn derive_discriminant(input: TokenStream) -> TokenStream {
     expanded.into()
 }
 
+/// `#[derive(FromStrKind)]` — the inverse of Discriminant. Parses
+/// a string back to a variant using the same case-folded variant
+/// name. Only unit variants are supported (data variants need
+/// caller-supplied payloads — out of scope for a string-only parse).
+///
+/// # Attributes
+///
+/// - `#[from_str_kind(case = "kebab" | "snake" | "lower" | "title")]`
+///   — case transform matching the wire format (default `"kebab"`)
+/// - Per-variant `#[from_str_kind(name = "explicit")]` — match a
+///   specific wire string for this variant (overrides case transform)
+/// - `#[from_str_kind(error = "MyEnumParseError")]` — name of the
+///   generated error type (default `<EnumName>ParseError`)
+///
+/// Pairs with Discriminant: when both derives are on the same enum
+/// with the same case transform, `s.parse() -> Ok(v); v.discriminant() == s`
+/// — a typed round-trip.
+#[proc_macro_derive(FromStrKind, attributes(from_str_kind))]
+pub fn derive_from_str_kind(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let enum_name = input.ident.clone();
+
+    let Data::Enum(de) = input.data.clone() else {
+        return syn::Error::new_spanned(
+            &enum_name,
+            "#[derive(FromStrKind)] is only valid on enums",
+        )
+        .to_compile_error()
+        .into();
+    };
+
+    let mut case = DiscriminantCase::Kebab;
+    let mut error_name = format!("{enum_name}ParseError");
+    for attr in &input.attrs {
+        if !attr.path().is_ident("from_str_kind") {
+            continue;
+        }
+        let _ = attr.parse_nested_meta(|meta| {
+            if meta.path.is_ident("case") {
+                let value = meta.value()?;
+                let s: syn::LitStr = value.parse()?;
+                if let Some(c) = DiscriminantCase::parse(&s.value()) {
+                    case = c;
+                }
+            } else if meta.path.is_ident("error") {
+                let value = meta.value()?;
+                let s: syn::LitStr = value.parse()?;
+                error_name = s.value();
+            }
+            Ok(())
+        });
+    }
+    let error_ident = syn::Ident::new(&error_name, proc_macro2::Span::call_site());
+
+    let mut arms: Vec<proc_macro2::TokenStream> = Vec::new();
+    let mut known_strings: Vec<String> = Vec::new();
+    for v in &de.variants {
+        if !matches!(v.fields, Fields::Unit) {
+            return syn::Error::new_spanned(
+                &v.ident,
+                "#[derive(FromStrKind)] requires all variants to be unit variants (no data payloads)",
+            )
+            .to_compile_error()
+            .into();
+        }
+        let v_ident = &v.ident;
+        let explicit = v.attrs.iter().find_map(|attr| {
+            if !attr.path().is_ident("from_str_kind") {
+                return None;
+            }
+            let mut out = None;
+            let _ = attr.parse_nested_meta(|meta| {
+                if meta.path.is_ident("name") {
+                    let value = meta.value()?;
+                    let s: syn::LitStr = value.parse()?;
+                    out = Some(s.value());
+                }
+                Ok(())
+            });
+            out
+        });
+        let name_str = explicit.unwrap_or_else(|| case.apply(&v_ident.to_string()));
+        known_strings.push(name_str.clone());
+        arms.push(quote! { #name_str => Ok(Self::#v_ident) });
+    }
+
+    let known_list = known_strings.join(" | ");
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+
+    let expanded = quote! {
+        /// Auto-generated parse error for the matching `FromStrKind` impl.
+        #[derive(Debug, Clone, PartialEq, Eq)]
+        pub struct #error_ident {
+            pub input: ::std::string::String,
+        }
+
+        impl ::core::fmt::Display for #error_ident {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                write!(
+                    f,
+                    "unknown variant {input:?}; expected one of: {known}",
+                    input = self.input,
+                    known = #known_list,
+                )
+            }
+        }
+
+        impl ::std::error::Error for #error_ident {}
+
+        impl #impl_generics ::core::str::FromStr for #enum_name #ty_generics #where_clause {
+            type Err = #error_ident;
+            fn from_str(s: &str) -> ::core::result::Result<Self, Self::Err> {
+                match s {
+                    #(#arms),*,
+                    other => Err(#error_ident { input: other.to_string() }),
+                }
+            }
+        }
+    };
+
+    expanded.into()
+}
+
 fn is_variant_method_name(v: &syn::Variant) -> syn::Ident {
     let explicit = v.attrs.iter().find_map(|attr| {
         if !attr.path().is_ident("is_variant") {

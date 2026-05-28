@@ -74,5 +74,5 @@ pub use emit::to_helpers_skeleton;
 pub use merge::MergeStrategy;
 
 // Re-exports — single canonical Rust handle.
-pub use gen_macros::{Discriminant, IsVariant, TypedDispatcher};
+pub use gen_macros::{Discriminant, FromStrKind, IsVariant, TypedDispatcher};
 pub use gen_types::{DispatcherVariant, TypedDispatcher as TypedDispatcherTrait};

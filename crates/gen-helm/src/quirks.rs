@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 /// `substrate/lib/build/helm/quirk-apply.nix`.
 // Note: `Eq` is intentionally NOT derived — variants carry
 // `serde_json::Value` which can hold floats (no Eq impl).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, gen_macros::TypedDispatcher)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum HelmQuirk {
     /// Override a values.yaml entry at chart-render time. Used when

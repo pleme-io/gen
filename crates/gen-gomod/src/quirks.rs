@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 /// Typed quirks for known third-party upstream gomod packages.
 /// Each variant maps to a Nix dispatch arm in
 /// `substrate/lib/build/gomod/quirk-apply.nix`.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, gen_macros::TypedDispatcher)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum GomodQuirk {
     /// Force a vendor-hash override — used when the proxy-fetched

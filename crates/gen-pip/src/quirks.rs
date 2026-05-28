@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 /// Typed quirks for known third-party upstream pip packages.
 /// Each variant maps to a Nix dispatch arm in
 /// `substrate/lib/build/pip/quirk-apply.nix`.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, gen_macros::TypedDispatcher)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum PipQuirk {
     /// Pin the Python interpreter for this package (e.g.

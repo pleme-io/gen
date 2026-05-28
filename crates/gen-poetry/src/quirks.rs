@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 /// Typed quirks for known third-party upstream poetry packages.
 /// Each variant maps to a Nix dispatch arm in
 /// `substrate/lib/build/poetry/quirk-apply.nix`.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, gen_macros::TypedDispatcher)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum PoetryQuirk {
     /// Override the build-system backend for a wheel that ships

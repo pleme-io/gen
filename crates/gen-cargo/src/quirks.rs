@@ -21,7 +21,7 @@ use serde::{Deserialize, Serialize};
 /// substrate consumer's lockfile-builder dispatches each variant to a
 /// class-helper function (forceCfg / foldNormalIntoBuild /
 /// substituteSource) without per-crate Nix-attrset knowledge.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, gen_macros::TypedDispatcher)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum CrateQuirk {
     /// Force a `--cfg <name>` on the lib compile. Used for crates

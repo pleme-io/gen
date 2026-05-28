@@ -39,7 +39,7 @@
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, DeriveInput, Lit, Meta};
+use syn::{parse_macro_input, Data, DeriveInput, Fields, Lit, Meta};
 
 /// `#[derive(SpecShape)]` — auto-implement `gen_types::Spec` on a
 /// struct whose fields follow the conventional gen build-spec shape:
@@ -218,4 +218,103 @@ pub fn derive_quirk_registry(input: TokenStream) -> TokenStream {
     };
 
     TokenStream::from(expanded)
+}
+
+/// `#[derive(TypedDispatcher)]` — auto-implement
+/// `gen_types::TypedDispatcher` on a Rust enum whose serde tag is
+/// `#[serde(tag = "kind", rename_all = "kebab-case")]`.
+///
+/// The macro observes the enum's variants and emits a trait impl
+/// reflecting the variant universe (kebab-case tags + per-variant
+/// field names). Substrate emitters consume the reflection to
+/// generate:
+///
+/// - the Nix `helpers = { ... }` table skeleton for the matching
+///   `substrate/lib/build/<eco>/quirk-apply.nix`;
+/// - the Lisp catalog entry naming the dispatcher;
+/// - a coverage test asserting every variant has a consumer arm.
+///
+/// Only unit variants and named-field struct variants are supported
+/// (the serde-tagged-enum shape pleme-io uses universally). Tuple
+/// variants raise a compile error.
+#[proc_macro_derive(TypedDispatcher)]
+pub fn derive_typed_dispatcher(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = &input.ident;
+
+    let Data::Enum(data) = &input.data else {
+        return TokenStream::from(quote! {
+            compile_error!("#[derive(TypedDispatcher)] only works on enums");
+        });
+    };
+
+    let mut kind_entries: Vec<proc_macro2::TokenStream> = Vec::new();
+    let mut field_entries: Vec<proc_macro2::TokenStream> = Vec::new();
+
+    for variant in &data.variants {
+        let tag = to_kebab_case(&variant.ident.to_string());
+        let fields = match &variant.fields {
+            Fields::Named(named) => named
+                .named
+                .iter()
+                .filter_map(|f| f.ident.as_ref().map(std::string::ToString::to_string))
+                .collect::<Vec<_>>(),
+            Fields::Unit => Vec::new(),
+            Fields::Unnamed(_) => {
+                let msg = format!(
+                    "#[derive(TypedDispatcher)] variant `{}` uses tuple fields; only named-field and unit variants are supported (matches the serde-tagged-enum shape pleme-io requires)",
+                    variant.ident
+                );
+                return TokenStream::from(quote! {
+                    compile_error!(#msg);
+                });
+            }
+        };
+
+        kind_entries.push(quote! { #tag });
+        let field_strs: Vec<proc_macro2::TokenStream> =
+            fields.iter().map(|f| quote! { #f }).collect();
+        field_entries.push(quote! {
+            (#tag, ::std::vec![ #( #field_strs ),* ])
+        });
+    }
+
+    let expanded = quote! {
+        impl ::gen_types::TypedDispatcher for #name {
+            fn variant_kinds() -> ::std::vec::Vec<&'static str> {
+                ::std::vec![ #( #kind_entries ),* ]
+            }
+
+            fn variant_fields() -> ::std::vec::Vec<(&'static str, ::std::vec::Vec<&'static str>)> {
+                ::std::vec![ #( #field_entries ),* ]
+            }
+        }
+    };
+
+    TokenStream::from(expanded)
+}
+
+/// Convert PascalCase variant identifiers to kebab-case serde tags.
+/// Mirrors `#[serde(rename_all = "kebab-case")]`.
+fn to_kebab_case(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() + 4);
+    let mut prev_lower = false;
+    for ch in s.chars() {
+        if ch.is_ascii_uppercase() {
+            if prev_lower {
+                out.push('-');
+            }
+            for c in ch.to_lowercase() {
+                out.push(c);
+            }
+            prev_lower = false;
+        } else if ch.is_ascii_digit() {
+            out.push(ch);
+            prev_lower = false;
+        } else {
+            out.push(ch);
+            prev_lower = true;
+        }
+    }
+    out
 }

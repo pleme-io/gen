@@ -33,6 +33,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 pub mod adapter;
+pub mod dispatcher;
 pub mod ecosystem;
 pub mod constraint;
 pub mod dependency;
@@ -54,6 +55,7 @@ pub use adapter::{
     DiffReport, InvariantBreak, LockOutcome, Plan, PlanIntent, PlanWarning, PlanWarningSeverity,
     Sbom, SbomFormat,
 };
+pub use dispatcher::TypedDispatcher;
 pub use ecosystem::{Invariants, QuirkRegistry, Spec};
 pub use constraint::{Combinator, CompoundConstraint, ConstraintSpec, VersionConstraint};
 pub use dependency::{Dependency, DependencyKind};

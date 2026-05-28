@@ -294,6 +294,256 @@ pub fn derive_typed_dispatcher(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
+// ── Discriminant + IsVariant — typed-reflection derive surface ───
+//
+// These two derives are the substrate-wide derive surface for typed
+// enums (PATTERN-EXTRACTION.md Patterns 6 + sibling). They live in
+// gen-macros (next to TypedDispatcher) so consumers in any pleme-io
+// crate that already depends on gen-platform can reach for them
+// without adding a fresh derive crate.
+//
+// Discriminant emits `pub const fn <method>(&self) -> &'static str`
+// returning the variant name as a stable lowercase / kebab-case /
+// snake_case / title-case identifier.
+//
+// IsVariant emits `pub const fn is_<variant>(&self) -> bool`
+// per variant.
+//
+// Both support per-variant `#[discriminant(name = "...")]` /
+// `#[is_variant(name = "...")]` overrides for cases where the
+// auto-derived name doesn't match the historical wire format.
+
+#[derive(Clone, Copy)]
+enum DiscriminantCase {
+    Kebab,
+    Snake,
+    Lower,
+    Title,
+}
+
+impl DiscriminantCase {
+    fn apply(self, s: &str) -> String {
+        match self {
+            DiscriminantCase::Kebab => to_kebab_case(s),
+            DiscriminantCase::Snake => discriminant_to_snake(s),
+            DiscriminantCase::Lower => s.to_ascii_lowercase(),
+            DiscriminantCase::Title => s.to_string(),
+        }
+    }
+
+    fn parse(s: &str) -> Option<Self> {
+        match s {
+            "kebab" | "kebab-case" => Some(DiscriminantCase::Kebab),
+            "snake" | "snake_case" => Some(DiscriminantCase::Snake),
+            "lower" | "lowercase" => Some(DiscriminantCase::Lower),
+            "title" | "Title" | "TitleCase" => Some(DiscriminantCase::Title),
+            _ => None,
+        }
+    }
+}
+
+fn discriminant_to_snake(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() + 4);
+    for (i, c) in s.chars().enumerate() {
+        if c.is_ascii_uppercase() {
+            if i > 0 {
+                out.push('_');
+            }
+            out.push(c.to_ascii_lowercase());
+        } else {
+            out.push(c);
+        }
+    }
+    out
+}
+
+fn discriminant_variant_pattern(v: &syn::Variant) -> proc_macro2::TokenStream {
+    let name = &v.ident;
+    match &v.fields {
+        Fields::Unit => quote! { Self::#name },
+        Fields::Unnamed(_) => quote! { Self::#name(..) },
+        Fields::Named(_) => quote! { Self::#name { .. } },
+    }
+}
+
+fn discriminant_variant_explicit_name(v: &syn::Variant) -> Option<String> {
+    for attr in &v.attrs {
+        if !attr.path().is_ident("discriminant") {
+            continue;
+        }
+        let mut out = None;
+        let _ = attr.parse_nested_meta(|meta| {
+            if meta.path.is_ident("name") {
+                let value = meta.value()?;
+                let s: syn::LitStr = value.parse()?;
+                out = Some(s.value());
+            }
+            Ok(())
+        });
+        if out.is_some() {
+            return out;
+        }
+    }
+    None
+}
+
+/// `#[derive(Discriminant)]` — auto-implement
+/// `pub const fn <method>(&self) -> &'static str` returning the
+/// variant name as a stable case-folded identifier.
+///
+/// # Attributes
+///
+/// - `#[discriminant(method = "kind")]` — method name (default
+///   `"discriminant"`)
+/// - `#[discriminant(case = "kebab" | "snake" | "lower" | "title")]`
+///   — variant-name case transformation (default `"kebab"`)
+/// - Per-variant `#[discriminant(name = "explicit-name")]` overrides
+///   the auto-derived name (used when the wire format pre-dates the
+///   rule).
+///
+/// Compounding: pairs naturally with `#[derive(IsVariant)]` (predicate
+/// methods) and `#[derive(TypedDispatcher)]` (variant → consumer arm
+/// dispatch). All three target the same closed-variant-universe shape
+/// the pleme-io substrate uses everywhere.
+#[proc_macro_derive(Discriminant, attributes(discriminant))]
+pub fn derive_discriminant(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let enum_name = input.ident.clone();
+
+    let Data::Enum(de) = input.data.clone() else {
+        return syn::Error::new_spanned(
+            &enum_name,
+            "#[derive(Discriminant)] is only valid on enums",
+        )
+        .to_compile_error()
+        .into();
+    };
+
+    let mut method = "discriminant".to_string();
+    let mut case = DiscriminantCase::Kebab;
+    for attr in &input.attrs {
+        if !attr.path().is_ident("discriminant") {
+            continue;
+        }
+        let _ = attr.parse_nested_meta(|meta| {
+            if meta.path.is_ident("method") {
+                let value = meta.value()?;
+                let s: syn::LitStr = value.parse()?;
+                method = s.value();
+            } else if meta.path.is_ident("case") {
+                let value = meta.value()?;
+                let s: syn::LitStr = value.parse()?;
+                if let Some(c) = DiscriminantCase::parse(&s.value()) {
+                    case = c;
+                }
+            }
+            Ok(())
+        });
+    }
+    let method_ident = syn::Ident::new(&method, proc_macro2::Span::call_site());
+
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+
+    let arms: Vec<proc_macro2::TokenStream> = de
+        .variants
+        .iter()
+        .map(|v| {
+            let pattern = discriminant_variant_pattern(v);
+            let name_str = discriminant_variant_explicit_name(v)
+                .unwrap_or_else(|| case.apply(&v.ident.to_string()));
+            quote! { #pattern => #name_str }
+        })
+        .collect();
+
+    let expanded = quote! {
+        impl #impl_generics #enum_name #ty_generics #where_clause {
+            /// Stable variant discriminant — auto-generated by
+            /// `#[derive(Discriminant)]`. The string IS the wire
+            /// identifier for metrics labels / audit-log tags /
+            /// rate-limit keys; renaming an existing variant is a
+            /// breaking change.
+            pub const fn #method_ident(&self) -> &'static str {
+                match self {
+                    #(#arms),*
+                }
+            }
+        }
+    };
+
+    expanded.into()
+}
+
+fn is_variant_method_name(v: &syn::Variant) -> syn::Ident {
+    let explicit = v.attrs.iter().find_map(|attr| {
+        if !attr.path().is_ident("is_variant") {
+            return None;
+        }
+        let mut out = None;
+        let _ = attr.parse_nested_meta(|meta| {
+            if meta.path.is_ident("name") {
+                let value = meta.value()?;
+                let s: syn::LitStr = value.parse()?;
+                out = Some(s.value());
+            }
+            Ok(())
+        });
+        out
+    });
+    let snake = explicit.unwrap_or_else(|| discriminant_to_snake(&v.ident.to_string()));
+    syn::Ident::new(&format!("is_{snake}"), proc_macro2::Span::call_site())
+}
+
+/// `#[derive(IsVariant)]` — auto-implement `pub const fn is_<variant>(&self) -> bool`
+/// for every variant.
+///
+/// # Attributes
+///
+/// - Per-variant `#[is_variant(name = "explicit")]` overrides the
+///   auto-derived method-name suffix (default is the snake-cased
+///   variant identifier).
+///
+/// Compounding: pairs with `#[derive(Discriminant)]` for variant→name
+/// reflection and `#[derive(TypedDispatcher)]` for variant→consumer
+/// dispatch.
+#[proc_macro_derive(IsVariant, attributes(is_variant))]
+pub fn derive_is_variant(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let enum_name = input.ident.clone();
+
+    let Data::Enum(de) = input.data.clone() else {
+        return syn::Error::new_spanned(
+            &enum_name,
+            "#[derive(IsVariant)] is only valid on enums",
+        )
+        .to_compile_error()
+        .into();
+    };
+
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+
+    let methods: Vec<proc_macro2::TokenStream> = de
+        .variants
+        .iter()
+        .map(|v| {
+            let pattern = discriminant_variant_pattern(v);
+            let method_name = is_variant_method_name(v);
+            quote! {
+                pub const fn #method_name(&self) -> bool {
+                    matches!(self, #pattern)
+                }
+            }
+        })
+        .collect();
+
+    let expanded = quote! {
+        impl #impl_generics #enum_name #ty_generics #where_clause {
+            #(#methods)*
+        }
+    };
+
+    expanded.into()
+}
+
 /// Convert PascalCase variant identifiers to kebab-case serde tags.
 /// Mirrors `#[serde(rename_all = "kebab-case")]` semantics via
 /// heck-style word boundaries: lower→upper and digit→upper both

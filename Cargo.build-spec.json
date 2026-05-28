@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "workspace": {
     "root": "/Users/drzzln/code/github/pleme-io/gen",
     "members": [
@@ -208,6 +208,32 @@
             "rename": "anstyle_query"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "anstream",
+        "version": "1.0.0",
+        "edition": "2021",
+        "features": [
+          "auto",
+          "default",
+          "wincon"
+        ],
+        "crateRenames": {
+          "anstyle-parse": [
+            {
+              "version": "1.0.0",
+              "rename": "anstyle_parse"
+            }
+          ],
+          "anstyle-query": [
+            {
+              "version": "1.1.5",
+              "rename": "anstyle_query"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=anstream;"
       }
     },
     "anstyle-1.0.14": {
@@ -232,7 +258,18 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "anstyle",
+        "version": "1.0.14",
+        "edition": "2021",
+        "features": [
+          "default",
+          "std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=anstyle;"
+      }
     },
     "anstyle-parse-1.0.0": {
       "name": "anstyle-parse",
@@ -276,7 +313,18 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "anstyle-parse",
+        "version": "1.0.0",
+        "edition": "2021",
+        "features": [
+          "default",
+          "utf8"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=anstyle_parse;"
+      }
     },
     "anstyle-query-1.1.5": {
       "name": "anstyle-query",
@@ -297,7 +345,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "anstyle-query",
+        "version": "1.1.5",
+        "edition": "2021",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=anstyle_query;"
+      }
     },
     "arc-swap-1.9.1": {
       "name": "arc-swap",
@@ -338,7 +393,14 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "arc-swap",
+        "version": "1.9.1",
+        "edition": "2018",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=arc_swap;"
+      }
     },
     "arrayref-0.3.9": {
       "name": "arrayref",
@@ -359,7 +421,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "arrayref",
+        "version": "0.3.9",
+        "edition": "2015",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=arrayref;"
+      }
     },
     "arrayvec-0.7.6": {
       "name": "arrayvec",
@@ -380,7 +449,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "arrayvec",
+        "version": "0.7.6",
+        "edition": "2018",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=arrayvec;"
+      }
     },
     "async-trait-0.1.89": {
       "name": "async-trait",
@@ -478,6 +554,22 @@
             "rename": "proc_macro2"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "async-trait",
+        "version": "0.1.89",
+        "edition": "2021",
+        "crateRenames": {
+          "proc-macro2": [
+            {
+              "version": "1.0.106",
+              "rename": "proc_macro2"
+            }
+          ]
+        },
+        "release": true,
+        "procMacro": true,
+        "preBuild": "export CARGO_CRATE_NAME=async_trait;"
       }
     },
     "autocfg-1.5.1": {
@@ -499,7 +591,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "autocfg",
+        "version": "1.5.1",
+        "edition": "2015",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=autocfg;"
+      }
     },
     "bitflags-2.11.1": {
       "name": "bitflags",
@@ -520,7 +619,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "bitflags",
+        "version": "2.11.1",
+        "edition": "2021",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=bitflags;"
+      }
     },
     "blake3-1.8.5": {
       "name": "blake3",
@@ -644,6 +750,26 @@
             "rename": "cfg_if"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "blake3",
+        "version": "1.8.5",
+        "edition": "2024",
+        "features": [
+          "default",
+          "std"
+        ],
+        "crateRenames": {
+          "cfg-if": [
+            {
+              "version": "1.0.4",
+              "rename": "cfg_if"
+            }
+          ]
+        },
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=blake3;"
       }
     },
     "camino-1.2.2": {
@@ -687,7 +813,18 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "camino",
+        "version": "1.2.2",
+        "edition": "2021",
+        "features": [
+          "serde1"
+        ],
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=camino;"
+      }
     },
     "cargo-platform-0.1.9": {
       "name": "cargo-platform",
@@ -728,7 +865,14 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "cargo-platform",
+        "version": "0.1.9",
+        "edition": "2021",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=cargo_platform;"
+      }
     },
     "cargo_metadata-0.18.1": {
       "name": "cargo_metadata",
@@ -884,6 +1028,24 @@
             "rename": "cargo_platform"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "cargo_metadata",
+        "version": "0.18.1",
+        "edition": "2018",
+        "features": [
+          "default"
+        ],
+        "crateRenames": {
+          "cargo-platform": [
+            {
+              "version": "0.1.9",
+              "rename": "cargo_platform"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=cargo_metadata;"
       }
     },
     "cc-1.2.62": {
@@ -950,6 +1112,21 @@
             "rename": "find_msvc_tools"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "cc",
+        "version": "1.2.62",
+        "edition": "2018",
+        "crateRenames": {
+          "find-msvc-tools": [
+            {
+              "version": "0.1.9",
+              "rename": "find_msvc_tools"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=cc;"
       }
     },
     "cfg-if-1.0.4": {
@@ -971,7 +1148,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "cfg-if",
+        "version": "1.0.4",
+        "edition": "2018",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=cfg_if;"
+      }
     },
     "chrono-0.4.44": {
       "name": "chrono",
@@ -1075,6 +1259,42 @@
             "rename": "num_traits"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "chrono",
+        "version": "0.4.44",
+        "edition": "2021",
+        "features": [
+          "alloc",
+          "clock",
+          "default",
+          "iana-time-zone",
+          "js-sys",
+          "now",
+          "oldtime",
+          "serde",
+          "std",
+          "wasm-bindgen",
+          "wasmbind",
+          "winapi",
+          "windows-link"
+        ],
+        "crateRenames": {
+          "iana-time-zone": [
+            {
+              "version": "0.1.65",
+              "rename": "iana_time_zone"
+            }
+          ],
+          "num-traits": [
+            {
+              "version": "0.2.19",
+              "rename": "num_traits"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=chrono;"
       }
     },
     "clap-4.6.1": {
@@ -1148,7 +1368,24 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "clap",
+        "version": "4.6.1",
+        "edition": "2024",
+        "features": [
+          "color",
+          "default",
+          "derive",
+          "error-context",
+          "help",
+          "std",
+          "suggestions",
+          "usage"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=clap;"
+      }
     },
     "clap_builder-4.6.0": {
       "name": "clap_builder",
@@ -1250,7 +1487,22 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "clap_builder",
+        "version": "4.6.0",
+        "edition": "2024",
+        "features": [
+          "color",
+          "error-context",
+          "help",
+          "std",
+          "suggestions",
+          "usage"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=clap_builder;"
+      }
     },
     "clap_derive-4.6.1": {
       "name": "clap_derive",
@@ -1358,6 +1610,25 @@
             "rename": "proc_macro2"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "clap_derive",
+        "version": "4.6.1",
+        "edition": "2024",
+        "features": [
+          "default"
+        ],
+        "crateRenames": {
+          "proc-macro2": [
+            {
+              "version": "1.0.106",
+              "rename": "proc_macro2"
+            }
+          ]
+        },
+        "release": true,
+        "procMacro": true,
+        "preBuild": "export CARGO_CRATE_NAME=clap_derive;"
       }
     },
     "clap_lex-1.1.0": {
@@ -1379,7 +1650,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "clap_lex",
+        "version": "1.1.0",
+        "edition": "2024",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=clap_lex;"
+      }
     },
     "colorchoice-1.0.5": {
       "name": "colorchoice",
@@ -1400,7 +1678,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "colorchoice",
+        "version": "1.0.5",
+        "edition": "2021",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=colorchoice;"
+      }
     },
     "constant_time_eq-0.4.2": {
       "name": "constant_time_eq",
@@ -1423,7 +1708,17 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "constant_time_eq",
+        "version": "0.4.2",
+        "edition": "2024",
+        "features": [
+          "std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=constant_time_eq;"
+      }
     },
     "core-foundation-sys-0.8.7": {
       "name": "core-foundation-sys",
@@ -1447,7 +1742,18 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "core-foundation-sys",
+        "version": "0.8.7",
+        "edition": "2018",
+        "features": [
+          "default",
+          "link"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=core_foundation_sys;"
+      }
     },
     "equivalent-1.0.2": {
       "name": "equivalent",
@@ -1468,7 +1774,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "equivalent",
+        "version": "1.0.2",
+        "edition": "2015",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=equivalent;"
+      }
     },
     "figment-0.10.19": {
       "name": "figment",
@@ -1607,7 +1920,23 @@
           "target": null
         }
       ],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "figment",
+        "version": "0.10.19",
+        "edition": "2018",
+        "features": [
+          "env",
+          "parse-value",
+          "pear",
+          "serde_yaml",
+          "toml",
+          "yaml"
+        ],
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=figment;"
+      }
     },
     "find-msvc-tools-0.1.9": {
       "name": "find-msvc-tools",
@@ -1628,7 +1957,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "find-msvc-tools",
+        "version": "0.1.9",
+        "edition": "2018",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=find_msvc_tools;"
+      }
     },
     "fsevent-sys-4.1.0": {
       "name": "fsevent-sys",
@@ -1669,7 +2005,14 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "fsevent-sys",
+        "version": "4.1.0",
+        "edition": "2018",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=fsevent_sys;"
+      }
     },
     "gen-adapter-forge-0.1.0": {
       "name": "gen-adapter-forge",
@@ -1684,7 +2027,10 @@
       "build_script": null,
       "links": null,
       "binaries": [],
-      "lib_target": null,
+      "lib_target": {
+        "name": "gen_adapter_forge",
+        "path": "src/lib.rs"
+      },
       "dependencies": [
         {
           "name": "gen_types",
@@ -1777,6 +2123,23 @@
             "rename": "gen_types"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-adapter-forge",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "libName": "gen_adapter_forge",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_adapter_forge;"
       }
     },
     "gen-bazel-0.1.0": {
@@ -1792,7 +2155,10 @@
       "build_script": null,
       "links": null,
       "binaries": [],
-      "lib_target": null,
+      "lib_target": {
+        "name": "gen_bazel",
+        "path": "src/lib.rs"
+      },
       "dependencies": [
         {
           "name": "gen_types",
@@ -1863,6 +2229,23 @@
             "rename": "gen_types"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-bazel",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "libName": "gen_bazel",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_bazel;"
       }
     },
     "gen-buck-0.1.0": {
@@ -1878,7 +2261,10 @@
       "build_script": null,
       "links": null,
       "binaries": [],
-      "lib_target": null,
+      "lib_target": {
+        "name": "gen_buck",
+        "path": "src/lib.rs"
+      },
       "dependencies": [
         {
           "name": "gen_bazel",
@@ -1973,6 +2359,29 @@
             "rename": "gen_types"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-buck",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-bazel": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_bazel"
+            }
+          ],
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "libName": "gen_buck",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_buck;"
       }
     },
     "gen-bundler-0.1.0": {
@@ -1988,7 +2397,10 @@
       "build_script": null,
       "links": null,
       "binaries": [],
-      "lib_target": null,
+      "lib_target": {
+        "name": "gen_bundler",
+        "path": "src/lib.rs"
+      },
       "dependencies": [
         {
           "name": "gen_types",
@@ -2099,6 +2511,23 @@
             "rename": "gen_types"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-bundler",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "libName": "gen_bundler",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_bundler;"
       }
     },
     "gen-cache-attic-0.1.0": {
@@ -2114,7 +2543,10 @@
       "build_script": null,
       "links": null,
       "binaries": [],
-      "lib_target": null,
+      "lib_target": {
+        "name": "gen_cache_attic",
+        "path": "src/lib.rs"
+      },
       "dependencies": [
         {
           "name": "gen_config",
@@ -2231,6 +2663,29 @@
             "rename": "gen_types"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-cache-attic",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-config": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_config"
+            }
+          ],
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "libName": "gen_cache_attic",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_cache_attic;"
       }
     },
     "gen-caixa-bridge-0.1.0": {
@@ -2246,7 +2701,10 @@
       "build_script": null,
       "links": null,
       "binaries": [],
-      "lib_target": null,
+      "lib_target": {
+        "name": "gen_caixa_bridge",
+        "path": "src/lib.rs"
+      },
       "dependencies": [
         {
           "name": "gen_config",
@@ -2363,6 +2821,29 @@
             "rename": "gen_types"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-caixa-bridge",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-config": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_config"
+            }
+          ],
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "libName": "gen_caixa_bridge",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_caixa_bridge;"
       }
     },
     "gen-cargo-0.1.0": {
@@ -2378,7 +2859,10 @@
       "build_script": null,
       "links": null,
       "binaries": [],
-      "lib_target": null,
+      "lib_target": {
+        "name": "gen_cargo",
+        "path": "src/lib.rs"
+      },
       "dependencies": [
         {
           "name": "blake3",
@@ -2543,6 +3027,23 @@
             "rename": "gen_types"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-cargo",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "libName": "gen_cargo",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_cargo;"
       }
     },
     "gen-cli-0.1.0": {
@@ -2876,6 +3377,57 @@
             "rename": "gen_types"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-cli",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-bundler": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_bundler"
+            }
+          ],
+          "gen-cache-attic": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_cache_attic"
+            }
+          ],
+          "gen-cargo": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_cargo"
+            }
+          ],
+          "gen-config": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_config"
+            }
+          ],
+          "gen-nix": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_nix"
+            }
+          ],
+          "gen-npm": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_npm"
+            }
+          ],
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=gen_cli;"
       }
     },
     "gen-config-0.1.0": {
@@ -2891,7 +3443,10 @@
       "build_script": null,
       "links": null,
       "binaries": [],
-      "lib_target": null,
+      "lib_target": {
+        "name": "gen_config",
+        "path": "src/lib.rs"
+      },
       "dependencies": [
         {
           "name": "gen_types",
@@ -3002,6 +3557,23 @@
             "rename": "gen_types"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-config",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "libName": "gen_config",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_config;"
       }
     },
     "gen-nix-0.1.0": {
@@ -3017,7 +3589,10 @@
       "build_script": null,
       "links": null,
       "binaries": [],
-      "lib_target": null,
+      "lib_target": {
+        "name": "gen_nix",
+        "path": "src/lib.rs"
+      },
       "dependencies": [
         {
           "name": "gen_types",
@@ -3088,6 +3663,23 @@
             "rename": "gen_types"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-nix",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "libName": "gen_nix",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_nix;"
       }
     },
     "gen-nix-bulk-0.1.0": {
@@ -3103,7 +3695,10 @@
       "build_script": null,
       "links": null,
       "binaries": [],
-      "lib_target": null,
+      "lib_target": {
+        "name": "gen_nix_bulk",
+        "path": "src/lib.rs"
+      },
       "dependencies": [
         {
           "name": "gen_nix",
@@ -3198,6 +3793,29 @@
             "rename": "gen_types"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-nix-bulk",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-nix": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_nix"
+            }
+          ],
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "libName": "gen_nix_bulk",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_nix_bulk;"
       }
     },
     "gen-npm-0.1.0": {
@@ -3213,7 +3831,10 @@
       "build_script": null,
       "links": null,
       "binaries": [],
-      "lib_target": null,
+      "lib_target": {
+        "name": "gen_npm",
+        "path": "src/lib.rs"
+      },
       "dependencies": [
         {
           "name": "gen_types",
@@ -3342,6 +3963,23 @@
             "rename": "gen_types"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-npm",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "libName": "gen_npm",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_npm;"
       }
     },
     "gen-polyglot-0.1.0": {
@@ -3357,7 +3995,10 @@
       "build_script": null,
       "links": null,
       "binaries": [],
-      "lib_target": null,
+      "lib_target": {
+        "name": "gen_polyglot",
+        "path": "src/lib.rs"
+      },
       "dependencies": [
         {
           "name": "gen_bundler",
@@ -3546,6 +4187,47 @@
             "rename": "gen_types"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "gen-polyglot",
+        "version": "0.1.0",
+        "edition": "2024",
+        "crateRenames": {
+          "gen-bundler": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_bundler"
+            }
+          ],
+          "gen-cargo": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_cargo"
+            }
+          ],
+          "gen-config": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_config"
+            }
+          ],
+          "gen-npm": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_npm"
+            }
+          ],
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
+            }
+          ]
+        },
+        "release": true,
+        "libName": "gen_polyglot",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_polyglot;"
       }
     },
     "gen-types-0.1.0": {
@@ -3561,7 +4243,10 @@
       "build_script": null,
       "links": null,
       "binaries": [],
-      "lib_target": null,
+      "lib_target": {
+        "name": "gen_types",
+        "path": "src/lib.rs"
+      },
       "dependencies": [
         {
           "name": "blake3",
@@ -3687,7 +4372,16 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "gen-types",
+        "version": "0.1.0",
+        "edition": "2024",
+        "release": true,
+        "libName": "gen_types",
+        "libPath": "src/lib.rs",
+        "preBuild": "export CARGO_CRATE_NAME=gen_types;"
+      }
     },
     "hashbrown-0.17.1": {
       "name": "hashbrown",
@@ -3708,7 +4402,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "hashbrown",
+        "version": "0.17.1",
+        "edition": "2024",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=hashbrown;"
+      }
     },
     "heck-0.5.0": {
       "name": "heck",
@@ -3729,7 +4430,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "heck",
+        "version": "0.5.0",
+        "edition": "2021",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=heck;"
+      }
     },
     "iana-time-zone-0.1.65": {
       "name": "iana-time-zone",
@@ -3779,6 +4487,24 @@
             "rename": "core_foundation_sys"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "iana-time-zone",
+        "version": "0.1.65",
+        "edition": "2021",
+        "features": [
+          "fallback"
+        ],
+        "crateRenames": {
+          "core-foundation-sys": [
+            {
+              "version": "0.8.7",
+              "rename": "core_foundation_sys"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=iana_time_zone;"
       }
     },
     "indexmap-2.14.0": {
@@ -3860,7 +4586,19 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "indexmap",
+        "version": "2.14.0",
+        "edition": "2024",
+        "features": [
+          "default",
+          "serde",
+          "std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=indexmap;"
+      }
     },
     "inlinable_string-0.1.15": {
       "name": "inlinable_string",
@@ -3881,7 +4619,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "inlinable_string",
+        "version": "0.1.15",
+        "edition": "2018",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=inlinable_string;"
+      }
     },
     "is_terminal_polyfill-1.70.2": {
       "name": "is_terminal_polyfill",
@@ -3904,7 +4649,17 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "is_terminal_polyfill",
+        "version": "1.70.2",
+        "edition": "2021",
+        "features": [
+          "default"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=is_terminal_polyfill;"
+      }
     },
     "itoa-1.0.18": {
       "name": "itoa",
@@ -3925,7 +4680,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "itoa",
+        "version": "1.0.18",
+        "edition": "2021",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=itoa;"
+      }
     },
     "libc-0.2.186": {
       "name": "libc",
@@ -3949,7 +4711,19 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "libc",
+        "version": "0.2.186",
+        "edition": "2021",
+        "features": [
+          "default",
+          "std"
+        ],
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=libc;"
+      }
     },
     "log-0.4.30": {
       "name": "log",
@@ -3970,7 +4744,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "log",
+        "version": "0.4.30",
+        "edition": "2021",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=log;"
+      }
     },
     "memchr-2.8.0": {
       "name": "memchr",
@@ -3994,7 +4775,18 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "memchr",
+        "version": "2.8.0",
+        "edition": "2021",
+        "features": [
+          "alloc",
+          "std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=memchr;"
+      }
     },
     "notify-8.2.0": {
       "name": "notify",
@@ -4142,6 +4934,32 @@
             "rename": "notify_types"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "notify",
+        "version": "8.2.0",
+        "edition": "2021",
+        "features": [
+          "default",
+          "fsevent-sys",
+          "macos_fsevent"
+        ],
+        "crateRenames": {
+          "fsevent-sys": [
+            {
+              "version": "4.1.0",
+              "rename": "fsevent_sys"
+            }
+          ],
+          "notify-types": [
+            {
+              "version": "2.1.0",
+              "rename": "notify_types"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=notify;"
       }
     },
     "notify-types-2.1.0": {
@@ -4183,7 +5001,14 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "notify-types",
+        "version": "2.1.0",
+        "edition": "2021",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=notify_types;"
+      }
     },
     "num-traits-0.2.19": {
       "name": "num-traits",
@@ -4224,7 +5049,15 @@
           "target": null
         }
       ],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "num-traits",
+        "version": "0.2.19",
+        "edition": "2021",
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=num_traits;"
+      }
     },
     "once_cell-1.21.4": {
       "name": "once_cell",
@@ -4250,7 +5083,20 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "once_cell",
+        "version": "1.21.4",
+        "edition": "2021",
+        "features": [
+          "alloc",
+          "default",
+          "race",
+          "std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=once_cell;"
+      }
     },
     "pear-0.2.9": {
       "name": "pear",
@@ -4331,7 +5177,19 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "pear",
+        "version": "0.2.9",
+        "edition": "2018",
+        "features": [
+          "color",
+          "default",
+          "yansi"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=pear;"
+      }
     },
     "pear_codegen-0.2.9": {
       "name": "pear_codegen",
@@ -4447,6 +5305,28 @@
             "rename": "proc_macro2_diagnostics"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "pear_codegen",
+        "version": "0.2.9",
+        "edition": "2018",
+        "crateRenames": {
+          "proc-macro2": [
+            {
+              "version": "1.0.106",
+              "rename": "proc_macro2"
+            }
+          ],
+          "proc-macro2-diagnostics": [
+            {
+              "version": "0.10.1",
+              "rename": "proc_macro2_diagnostics"
+            }
+          ]
+        },
+        "release": true,
+        "procMacro": true,
+        "preBuild": "export CARGO_CRATE_NAME=pear_codegen;"
       }
     },
     "pin-project-lite-0.2.17": {
@@ -4468,7 +5348,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "pin-project-lite",
+        "version": "0.2.17",
+        "edition": "2018",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=pin_project_lite;"
+      }
     },
     "proc-macro2-1.0.106": {
       "name": "proc-macro2",
@@ -4519,6 +5406,26 @@
             "rename": "unicode_ident"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "proc-macro2",
+        "version": "1.0.106",
+        "edition": "2021",
+        "features": [
+          "default",
+          "proc-macro"
+        ],
+        "crateRenames": {
+          "unicode-ident": [
+            {
+              "version": "1.0.24",
+              "rename": "unicode_ident"
+            }
+          ]
+        },
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=proc_macro2;"
       }
     },
     "proc-macro2-diagnostics-0.10.1": {
@@ -4644,6 +5551,27 @@
             "rename": "proc_macro2"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "proc-macro2-diagnostics",
+        "version": "0.10.1",
+        "edition": "2018",
+        "features": [
+          "colors",
+          "default",
+          "yansi"
+        ],
+        "crateRenames": {
+          "proc-macro2": [
+            {
+              "version": "1.0.106",
+              "rename": "proc_macro2"
+            }
+          ]
+        },
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=proc_macro2_diagnostics;"
       }
     },
     "quote-1.0.45": {
@@ -4695,6 +5623,26 @@
             "rename": "proc_macro2"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "quote",
+        "version": "1.0.45",
+        "edition": "2021",
+        "features": [
+          "default",
+          "proc-macro"
+        ],
+        "crateRenames": {
+          "proc-macro2": [
+            {
+              "version": "1.0.106",
+              "rename": "proc_macro2"
+            }
+          ]
+        },
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=quote;"
       }
     },
     "rustversion-1.0.22": {
@@ -4716,7 +5664,16 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "rustversion",
+        "version": "1.0.22",
+        "edition": "2018",
+        "release": true,
+        "procMacro": true,
+        "build": "build/build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=rustversion;"
+      }
     },
     "ryu-1.0.23": {
       "name": "ryu",
@@ -4737,7 +5694,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "ryu",
+        "version": "1.0.23",
+        "edition": "2021",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=ryu;"
+      }
     },
     "same-file-1.0.6": {
       "name": "same-file",
@@ -4758,7 +5722,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "same-file",
+        "version": "1.0.6",
+        "edition": "2018",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=same_file;"
+      }
     },
     "semver-1.0.28": {
       "name": "semver",
@@ -4810,6 +5781,26 @@
             "rename": "serde"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "semver",
+        "version": "1.0.28",
+        "edition": "2021",
+        "features": [
+          "default",
+          "serde",
+          "std"
+        ],
+        "crateRenames": {
+          "serde_core": [
+            {
+              "version": "1.0.228",
+              "rename": "serde"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=semver;"
       }
     },
     "serde-1.0.228": {
@@ -4878,7 +5869,21 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "serde",
+        "version": "1.0.228",
+        "edition": "2021",
+        "features": [
+          "default",
+          "derive",
+          "serde_derive",
+          "std"
+        ],
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=serde;"
+      }
     },
     "serde_core-1.0.228": {
       "name": "serde_core",
@@ -4903,7 +5908,20 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "serde_core",
+        "version": "1.0.228",
+        "edition": "2021",
+        "features": [
+          "default",
+          "result",
+          "std"
+        ],
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=serde_core;"
+      }
     },
     "serde_derive-1.0.228": {
       "name": "serde_derive",
@@ -5005,6 +6023,25 @@
             "rename": "proc_macro2"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "serde_derive",
+        "version": "1.0.228",
+        "edition": "2021",
+        "features": [
+          "default"
+        ],
+        "crateRenames": {
+          "proc-macro2": [
+            {
+              "version": "1.0.106",
+              "rename": "proc_macro2"
+            }
+          ]
+        },
+        "release": true,
+        "procMacro": true,
+        "preBuild": "export CARGO_CRATE_NAME=serde_derive;"
       }
     },
     "serde_json-1.0.150": {
@@ -5104,7 +6141,20 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "serde_json",
+        "version": "1.0.150",
+        "edition": "2021",
+        "features": [
+          "default",
+          "std",
+          "unbounded_depth"
+        ],
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=serde_json;"
+      }
     },
     "serde_spanned-0.6.9": {
       "name": "serde_spanned",
@@ -5147,7 +6197,17 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "serde_spanned",
+        "version": "0.6.9",
+        "edition": "2021",
+        "features": [
+          "serde"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=serde_spanned;"
+      }
     },
     "serde_yaml-0.9.34+deprecated": {
       "name": "serde_yaml",
@@ -5267,6 +6327,21 @@
             "rename": "unsafe_libyaml"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "serde_yaml",
+        "version": "0.9.34+deprecated",
+        "edition": "2021",
+        "crateRenames": {
+          "unsafe-libyaml": [
+            {
+              "version": "0.2.11",
+              "rename": "unsafe_libyaml"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=serde_yaml;"
       }
     },
     "shikumi-0.1.0": {
@@ -5479,6 +6554,30 @@
             "rename": "async_trait"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "shikumi",
+        "version": "0.1.0",
+        "edition": "2024",
+        "features": [
+          "default"
+        ],
+        "crateRenames": {
+          "arc-swap": [
+            {
+              "version": "1.9.1",
+              "rename": "arc_swap"
+            }
+          ],
+          "async-trait": [
+            {
+              "version": "0.1.89",
+              "rename": "async_trait"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=shikumi;"
       }
     },
     "shlex-1.3.0": {
@@ -5503,7 +6602,18 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "shlex",
+        "version": "1.3.0",
+        "edition": "2015",
+        "features": [
+          "default",
+          "std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=shlex;"
+      }
     },
     "strsim-0.11.1": {
       "name": "strsim",
@@ -5524,7 +6634,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "strsim",
+        "version": "0.11.1",
+        "edition": "2015",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=strsim;"
+      }
     },
     "syn-2.0.117": {
       "name": "syn",
@@ -5625,6 +6742,39 @@
             "rename": "unicode_ident"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "syn",
+        "version": "2.0.117",
+        "edition": "2021",
+        "features": [
+          "clone-impls",
+          "default",
+          "derive",
+          "extra-traits",
+          "full",
+          "parsing",
+          "printing",
+          "proc-macro",
+          "visit",
+          "visit-mut"
+        ],
+        "crateRenames": {
+          "proc-macro2": [
+            {
+              "version": "1.0.106",
+              "rename": "proc_macro2"
+            }
+          ],
+          "unicode-ident": [
+            {
+              "version": "1.0.24",
+              "rename": "unicode_ident"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=syn;"
       }
     },
     "thiserror-1.0.69": {
@@ -5673,6 +6823,22 @@
             "rename": "thiserror_impl"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "thiserror",
+        "version": "1.0.69",
+        "edition": "2021",
+        "crateRenames": {
+          "thiserror-impl": [
+            {
+              "version": "1.0.69",
+              "rename": "thiserror_impl"
+            }
+          ]
+        },
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=thiserror;"
       }
     },
     "thiserror-2.0.18": {
@@ -5724,6 +6890,26 @@
             "rename": "thiserror_impl"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "thiserror",
+        "version": "2.0.18",
+        "edition": "2021",
+        "features": [
+          "default",
+          "std"
+        ],
+        "crateRenames": {
+          "thiserror-impl": [
+            {
+              "version": "2.0.18",
+              "rename": "thiserror_impl"
+            }
+          ]
+        },
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=thiserror;"
       }
     },
     "thiserror-impl-1.0.69": {
@@ -5808,6 +6994,22 @@
             "rename": "proc_macro2"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "thiserror-impl",
+        "version": "1.0.69",
+        "edition": "2021",
+        "crateRenames": {
+          "proc-macro2": [
+            {
+              "version": "1.0.106",
+              "rename": "proc_macro2"
+            }
+          ]
+        },
+        "release": true,
+        "procMacro": true,
+        "preBuild": "export CARGO_CRATE_NAME=thiserror_impl;"
       }
     },
     "thiserror-impl-2.0.18": {
@@ -5892,6 +7094,22 @@
             "rename": "proc_macro2"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "thiserror-impl",
+        "version": "2.0.18",
+        "edition": "2021",
+        "crateRenames": {
+          "proc-macro2": [
+            {
+              "version": "1.0.106",
+              "rename": "proc_macro2"
+            }
+          ]
+        },
+        "release": true,
+        "procMacro": true,
+        "preBuild": "export CARGO_CRATE_NAME=thiserror_impl;"
       }
     },
     "toml-0.8.23": {
@@ -6003,7 +7221,19 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "toml",
+        "version": "0.8.23",
+        "edition": "2021",
+        "features": [
+          "default",
+          "display",
+          "parse"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=toml;"
+      }
     },
     "toml_datetime-0.6.11": {
       "name": "toml_datetime",
@@ -6046,7 +7276,17 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "toml_datetime",
+        "version": "0.6.11",
+        "edition": "2021",
+        "features": [
+          "serde"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=toml_datetime;"
+      }
     },
     "toml_edit-0.22.27": {
       "name": "toml_edit",
@@ -6189,7 +7429,19 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "toml_edit",
+        "version": "0.22.27",
+        "edition": "2021",
+        "features": [
+          "display",
+          "parse",
+          "serde"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=toml_edit;"
+      }
     },
     "toml_write-0.1.2": {
       "name": "toml_write",
@@ -6214,7 +7466,19 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "toml_write",
+        "version": "0.1.2",
+        "edition": "2021",
+        "features": [
+          "alloc",
+          "default",
+          "std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=toml_write;"
+      }
     },
     "tracing-0.1.44": {
       "name": "tracing",
@@ -6315,6 +7579,39 @@
             "rename": "tracing_core"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "tracing",
+        "version": "0.1.44",
+        "edition": "2018",
+        "features": [
+          "attributes",
+          "default",
+          "std",
+          "tracing-attributes"
+        ],
+        "crateRenames": {
+          "pin-project-lite": [
+            {
+              "version": "0.2.17",
+              "rename": "pin_project_lite"
+            }
+          ],
+          "tracing-attributes": [
+            {
+              "version": "0.1.31",
+              "rename": "tracing_attributes"
+            }
+          ],
+          "tracing-core": [
+            {
+              "version": "0.1.36",
+              "rename": "tracing_core"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=tracing;"
       }
     },
     "tracing-attributes-0.1.31": {
@@ -6415,6 +7712,22 @@
             "rename": "proc_macro2"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "tracing-attributes",
+        "version": "0.1.31",
+        "edition": "2018",
+        "crateRenames": {
+          "proc-macro2": [
+            {
+              "version": "1.0.106",
+              "rename": "proc_macro2"
+            }
+          ]
+        },
+        "release": true,
+        "procMacro": true,
+        "preBuild": "export CARGO_CRATE_NAME=tracing_attributes;"
       }
     },
     "tracing-core-0.1.36": {
@@ -6459,7 +7772,18 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "tracing-core",
+        "version": "0.1.36",
+        "edition": "2018",
+        "features": [
+          "once_cell",
+          "std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=tracing_core;"
+      }
     },
     "uncased-0.9.10": {
       "name": "uncased",
@@ -6503,7 +7827,19 @@
           "target": null
         }
       ],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "uncased",
+        "version": "0.9.10",
+        "edition": "2018",
+        "features": [
+          "alloc",
+          "default"
+        ],
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=uncased;"
+      }
     },
     "unicode-ident-1.0.24": {
       "name": "unicode-ident",
@@ -6524,7 +7860,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "unicode-ident",
+        "version": "1.0.24",
+        "edition": "2021",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=unicode_ident;"
+      }
     },
     "unsafe-libyaml-0.2.11": {
       "name": "unsafe-libyaml",
@@ -6554,7 +7897,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "unsafe-libyaml",
+        "version": "0.2.11",
+        "edition": "2021",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=unsafe_libyaml;"
+      }
     },
     "utf8parse-0.2.2": {
       "name": "utf8parse",
@@ -6577,7 +7927,17 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "utf8parse",
+        "version": "0.2.2",
+        "edition": "2018",
+        "features": [
+          "default"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=utf8parse;"
+      }
     },
     "version_check-0.9.5": {
       "name": "version_check",
@@ -6598,7 +7958,14 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "version_check",
+        "version": "0.9.5",
+        "edition": "2015",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=version_check;"
+      }
     },
     "walkdir-2.5.0": {
       "name": "walkdir",
@@ -6646,6 +8013,21 @@
             "rename": "same_file"
           }
         ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "walkdir",
+        "version": "2.5.0",
+        "edition": "2018",
+        "crateRenames": {
+          "same-file": [
+            {
+              "version": "1.0.6",
+              "rename": "same_file"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=walkdir;"
       }
     },
     "winnow-0.7.15": {
@@ -6691,7 +8073,19 @@
         }
       ],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "winnow",
+        "version": "0.7.15",
+        "edition": "2021",
+        "features": [
+          "alloc",
+          "default",
+          "std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=winnow;"
+      }
     },
     "yansi-1.0.1": {
       "name": "yansi",
@@ -6716,7 +8110,19 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "yansi",
+        "version": "1.0.1",
+        "edition": "2021",
+        "features": [
+          "alloc",
+          "default",
+          "std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=yansi;"
+      }
     },
     "zmij-1.0.21": {
       "name": "zmij",
@@ -6737,7 +8143,15 @@
       "dependencies": [],
       "runtime_dependencies": [],
       "build_dependencies": [],
-      "crate_renames": {}
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "zmij",
+        "version": "1.0.21",
+        "edition": "2021",
+        "release": true,
+        "build": "build.rs",
+        "preBuild": "export CARGO_CRATE_NAME=zmij;"
+      }
     }
   },
   "root_crate": "gen-types-0.1.0",

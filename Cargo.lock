@@ -575,6 +575,7 @@ version = "0.1.0"
 dependencies = [
  "gen-cargo",
  "gen-macros",
+ "gen-npm",
  "gen-types",
  "inventory",
  "serde",

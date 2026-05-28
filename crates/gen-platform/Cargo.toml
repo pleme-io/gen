@@ -26,3 +26,4 @@ inventory = { workspace = true }
 
 [dev-dependencies]
 gen-cargo = { workspace = true }
+gen-npm = { workspace = true }

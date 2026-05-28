@@ -346,6 +346,26 @@ mod tests {
     }
 
     fn crate_at(key: &str, name: &str, version: &str, source: CrateSource) -> (String, CrateSpec) {
+        // Populate build_rust_crate_args with the bare-minimum fields
+        // the universal invariants demand (crate_name + pre_build for
+        // CARGO_CRATE_NAME). Tests that want to exercise the failing
+        // paths construct the args manually.
+        let rustc_crate_name = name.replace('-', "_");
+        let pre_build = format!("export CARGO_CRATE_NAME={};", rustc_crate_name);
+        let build_rust_crate_args = crate::build_spec::BuildRustCrateArgs {
+            crate_name: Some(name.into()),
+            version: Some(version.into()),
+            edition: Some("2024".into()),
+            features: vec![],
+            crate_renames: IndexMap::new(),
+            release: Some(true),
+            proc_macro: None,
+            build: None,
+            links: None,
+            lib_name: None,
+            lib_path: None,
+            pre_build: Some(pre_build),
+        };
         (
             key.into(),
             CrateSpec {
@@ -358,7 +378,7 @@ mod tests {
                 build_script: None,
                 links: None,
                 quirks: vec![],
-                build_rust_crate_args: Default::default(),
+                build_rust_crate_args,
                 binaries: vec![],
                 lib_target: None,
                 dependencies: vec![],

@@ -6,7 +6,10 @@
 //! adapter for the npm cohort.
 
 pub mod adapter;
+pub mod build_spec;
 pub mod error;
+pub mod invariants;
+pub mod quirks;
 pub mod raw;
 
 pub use adapter::{ctx_for, NpmAdapter};

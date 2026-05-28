@@ -537,6 +537,7 @@ dependencies = [
 name = "gen-npm"
 version = "0.1.0"
 dependencies = [
+ "gen-macros",
  "gen-types",
  "indexmap",
  "inventory",

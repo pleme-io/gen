@@ -61,6 +61,23 @@ impl Adapter for NpmAdapter {
             "npm sbom not implemented yet (M2)".to_string(),
         ))
     }
+
+    /// Expose the typed NpmQuirk registry through the adapter
+    /// envelope. Currently empty — entries land as we encounter
+    /// real upstream npm packages needing class-helper workarounds.
+    fn quirks_registry(&self) -> Vec<gen_types::AdapterQuirkEntry> {
+        use gen_types::QuirkRegistry;
+        <crate::quirks::NpmQuirks as QuirkRegistry>::registry()
+            .into_iter()
+            .map(|(p, qs)| gen_types::AdapterQuirkEntry {
+                package: p.to_string(),
+                quirks: qs
+                    .into_iter()
+                    .filter_map(|q| serde_json::to_value(&q).ok())
+                    .collect(),
+            })
+            .collect()
+    }
 }
 
 #[must_use]

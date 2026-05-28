@@ -36,3 +36,6 @@ pub fn registry() -> Vec<(&'static str, Vec<PoetryQuirk>)> {
 #[derive(gen_macros::QuirkRegistry)]
 #[quirks(enum_name = "PoetryQuirk", registry_fn = "crate::quirks::registry")]
 pub struct PoetryQuirks;
+
+// Fleet-wide dispatcher-catalog registration.
+gen_platform::register_dispatcher!("gen.poetry.poetry-quirk", PoetryQuirk);

@@ -363,6 +363,7 @@ name = "gen-ansible"
 version = "0.1.0"
 dependencies = [
  "gen-macros",
+ "gen-platform",
  "gen-types",
  "indexmap",
  "inventory",
@@ -395,6 +396,7 @@ name = "gen-bundler"
 version = "0.1.0"
 dependencies = [
  "gen-macros",
+ "gen-platform",
  "gen-types",
  "indexmap",
  "inventory",
@@ -432,6 +434,7 @@ dependencies = [
  "blake3",
  "cargo_metadata",
  "gen-macros",
+ "gen-platform",
  "gen-types",
  "indexmap",
  "inventory",
@@ -457,6 +460,7 @@ dependencies = [
  "gen-nix",
  "gen-npm",
  "gen-pip",
+ "gen-platform",
  "gen-poetry",
  "gen-swift",
  "gen-types",
@@ -484,6 +488,7 @@ name = "gen-gomod"
 version = "0.1.0"
 dependencies = [
  "gen-macros",
+ "gen-platform",
  "gen-types",
  "indexmap",
  "inventory",
@@ -497,6 +502,7 @@ name = "gen-helm"
 version = "0.1.0"
 dependencies = [
  "gen-macros",
+ "gen-platform",
  "gen-types",
  "indexmap",
  "inventory",
@@ -539,6 +545,7 @@ name = "gen-npm"
 version = "0.1.0"
 dependencies = [
  "gen-macros",
+ "gen-platform",
  "gen-types",
  "indexmap",
  "inventory",
@@ -553,6 +560,7 @@ name = "gen-pip"
 version = "0.1.0"
 dependencies = [
  "gen-macros",
+ "gen-platform",
  "gen-types",
  "indexmap",
  "inventory",
@@ -579,6 +587,7 @@ name = "gen-poetry"
 version = "0.1.0"
 dependencies = [
  "gen-macros",
+ "gen-platform",
  "gen-types",
  "indexmap",
  "inventory",
@@ -607,6 +616,7 @@ name = "gen-swift"
 version = "0.1.0"
 dependencies = [
  "gen-macros",
+ "gen-platform",
  "gen-types",
  "indexmap",
  "inventory",

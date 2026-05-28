@@ -100,6 +100,13 @@ enum Cmd {
         /// Filter to a single ecosystem by name (e.g. `cargo`, `npm`).
         #[arg(long)]
         ecosystem: Option<String>,
+        /// List entries from the gen-platform DispatcherCatalog
+        /// (every Rust enum registered via gen_platform::register_dispatcher!)
+        /// instead of the per-adapter reflection view. Surfaces the
+        /// fleet-wide catalog — production dispatchers AND any
+        /// non-adapter dispatcher a downstream crate registered.
+        #[arg(long)]
+        from_catalog: bool,
     },
     /// Render the workspace at <path> to Nix source (crate2nix shape).
     /// Output goes to `cfg.render.output_path` or stdout.
@@ -546,7 +553,27 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             );
             Ok(())
         }
-        Cmd::Dispatchers { ecosystem } => {
+        Cmd::Dispatchers { ecosystem, from_catalog } => {
+            if *from_catalog {
+                #[derive(serde::Serialize)]
+                struct CatalogEntry<'a> {
+                    label: &'a str,
+                    variant_count: usize,
+                    variant_kinds: Vec<&'static str>,
+                    variant_fields: Vec<(&'static str, Vec<&'static str>)>,
+                }
+                let mut out: Vec<CatalogEntry> = gen_platform::catalog_registered()
+                    .into_iter()
+                    .map(|e| CatalogEntry {
+                        label: e.label,
+                        variant_count: (e.variant_count)(),
+                        variant_kinds: (e.variant_kinds)(),
+                        variant_fields: (e.variant_fields)(),
+                    })
+                    .collect();
+                out.sort_by_key(|e| e.label);
+                return emit(&out, cli.format);
+            }
             #[derive(serde::Serialize)]
             struct EcoDispatcher<'a> {
                 ecosystem: &'a str,

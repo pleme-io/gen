@@ -50,3 +50,6 @@ pub fn registry() -> Vec<(&'static str, Vec<NpmQuirk>)> {
 #[derive(gen_macros::QuirkRegistry)]
 #[quirks(enum_name = "NpmQuirk", registry_fn = "crate::quirks::registry")]
 pub struct NpmQuirks;
+
+// Fleet-wide dispatcher-catalog registration.
+gen_platform::register_dispatcher!("gen.npm.npm-quirk", NpmQuirk);

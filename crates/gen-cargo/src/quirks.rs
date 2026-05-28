@@ -140,3 +140,7 @@ pub fn for_crate(name: &str) -> Vec<CrateQuirk> {
 pub fn registered_crate_names() -> Vec<&'static str> {
     registry().into_iter().map(|(k, _)| k).collect()
 }
+
+// Fleet-wide dispatcher-catalog registration. One line per adapter;
+// the catalog gains the entry at link time via inventory.
+gen_platform::register_dispatcher!("gen.cargo.crate-quirk", CrateQuirk);

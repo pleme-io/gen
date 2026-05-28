@@ -42,3 +42,6 @@ pub fn registry() -> Vec<(&'static str, Vec<BundlerQuirk>)> {
 #[derive(gen_macros::QuirkRegistry)]
 #[quirks(enum_name = "BundlerQuirk", registry_fn = "crate::quirks::registry")]
 pub struct BundlerQuirks;
+
+// Fleet-wide dispatcher-catalog registration.
+gen_platform::register_dispatcher!("gen.bundler.bundler-quirk", BundlerQuirk);

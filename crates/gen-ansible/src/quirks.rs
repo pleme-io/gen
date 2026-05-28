@@ -34,3 +34,6 @@ pub fn registry() -> Vec<(&'static str, Vec<AnsibleQuirk>)> {
 #[derive(gen_macros::QuirkRegistry)]
 #[quirks(enum_name = "AnsibleQuirk", registry_fn = "crate::quirks::registry")]
 pub struct AnsibleQuirks;
+
+// Fleet-wide dispatcher-catalog registration.
+gen_platform::register_dispatcher!("gen.ansible.ansible-quirk", AnsibleQuirk);

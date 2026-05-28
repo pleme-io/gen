@@ -126,6 +126,16 @@ pub struct CrateSpec {
     /// `links` arg verbatim. Emitting this from spec avoids per-crate
     /// `links = ...` overrides in pleme-crate-overrides.nix.
     pub links: Option<String>,
+    /// Typed quirks for known third-party upstream crates whose
+    /// buildRustCrate compile fails without a class-helper fix.
+    /// Source of truth is the const registry in `quirks::REGISTRY`;
+    /// gen-cargo emits per-crate quirks into the spec so the substrate
+    /// consumer only needs three mechanical dispatch arms (one per
+    /// variant), not per-crate Nix-attrset knowledge. Adding a new
+    /// quirk = one entry in the typed registry; new quirk classes =
+    /// one new enum variant.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub quirks: Vec<crate::quirks::CrateQuirk>,
     /// Declared binary targets — empty when the crate is library-only.
     /// Threads through to buildRustCrate's `crateBin` arg, preventing
     /// it from auto-discovering example/test bins under src/bin/ that
@@ -897,6 +907,10 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             pre_build: Some(pre_build),
         };
 
+        // Look up typed quirks from the canonical registry. Lookup
+        // is by crate name; empty Vec when no quirks registered.
+        let quirks = crate::quirks::for_crate(pkg.name.as_str());
+
         let new_entry = CrateSpec {
             name: pkg.name.to_string(),
             version: pkg.version.to_string(),
@@ -906,6 +920,7 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             proc_macro,
             build_script,
             links,
+            quirks,
             binaries,
             lib_target,
             dependencies,

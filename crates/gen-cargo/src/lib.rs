@@ -19,6 +19,7 @@ pub mod features;
 pub mod fleet_commit;
 pub mod fleet_sweep;
 pub mod invariants;
+pub mod quirks;
 pub mod raw;
 
 pub use adapter::{ctx_for, CargoAdapter};

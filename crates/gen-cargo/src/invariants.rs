@@ -87,6 +87,17 @@ pub enum Violation {
     /// targets — it produces nothing. That's a stale-gen-cargo or
     /// emission-regression signature.
     WorkspaceMemberMissingLibTarget { key: String, name: String },
+    /// A crate is in `quirks::REGISTRY` but the emitted spec entry
+    /// has an empty `quirks` field. Means gen-cargo's emission loop
+    /// missed the lookup for this crate — substrate consumer will
+    /// then build it without the known-required class-helper applied
+    /// and the compile will fail at the upstream-bug call site.
+    /// Drift catcher between registry truth and spec output.
+    QuirkRegisteredButNotEmitted {
+        crate_key: String,
+        name: String,
+        expected_quirks: usize,
+    },
 }
 
 /// Run every invariant. Returns the violation list (empty on success).
@@ -105,6 +116,7 @@ pub fn check(spec: &BuildSpec) -> Vec<Violation> {
     check_registry_url_canonical(spec, &mut out);
     check_schema_version(spec, &mut out);
     check_workspace_member_lib_targets(spec, &mut out);
+    check_quirks_registry_consistency(spec, &mut out);
     // duplicate-key check: a sanity check on IndexMap usage.
     // (IndexMap dedupes on insert, so duplicates can only happen if
     // the source data already had them — we re-verify here for
@@ -138,6 +150,26 @@ fn check_registry_url_canonical(spec: &BuildSpec, out: &mut Vec<Violation>) {
                     crate_key: key.clone(),
                     name: c.name.clone(),
                     url: url.clone(),
+                });
+            }
+        }
+    }
+}
+
+/// Detect drift between `quirks::REGISTRY` and the emitted spec. If
+/// a crate appears in the registry but the spec's entry has empty
+/// `quirks`, gen-cargo's emission loop regressed. Per-name lookup —
+/// O(spec crates * registered names), trivially small (registry is
+/// hand-curated, <100 entries indefinitely).
+fn check_quirks_registry_consistency(spec: &BuildSpec, out: &mut Vec<Violation>) {
+    for registered in crate::quirks::registered_crate_names() {
+        for (key, c) in &spec.crates {
+            if c.name == registered && c.quirks.is_empty() {
+                let expected = crate::quirks::for_crate(registered).len();
+                out.push(Violation::QuirkRegisteredButNotEmitted {
+                    crate_key: key.clone(),
+                    name: c.name.clone(),
+                    expected_quirks: expected,
                 });
             }
         }
@@ -325,6 +357,7 @@ mod tests {
                 proc_macro: false,
                 build_script: None,
                 links: None,
+                quirks: vec![],
                 build_rust_crate_args: Default::default(),
                 binaries: vec![],
                 lib_target: None,

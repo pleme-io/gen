@@ -177,5 +177,8 @@ fn violation_locus(v: &crate::invariants::Violation) -> (&'static str, Option<St
         WorkspaceMemberMissingLibTarget { key, .. } => {
             ("workspace-member-missing-lib-target", Some(key.clone()))
         }
+        QuirkRegisteredButNotEmitted { crate_key, .. } => {
+            ("quirk-registered-but-not-emitted", Some(crate_key.clone()))
+        }
     }
 }

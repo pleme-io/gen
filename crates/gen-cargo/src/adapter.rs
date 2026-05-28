@@ -174,5 +174,8 @@ fn violation_locus(v: &crate::invariants::Violation) -> (&'static str, Option<St
             ("registry-url-not-canonical", Some(crate_key.clone()))
         }
         StaleSchemaVersion { .. } => ("stale-schema-version", None),
+        WorkspaceMemberMissingLibTarget { key, .. } => {
+            ("workspace-member-missing-lib-target", Some(key.clone()))
+        }
     }
 }

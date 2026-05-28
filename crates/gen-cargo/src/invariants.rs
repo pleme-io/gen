@@ -72,6 +72,21 @@ pub enum Violation {
     /// SCHEMA_VERSION. Means the spec was emitted by an older gen
     /// and is missing fields downstream consumers rely on.
     StaleSchemaVersion { found: u32, expected: u32 },
+    /// I1 of the GEN TYPED-SPEC CONTRACT (org-level directive
+    /// `theory/GEN-TYPED-SPEC-CONTRACT.md`): a workspace member must
+    /// emit `lib_target = Some(_)` whenever the package has a
+    /// library target, even at the cargo default name/path. Without
+    /// it, substrate's lockfile-builder (which uses `src =
+    /// workspaceSrc` for path-source members) resolves `src/lib.rs`
+    /// against the workspace root instead of the member subdir,
+    /// producing no rlib and breaking every consumer that links the
+    /// member.
+    ///
+    /// Provable on the spec alone: a workspace member with
+    /// `binaries.is_empty() && lib_target.is_none()` has zero build
+    /// targets — it produces nothing. That's a stale-gen-cargo or
+    /// emission-regression signature.
+    WorkspaceMemberMissingLibTarget { key: String, name: String },
 }
 
 /// Run every invariant. Returns the violation list (empty on success).
@@ -89,6 +104,7 @@ pub fn check(spec: &BuildSpec) -> Vec<Violation> {
     check_build_rust_crate_args(spec, &mut out);
     check_registry_url_canonical(spec, &mut out);
     check_schema_version(spec, &mut out);
+    check_workspace_member_lib_targets(spec, &mut out);
     // duplicate-key check: a sanity check on IndexMap usage.
     // (IndexMap dedupes on insert, so duplicates can only happen if
     // the source data already had them — we re-verify here for
@@ -134,6 +150,35 @@ fn check_schema_version(spec: &BuildSpec, out: &mut Vec<Violation>) {
             found: spec.version,
             expected: crate::build_spec::SCHEMA_VERSION,
         });
+    }
+}
+
+/// I1 — workspace members must declare at least one build target.
+///
+/// A spec where a workspace_member has neither a library target
+/// (`lib_target`) nor any binary targets (`binaries`) cannot have
+/// been emitted correctly: cargo-metadata always reports at least
+/// one target for any non-virtual member, and gen-cargo's lib_target
+/// detection must always populate `lib_target` for workspace members
+/// (the `is_default && !is_member { None }` suppression branch in
+/// `build_spec.rs` is correctness-bearing only for non-members). A
+/// member with both empty signals down to the substrate side as an
+/// unbuildable target — substrate's lockfile-builder then sees no
+/// libName/libPath, falls back to `src/lib.rs` resolved against
+/// `workspaceSrc` (the workspace root, not the member subdir), and
+/// rustc never runs the lib build. Catches stale-gen-cargo specs that
+/// pre-date the workspace-member emission rule.
+fn check_workspace_member_lib_targets(spec: &BuildSpec, out: &mut Vec<Violation>) {
+    for key in &spec.workspace_members {
+        let Some(c) = spec.crates.get(key) else {
+            continue; // separately reported by check_workspace_members.
+        };
+        if c.binaries.is_empty() && c.lib_target.is_none() {
+            out.push(Violation::WorkspaceMemberMissingLibTarget {
+                key: key.clone(),
+                name: c.name.clone(),
+            });
+        }
     }
 }
 
@@ -255,7 +300,7 @@ mod tests {
 
     fn empty_spec() -> BuildSpec {
         BuildSpec {
-            version: 2,
+            version: crate::build_spec::SCHEMA_VERSION,
             workspace: WorkspaceSpec {
                 root: "/x".into(),
                 members: vec![],
@@ -453,6 +498,72 @@ mod tests {
         let ja = serde_json::to_string(&a).unwrap();
         let jb = serde_json::to_string(&b).unwrap();
         assert_eq!(ja, jb, "spec must be byte-deterministic across runs");
+    }
+
+    #[test]
+    fn workspace_member_with_no_targets_is_caught() {
+        // I1 — a workspace member with neither lib_target nor binaries
+        // is the stale-gen-cargo signature (ishou-render-style). The
+        // spec is provably unbuildable; the check must fire.
+        let mut s = empty_spec();
+        let (k, c) = crate_at("ishou-render-0.1.0", "ishou-render", "0.1.0", path_src());
+        s.crates.insert(k.clone(), c);
+        s.workspace_members.push(k.clone());
+        s.root_crate = k.clone();
+        let v = check(&s);
+        assert!(
+            v.iter().any(|x| matches!(
+                x,
+                Violation::WorkspaceMemberMissingLibTarget { key, .. } if key == "ishou-render-0.1.0"
+            )),
+            "expected WorkspaceMemberMissingLibTarget for ishou-render, got: {v:?}"
+        );
+    }
+
+    #[test]
+    fn workspace_member_with_lib_target_is_well_formed() {
+        // Counter-example: same member but with lib_target populated
+        // (the post-fix gen-cargo emission). Must pass without
+        // WorkspaceMemberMissingLibTarget.
+        use crate::build_spec::LibTargetSpec;
+        let mut s = empty_spec();
+        let (k, mut c) = crate_at("ishou-render-0.1.0", "ishou-render", "0.1.0", path_src());
+        c.lib_target = Some(LibTargetSpec {
+            name: "ishou_render".into(),
+            path: "src/lib.rs".into(),
+        });
+        s.crates.insert(k.clone(), c);
+        s.workspace_members.push(k.clone());
+        s.root_crate = k;
+        let v = check(&s);
+        assert!(
+            !v.iter()
+                .any(|x| matches!(x, Violation::WorkspaceMemberMissingLibTarget { .. })),
+            "expected no WorkspaceMemberMissingLibTarget when lib_target is Some, got: {v:?}"
+        );
+    }
+
+    #[test]
+    fn workspace_member_with_only_binaries_is_well_formed() {
+        // Counter-example: a member that's a pure-binary crate (no
+        // [lib] section) is legitimately lib_target=None as long as
+        // binaries is non-empty. The check must not fire.
+        use crate::build_spec::CrateBinSpec;
+        let mut s = empty_spec();
+        let (k, mut c) = crate_at("ryn-cli-0.1.0", "ryn-cli", "0.1.0", path_src());
+        c.binaries = vec![CrateBinSpec {
+            name: "ryn-cli".into(),
+            path: "src/main.rs".into(),
+        }];
+        s.crates.insert(k.clone(), c);
+        s.workspace_members.push(k.clone());
+        s.root_crate = k;
+        let v = check(&s);
+        assert!(
+            !v.iter()
+                .any(|x| matches!(x, Violation::WorkspaceMemberMissingLibTarget { .. })),
+            "expected no WorkspaceMemberMissingLibTarget when binaries is non-empty, got: {v:?}"
+        );
     }
 
     #[test]

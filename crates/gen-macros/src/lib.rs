@@ -848,6 +848,163 @@ pub fn derive_backend_error(input: TokenStream) -> TokenStream {
     expanded.into()
 }
 
+/// `#[derive(OutcomeLattice)]` — auto-implement an OutcomeLattice
+/// trait from per-variant severity attributes.
+///
+/// Expected trait shape:
+///
+/// ```ignore
+/// pub trait OutcomeLattice: Clone + PartialEq {
+///     fn severity(&self) -> u32;
+///     fn baseline() -> Self;
+///     fn worst(&self, other: &Self) -> Self { ... }
+///     fn best(&self, other: &Self) -> Self { ... }
+/// }
+/// ```
+///
+/// The derive emits `severity()` (from per-variant attrs) +
+/// `baseline()` (returning the single `#[outcome(baseline)]`-tagged
+/// unit variant). `worst` + `best` come from the trait's defaults.
+///
+/// # Attributes
+///
+/// - `#[outcome_lattice(trait_path = "::path::to::OutcomeLattice")]`
+///   — fully-qualified trait path (default unqualified
+///   `OutcomeLattice` — consumer must `use the_trait::OutcomeLattice`
+///   in scope).
+/// - Per-variant `#[outcome(severity = N)]` — severity for this
+///   variant (u32; default 0 if unspecified).
+/// - Per-variant `#[outcome(baseline)]` — marks the unit variant
+///   that `baseline()` returns. Exactly ONE variant must carry this;
+///   it must be a unit variant.
+///
+/// # Example
+///
+/// ```ignore
+/// use magma_converge::outcome::OutcomeLattice;
+///
+/// #[derive(Clone, PartialEq, gen_platform::OutcomeLattice)]
+/// enum ReadyState {
+///     #[outcome(severity = 0, baseline)]
+///     Ready,
+///     #[outcome(severity = 1)]
+///     Unknown,
+///     #[outcome(severity = 2)]
+///     InProgress { reason: String },
+///     #[outcome(severity = 3)]
+///     Failed { reason: String },
+/// }
+///
+/// // Auto-generated:
+/// //   impl OutcomeLattice for ReadyState {
+/// //       fn severity(&self) -> u32 { match self { ... } }
+/// //       fn baseline() -> Self { Self::Ready }
+/// //   }
+/// ```
+#[proc_macro_derive(OutcomeLattice, attributes(outcome_lattice, outcome))]
+pub fn derive_outcome_lattice(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let enum_name = input.ident.clone();
+
+    let Data::Enum(de) = input.data.clone() else {
+        return syn::Error::new_spanned(
+            &enum_name,
+            "#[derive(OutcomeLattice)] is only valid on enums",
+        )
+        .to_compile_error()
+        .into();
+    };
+
+    let mut trait_path: syn::Path = syn::parse_quote!(OutcomeLattice);
+    for attr in &input.attrs {
+        if !attr.path().is_ident("outcome_lattice") {
+            continue;
+        }
+        let _ = attr.parse_nested_meta(|meta| {
+            if meta.path.is_ident("trait_path") {
+                let value = meta.value()?;
+                let s: syn::LitStr = value.parse()?;
+                if let Ok(p) = syn::parse_str::<syn::Path>(&s.value()) {
+                    trait_path = p;
+                }
+            }
+            Ok(())
+        });
+    }
+
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+
+    let mut severity_arms: Vec<proc_macro2::TokenStream> = Vec::new();
+    let mut baseline_variant: Option<syn::Ident> = None;
+    for v in &de.variants {
+        let v_ident = &v.ident;
+        let pattern = discriminant_variant_pattern(v);
+        let mut sev: u32 = 0;
+        let mut is_baseline = false;
+        for attr in &v.attrs {
+            if !attr.path().is_ident("outcome") {
+                continue;
+            }
+            let _ = attr.parse_nested_meta(|meta| {
+                if meta.path.is_ident("severity") {
+                    let value = meta.value()?;
+                    let lit: syn::LitInt = value.parse()?;
+                    sev = lit.base10_parse::<u32>().unwrap_or(0);
+                } else if meta.path.is_ident("baseline") {
+                    is_baseline = true;
+                }
+                Ok(())
+            });
+        }
+        if is_baseline {
+            if !matches!(v.fields, Fields::Unit) {
+                return syn::Error::new_spanned(
+                    v_ident,
+                    "#[outcome(baseline)] requires a unit variant",
+                )
+                .to_compile_error()
+                .into();
+            }
+            if baseline_variant.is_some() {
+                return syn::Error::new_spanned(
+                    v_ident,
+                    "exactly one variant may carry #[outcome(baseline)]",
+                )
+                .to_compile_error()
+                .into();
+            }
+            baseline_variant = Some(v_ident.clone());
+        }
+        let lit = syn::LitInt::new(&sev.to_string(), proc_macro2::Span::call_site());
+        severity_arms.push(quote! { #pattern => #lit });
+    }
+
+    let Some(baseline_ident) = baseline_variant else {
+        return syn::Error::new_spanned(
+            &enum_name,
+            "exactly one variant must carry #[outcome(baseline)] to derive OutcomeLattice",
+        )
+        .to_compile_error()
+        .into();
+    };
+
+    let expanded = quote! {
+        impl #impl_generics #trait_path for #enum_name #ty_generics #where_clause {
+            fn severity(&self) -> u32 {
+                match self {
+                    #(#severity_arms),*
+                }
+            }
+
+            fn baseline() -> Self {
+                Self::#baseline_ident
+            }
+        }
+    };
+
+    expanded.into()
+}
+
 /// Convert PascalCase variant identifiers to kebab-case serde tags.
 /// Mirrors `#[serde(rename_all = "kebab-case")]` semantics via
 /// heck-style word boundaries: lower→upper and digit→upper both

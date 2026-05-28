@@ -55,3 +55,5 @@ gen-npm = { workspace = true }
 gen-pip = { path = "../gen-pip" }
 gen-poetry = { path = "../gen-poetry" }
 gen-swift = { path = "../gen-swift" }
+gen-platform = { workspace = true }
+tempfile = "3"

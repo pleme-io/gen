@@ -64,11 +64,13 @@
 pub mod catalog;
 pub mod composed;
 pub mod dispatcher;
+pub mod emit;
 pub mod merge;
 
 pub use catalog::{by_label as catalog_by_label, registered as catalog_registered, DispatcherEntry};
 pub use composed::{ComposedDispatcher, ComposedSource};
 pub use dispatcher::{Dispatcher, DispatcherError, SealedDispatcher};
+pub use emit::to_helpers_skeleton;
 pub use merge::MergeStrategy;
 
 // Re-exports — single canonical Rust handle.

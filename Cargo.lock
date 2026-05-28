@@ -469,6 +469,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "shikumi",
+ "tempfile",
  "thiserror 2.0.18",
 ]
 

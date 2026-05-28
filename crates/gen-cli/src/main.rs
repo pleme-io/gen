@@ -108,6 +108,18 @@ enum Cmd {
         #[arg(long)]
         from_catalog: bool,
     },
+    /// `gen dispatchers-skeleton` — emit substrate `quirk-apply.nix`
+    /// skeleton for a registered dispatcher catalog entry. One Rust
+    /// enum + one CLI call → typed Nix dispatch arm. Operator fills
+    /// in the class-helper function bodies; the dispatch table is
+    /// mechanical.
+    #[command(name = "dispatchers-skeleton")]
+    DispatchersSkeleton {
+        /// Catalog label to emit (e.g. `gen.cargo.crate-quirk`).
+        /// List available via `gen dispatchers --from-catalog`.
+        #[arg(long)]
+        label: String,
+    },
     /// Render the workspace at <path> to Nix source (crate2nix shape).
     /// Output goes to `cfg.render.output_path` or stdout.
     Render {
@@ -597,6 +609,15 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             // + reproducible diffing.
             out.sort_by_key(|e| e.ecosystem);
             emit(&out, cli.format)
+        }
+        Cmd::DispatchersSkeleton { label } => {
+            let entry = gen_platform::catalog_by_label(label).ok_or_else(|| {
+                CliError::Other(format!(
+                    "no dispatcher registered with label '{label}'. Run `gen dispatchers --from-catalog` to list available labels."
+                ))
+            })?;
+            print!("{}", gen_platform::to_helpers_skeleton(entry));
+            Ok(())
         }
         Cmd::Quirks { adapter } => {
             // Distributed-slice introspection: every adapter

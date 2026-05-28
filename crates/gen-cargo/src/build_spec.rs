@@ -26,7 +26,7 @@ use crate::error::{CargoError, Result};
 ///     kwargs); + `links` + universal `preBuild`. Substrate's
 ///     lockfile-builder asserts on this version — older specs MUST
 ///     be regenerated via `gen build .` (no silent fallback).
-pub const SCHEMA_VERSION: u32 = 3;
+pub const SCHEMA_VERSION: u32 = 4;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BuildSpec {
@@ -253,6 +253,41 @@ pub struct CrateDepSpec {
     pub uses_default_features: bool,
     pub optional: bool,
     pub target: Option<String>,
+    /// Typed tree placement (#12 — substrate dispatch in Rust, not Nix).
+    ///
+    /// Each resolved dep edge declares whether the dep is consumed
+    /// from the TARGET tree (built for the workload's arch — e.g.
+    /// `x86_64-unknown-linux-musl` for rio) or the HOST tree (built
+    /// for the build machine's arch — e.g. `aarch64-apple-darwin`
+    /// for cid). The substrate's lockfile-builder reads this field
+    /// directly instead of reconstructing the placement from
+    /// `proc_macro` + dep-kind in Nix.
+    ///
+    /// Rules:
+    /// - `kind = Build` (build.rs deps)        → Host
+    /// - `kind = Normal` + target's `proc_macro` → Host
+    /// - `kind = Normal` + target not procmacro → Target
+    /// - `kind = Dev`                          → Host (deferred; today
+    ///                                            dev deps are dropped
+    ///                                            from runtime/build
+    ///                                            graphs)
+    ///
+    /// Defaults to Target on deserialize for compat with v3 specs
+    /// (#[serde(default)] picks Target as the zero variant).
+    #[serde(default)]
+    pub tree: BuildTree,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "kebab-case")]
+pub enum BuildTree {
+    /// Built for the workload's arch (musl/linux/darwin). Default —
+    /// most runtime deps land here.
+    #[default]
+    Target,
+    /// Built for the build-machine's arch. Proc-macros, build.rs
+    /// scripts, and anything `kind = Build` go here.
+    Host,
 }
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
@@ -297,11 +332,26 @@ fn host_target_triple() -> &'static str {
 
 /// Generate the complete typed BuildSpec for the workspace at `root`,
 /// targeting the host. cargo metadata is invoked with
-/// `--filter-platform=<host>` so the resolve graph contains only deps
-/// active for this target — the substrate Nix side never has to
-/// evaluate cfg() expressions itself.
+/// Generates the MULTI-PLATFORM BuildSpec by default — `cargo metadata`
+/// is invoked WITHOUT `--filter-platform`, so the resolve graph
+/// contains every cfg-conditional dep edge across all targets the
+/// workspace supports.
+///
+/// This is the right default for a committed `Cargo.build-spec.json`:
+/// it carries enough information for substrate to build the workspace
+/// on any target without re-running gen. The per-target filtered emit
+/// is `generate_for_target(root, <triple>)`, used by substrate's IFD
+/// auto-regen path to narrow the spec when an exact target is known
+/// (invariant I4).
+///
+/// Earlier behavior host-filtered here. That broke the gen-bootstrap
+/// chain: gen's own committed spec, emitted on a darwin author host,
+/// dropped linux-only deps (mio) — making gen unbuildable on linux
+/// from the committed spec until the IFD could regen it (but the IFD
+/// itself needs a built gen). Multi-platform default eliminates the
+/// chicken-and-egg.
 pub fn generate(root: &Path) -> Result<BuildSpec> {
-    generate_for_target(root, host_target_triple())
+    generate_for_target(root, "")
 }
 
 /// Generate the BuildSpec for an explicit target triple. Used by
@@ -647,6 +697,25 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                     None => (Vec::new(), true, false),
                 };
 
+                // I5: typed BuildTree placement — substrate consumes
+                // this directly instead of reconstructing host/target
+                // dispatch in Nix from proc_macro + kind. Rules
+                // (mirrored in BuildTree's docstring):
+                //   - kind=Build (build.rs deps)      → Host
+                //   - kind=Normal + dep.proc_macro    → Host
+                //   - kind=Normal otherwise           → Target
+                //   - kind=Dev                        → Host (dev deps are
+                //     filtered out before reaching substrate; placement
+                //     is documented for completeness)
+                let dep_is_proc_macro = dep_pkg
+                    .targets
+                    .iter()
+                    .any(|t| t.kind.iter().any(|k| k == "proc-macro"));
+                let tree = match kind {
+                    DepKind::Build | DepKind::Dev => BuildTree::Host,
+                    DepKind::Normal if dep_is_proc_macro => BuildTree::Host,
+                    DepKind::Normal => BuildTree::Target,
+                };
                 dependencies.push(CrateDepSpec {
                     name: local_name.clone(),
                     package_key: package_key.clone(),
@@ -655,6 +724,7 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                     uses_default_features,
                     optional,
                     target,
+                    tree,
                 });
             }
         }

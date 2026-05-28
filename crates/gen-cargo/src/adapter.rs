@@ -133,6 +133,23 @@ impl Adapter for CargoAdapter {
             "cargo sbom is not implemented yet (M2)".to_string(),
         ))
     }
+
+    /// Expose the typed CrateQuirk registry through the
+    /// adapter-agnostic envelope. Operators can `gen quirks list`
+    /// and tooling can introspect what the cargo adapter knows
+    /// about — without depending on the gen-cargo crate directly.
+    fn quirks_registry(&self) -> Vec<gen_types::AdapterQuirkEntry> {
+        crate::quirks::registry()
+            .into_iter()
+            .map(|(name, quirks)| gen_types::AdapterQuirkEntry {
+                package: name.to_string(),
+                quirks: quirks
+                    .into_iter()
+                    .filter_map(|q| serde_json::to_value(&q).ok())
+                    .collect(),
+            })
+            .collect()
+    }
 }
 
 /// Construct an `AdapterCtx` from a workspace root path. Convenience

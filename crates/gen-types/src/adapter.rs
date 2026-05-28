@@ -78,6 +78,39 @@ pub trait Adapter: Send + Sync {
     /// `gen sbom <path>` — software bill of materials in the given
     /// format. Pure function of the build-spec.
     fn sbom(&self, ctx: &AdapterCtx, format: SbomFormat) -> AdapterResult<Sbom>;
+
+    /// `gen quirks list` — typed registry of upstream third-party
+    /// package quirks the adapter knows about. Each adapter's quirks
+    /// shape is its own (CrateQuirk for Cargo, future NpmQuirk for
+    /// npm, GemQuirk for Bundler) — the trait surface stays uniform
+    /// via the opaque `serde_json::Value` envelope.
+    ///
+    /// Default `quirks_registry` returns empty — adapters with a
+    /// registry override to expose it. Substrate consumers can
+    /// introspect every ecosystem's quirks through a single call.
+    ///
+    /// The CANONICAL surface for adding a new quirk is the adapter's
+    /// own typed registry; this trait method is the operator-facing
+    /// + tooling-discovery surface.
+    fn quirks_registry(&self) -> Vec<AdapterQuirkEntry> {
+        Vec::new()
+    }
+}
+
+/// One entry in an Adapter's quirks registry: a package name plus
+/// the ecosystem-specific typed-quirk payloads. The `quirks` field is
+/// `serde_json::Value` so each adapter can carry its own typed shape
+/// without polluting the trait with a generic parameter — the JSON
+/// envelope is what substrate's dispatch layer reads anyway.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct AdapterQuirkEntry {
+    /// Package name (`crate.name` for Cargo, `package.json` `name`
+    /// for npm, gemspec `name` for Bundler).
+    pub package: String,
+    /// Quirk payloads, opaque to the trait. Each adapter shapes
+    /// these as its own typed enum (gen-cargo: `CrateQuirk`); the
+    /// JSON form is what substrate dispatches on.
+    pub quirks: Vec<serde_json::Value>,
 }
 
 /// Context every adapter verb receives. Captures workspace root +

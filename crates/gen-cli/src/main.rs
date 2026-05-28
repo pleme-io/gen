@@ -63,6 +63,16 @@ enum Cmd {
     },
     /// List the adapter routing table (filename → adapter name).
     Adapters,
+    /// `gen quirks` — operator-visible view of every adapter's typed
+    /// quirk registry. The canonical surface for "what does substrate
+    /// know about?" — discoverable from one command per adapter.
+    /// JSON output by default (machine + AST-renderer consumption).
+    Quirks {
+        /// Filter to a single adapter by name (e.g. `cargo`, `npm`).
+        /// Default: every adapter the gen-cli was built against.
+        #[arg(long)]
+        adapter: Option<String>,
+    },
     /// Render the workspace at <path> to Nix source (crate2nix shape).
     /// Output goes to `cfg.render.output_path` or stdout.
     Render {
@@ -474,6 +484,44 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
         Cmd::Scaffold { shape, name, dir, owner } => {
             scaffold_repo(*shape, name, dir.as_deref(), owner)
                 .map_err(|e| CliError::Other(format!("scaffold: {e}")))
+        }
+        Cmd::Quirks { adapter } => {
+            // Operator-visible introspection of every adapter's typed
+            // quirk registry. The CargoAdapter exposes the CrateQuirk
+            // registry via the Adapter::quirks_registry surface; future
+            // npm + bundler adapters expose their own typed shapes via
+            // the same trait method. One verb, every ecosystem.
+            #[derive(serde::Serialize)]
+            struct AdapterQuirks<'a> {
+                adapter: &'a str,
+                entries: Vec<gen_types::AdapterQuirkEntry>,
+            }
+            let mut out: Vec<AdapterQuirks> = Vec::new();
+            // Cargo
+            let cargo = gen_cargo::adapter::CargoAdapter;
+            if adapter.as_deref().map(|a| a == "cargo").unwrap_or(true) {
+                out.push(AdapterQuirks {
+                    adapter: "cargo",
+                    entries: gen_types::Adapter::quirks_registry(&cargo),
+                });
+            }
+            // npm + bundler: stubs return empty Vec via default impl.
+            // Surface them so operators see what's available.
+            if adapter.as_deref().map(|a| a == "npm").unwrap_or(true) {
+                let npm = gen_npm::adapter::NpmAdapter;
+                out.push(AdapterQuirks {
+                    adapter: "npm",
+                    entries: gen_types::Adapter::quirks_registry(&npm),
+                });
+            }
+            if adapter.as_deref().map(|a| a == "bundler").unwrap_or(true) {
+                let bundler = gen_bundler::adapter::BundlerAdapter;
+                out.push(AdapterQuirks {
+                    adapter: "bundler",
+                    entries: gen_types::Adapter::quirks_registry(&bundler),
+                });
+            }
+            emit(&out, cli.format)
         }
     }
 }

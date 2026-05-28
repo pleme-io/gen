@@ -295,25 +295,31 @@ pub fn derive_typed_dispatcher(input: TokenStream) -> TokenStream {
 }
 
 /// Convert PascalCase variant identifiers to kebab-case serde tags.
-/// Mirrors `#[serde(rename_all = "kebab-case")]`.
+/// Mirrors `#[serde(rename_all = "kebab-case")]` semantics via
+/// heck-style word boundaries: lower→upper and digit→upper both
+/// trigger a hyphen. `Wasm32Wasi` → `wasm32-wasi`.
 fn to_kebab_case(s: &str) -> String {
     let mut out = String::with_capacity(s.len() + 4);
     let mut prev_lower = false;
+    let mut prev_digit = false;
     for ch in s.chars() {
         if ch.is_ascii_uppercase() {
-            if prev_lower {
+            if prev_lower || prev_digit {
                 out.push('-');
             }
             for c in ch.to_lowercase() {
                 out.push(c);
             }
             prev_lower = false;
+            prev_digit = false;
         } else if ch.is_ascii_digit() {
             out.push(ch);
             prev_lower = false;
+            prev_digit = true;
         } else {
             out.push(ch);
             prev_lower = true;
+            prev_digit = false;
         }
     }
     out

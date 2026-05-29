@@ -1243,7 +1243,19 @@ pub fn generate_and_write(root: &Path) -> Result<std::path::PathBuf> {
 /// operator `gen check` diagnostics) use the typed `Freshness`
 /// variants to make decisions: `Fresh` means skip regeneration,
 /// `Drifted` / `Missing` / `UnhashedSpec` mean a regen is needed.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+///
+/// **Typed-dispatcher catalog member** (`gen.cargo.freshness`). The
+/// 14th consumer class in gen-platform's fleet-wide catalog, joining
+/// the per-ecosystem crate-quirks, cofre.backend-kind,
+/// shigoto.retry-outcome, etc. Adding a Freshness variant
+/// mechanically bumps `variant_count` in the fleet-catalog-coverage
+/// test — the substrate enforces no silent drift.
+#[derive(
+    Clone, Debug, PartialEq, Eq, Serialize, Deserialize,
+    gen_macros::TypedDispatcher,
+    gen_macros::Discriminant,
+    gen_macros::IsVariant,
+)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum Freshness {
     /// `Cargo.lock` hashes match the spec's stored hash — spec is
@@ -1271,11 +1283,9 @@ pub enum Freshness {
 }
 
 impl Freshness {
-    /// True iff the spec is byte-equal to a fresh regen.
-    #[must_use]
-    pub fn is_fresh(&self) -> bool {
-        matches!(self, Freshness::Fresh { .. })
-    }
+    // `is_fresh()` / `is_drifted()` / `is_unhashed_spec()` /
+    // `is_missing_spec()` / `is_missing_lock()` are emitted by the
+    // `gen_macros::IsVariant` derive — no hand-rolled body needed.
 
     /// True iff `gen build` would do meaningful work.
     #[must_use]
@@ -1520,6 +1530,19 @@ fn pathdiff_relative(from: &str, base: &str) -> Option<String> {
     from.strip_prefix(&with_slash).map(String::from)
 }
 
+// Fleet-wide dispatcher-catalog registration for gen-cargo's typed
+// spec freshness surface. 14th consumer class in gen-platform's
+// catalog (joining gen.cargo.crate-quirk, cofre.backend-kind,
+// shigoto.retry-outcome, kura.node-kind, etc.). Adding a Freshness
+// variant mechanically bumps `variant_count` against the
+// fleet-catalog-coverage-test snapshot — silent drift is a
+// substrate-test failure, not a runtime surprise.
+//
+// Operator surface: `gen dispatchers list` reports the entry;
+// substrate emitters can generate the matching dispatch skeleton
+// from the typed shape without naming `Freshness` directly.
+gen_platform::register_dispatcher!("gen.cargo.freshness", Freshness);
+
 #[cfg(test)]
 mod path_helper_tests {
     use super::{pathdiff_relative, relative_path_escaping};
@@ -1684,6 +1707,79 @@ mod path_helper_tests {
         assert_eq!(
             super::check_freshness(&dir).summary(),
             "missing-spec"
+        );
+    }
+
+    // ------------------------------------------------------------------
+    // Typed-dispatcher catalog membership for Freshness.
+    // ------------------------------------------------------------------
+    //
+    // The forcing-function pair: every Freshness variant has a stable
+    // `summary()` AND the derived `discriminant()`; they must agree
+    // and they must cover all 5 variants. If a variant lands without
+    // a summary() arm OR the derive drops, the substrate fleet-
+    // catalog-coverage-test fails by construction — but the round-
+    // trip here surfaces the drift in the gen-cargo unit tests
+    // first.
+    #[test]
+    fn freshness_summary_matches_discriminant_across_all_variants() {
+        use super::Freshness;
+        let cases = [
+            Freshness::Fresh { spec_hash: "a".into(), lock_hash: "a".into() },
+            Freshness::Drifted { spec_hash: "a".into(), lock_hash: "b".into() },
+            Freshness::UnhashedSpec { lock_hash: "c".into() },
+            Freshness::MissingSpec { lock_hash: "d".into() },
+            Freshness::MissingLock,
+        ];
+        for f in &cases {
+            assert_eq!(
+                f.summary(),
+                f.discriminant(),
+                "Freshness::{:?} — summary() and discriminant() must agree",
+                f
+            );
+        }
+    }
+
+    #[test]
+    fn freshness_is_variant_helpers_cover_every_arm() {
+        use super::Freshness;
+        let fresh = Freshness::Fresh { spec_hash: "x".into(), lock_hash: "x".into() };
+        let drifted = Freshness::Drifted { spec_hash: "x".into(), lock_hash: "y".into() };
+        let unhashed = Freshness::UnhashedSpec { lock_hash: "x".into() };
+        let missing_spec = Freshness::MissingSpec { lock_hash: "x".into() };
+        let missing_lock = Freshness::MissingLock;
+
+        // Each helper recognizes its own variant, rejects every other.
+        assert!(fresh.is_fresh() && !drifted.is_fresh() && !unhashed.is_fresh());
+        assert!(drifted.is_drifted() && !fresh.is_drifted() && !missing_lock.is_drifted());
+        assert!(unhashed.is_unhashed_spec() && !fresh.is_unhashed_spec());
+        assert!(missing_spec.is_missing_spec() && !drifted.is_missing_spec());
+        assert!(missing_lock.is_missing_lock() && !fresh.is_missing_lock());
+    }
+
+    #[test]
+    fn freshness_registered_in_fleet_catalog() {
+        // The substrate fleet-catalog-coverage-test asserts
+        // `variant_count == 5` against the snapshot. This test is
+        // the matching forcing function on the Rust side: if a
+        // variant lands or drops, the count diverges from 5 AND
+        // the substrate test fails — drift can't slip through.
+        use gen_platform::TypedDispatcherTrait;
+        assert_eq!(
+            <super::Freshness as TypedDispatcherTrait>::variant_count(),
+            5,
+            "Freshness variant_count must stay in lockstep with \
+             substrate/lib/build/shared/fleet-catalog-coverage-test.nix \
+             (label = gen.cargo.freshness)"
+        );
+        // Variant kinds are the kebab-case discriminants used by
+        // serde + the catalog snapshot. Exact set is part of the
+        // catalog contract — adding / renaming a kind is a
+        // catalog-level change that must roll through the snapshot.
+        assert_eq!(
+            <super::Freshness as TypedDispatcherTrait>::variant_kinds(),
+            vec!["fresh", "drifted", "unhashed-spec", "missing-spec", "missing-lock"],
         );
     }
 }

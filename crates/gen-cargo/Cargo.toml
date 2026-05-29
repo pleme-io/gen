@@ -29,6 +29,14 @@ sha2 = "0.10"
 rayon = "1.10"
 cargo_metadata = { workspace = true }
 inventory = { workspace = true }
+# Pure-Rust git fetcher + NAR-sha256 — replaces the brittle
+# nix-prefetch-git shell-script call chain. See theory/RUST-NATIVE-PREFETCH.md.
+# Versions match what pleme-io/sui's sui-compat uses so the substrate
+# NAR semantics stay aligned fleet-wide.
+gix = { version = "0.83", default-features = false, features = ["sha1", "blocking-network-client", "blocking-http-transport-reqwest-rust-tls", "worktree-mutation", "revision", "max-performance-safe"] }
+nix-nar = "0.3"
+base64 = "0.22"
+tempfile = "3"
 
 [dev-dependencies]
-tempfile = "3"
+proptest = "1"

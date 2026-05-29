@@ -1340,9 +1340,15 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
     // (no IFD, no impure builtins.fetchGit). Sequential — could be
     // parallelized but git deps are typically few.
     //
+    // Pure-Rust via `GitPrefetcher` trait (gix clone + nix-nar
+    // streaming NAR-sha256 + SRI encode). No subprocess, no shell
+    // script, no nix-prefetch-git/git/nix on the substrate IFD
+    // sandbox PATH. See `theory/RUST-NATIVE-PREFETCH.md` for the
+    // design + `git_prefetcher.rs` for the impl.
+    //
     // Hard-fail on prefetch error. Earlier this was a swallowed
-    // warning: when nix-prefetch-git couldn't reach the remote
-    // (sandbox DNS, transient network), gen continued and emitted a
+    // warning: when prefetch couldn't reach the remote (sandbox DNS,
+    // transient network), gen continued and emitted a
     // CrateSource::Git with `sha256: None`. substrate's
     // lockfile-builder then generated a `pkgs.fetchgit` call without
     // outputHash — which produces a NON-FOD derivation that's denied
@@ -1351,22 +1357,18 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
     // inside an unrelated build. Surfaced via the rio rebuild on
     // 2026-05-29; root-causing the malformed hayai-731ad59.drv took
     // significantly more time than the 5-line fix to write.
-    //
-    // Visibility wins: a hard failure during `gen build` points the
-    // operator at the actual missing piece (network / nix-prefetch-git
-    // / a deleted rev) instead of producing a poisoned spec that
-    // hides the bug behind layers of downstream substrate machinery.
+    let prefetcher = crate::git_prefetcher::default_prefetcher();
     for crate_spec in crates.values_mut() {
         if let CrateSource::Git { url, rev, sha256, .. } = &mut crate_spec.source {
             if sha256.is_none() && !url.is_empty() && !rev.is_empty() {
-                let hash = prefetch_git_sha256(url, rev).map_err(|e| {
+                let hash = prefetcher.prefetch(url, rev).map_err(|e| {
                     CargoError::PrefetchSha256Failed {
                         url: url.clone(),
                         rev: rev.clone(),
                         reason: e.to_string(),
                     }
                 })?;
-                *sha256 = Some(hash);
+                *sha256 = Some(hash.sri);
             }
         }
     }
@@ -1427,47 +1429,9 @@ fn parse_owner_repo(url: &str) -> Option<String> {
     Some(format!("{owner}/{name}"))
 }
 
-/// Run `nix-prefetch-git --url URL --rev REV --quiet` and parse the
-/// resulting JSON for the `sha256` field. Spawns a sub-process; needs
-/// nix-prefetch-git on PATH (nix-shell -p nix-prefetch-git satisfies).
-fn prefetch_git_sha256(url: &str, rev: &str) -> std::io::Result<String> {
-    use std::process::Command;
-    // Strip cargo's `?branch=...` / `?tag=...` / `?rev=...` query
-    // suffix — nix-prefetch-git treats the URL literally and the `?`
-    // form isn't a valid git URL.
-    let clean_url = url.split('?').next().unwrap_or(url);
-    // First try direct invocation; fall back to nix-shell wrapper.
-    let direct = Command::new("nix-prefetch-git")
-        .args(["--url", clean_url, "--rev", rev, "--quiet"])
-        .output();
-    let output = match direct {
-        Ok(o) if o.status.success() => o,
-        _ => Command::new("nix-shell")
-            .args([
-                "-p",
-                "nix-prefetch-git",
-                "--run",
-                &format!("nix-prefetch-git --url {clean_url} --rev {rev} --quiet"),
-            ])
-            .output()?,
-    };
-    if !output.status.success() {
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            format!(
-                "nix-prefetch-git failed: {}",
-                String::from_utf8_lossy(&output.stderr).trim()
-            ),
-        ));
-    }
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let v: serde_json::Value = serde_json::from_str(&stdout)
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, format!("parse: {e}")))?;
-    v["sha256"]
-        .as_str()
-        .map(String::from)
-        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::Other, "no sha256 field in output"))
-}
+// Legacy shell-out `prefetch_git_sha256` removed at 2026-05-29 —
+// replaced by the pure-Rust `git_prefetcher::GixPrefetcher` (gix +
+// nix-nar streaming NAR-sha256). See `theory/RUST-NATIVE-PREFETCH.md`.
 
 pub fn generate_and_write(root: &Path) -> Result<std::path::PathBuf> {
     generate_for_target_and_write(root, host_target_triple())

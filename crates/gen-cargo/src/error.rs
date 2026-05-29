@@ -62,9 +62,9 @@ Once the Cargo.toml dep is git-based, run `gen build --if-stale` to regenerate t
 The build spec MUST carry a fixed sha256 for every git source; emitting one \
 without sha256 would produce a non-FOD `pkgs.fetchgit` derivation that is \
 denied network access in the substrate sandbox and explodes downstream with \
-cryptic 'Could not resolve host' errors during nixos-rebuild. Ensure \
-`nix-prefetch-git` is on PATH and the remote is reachable (host-side DNS, \
-auth tokens for private repos), then re-run `gen build`."
+cryptic 'Could not resolve host' errors during nixos-rebuild. The prefetcher \
+is pure-Rust (gix + nix-nar) — check the remote is reachable (host DNS, \
+auth tokens for private repos) and the rev exists, then re-run `gen build`."
     )]
     PrefetchSha256Failed {
         url: String,

@@ -26,7 +26,7 @@ use crate::error::{CargoError, Result};
 ///     kwargs); + `links` + universal `preBuild`. Substrate's
 ///     lockfile-builder asserts on this version — older specs MUST
 ///     be regenerated via `gen build .` (no silent fallback).
-pub const SCHEMA_VERSION: u32 = 6;
+pub const SCHEMA_VERSION: u32 = 7;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BuildSpec {
@@ -57,21 +57,31 @@ pub struct BuildSpec {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub target_resolves: Option<IndexMap<String, TargetResolve>>,
     /// BLAKE3 hex (64 chars) of the workspace's Cargo.lock content at
-    /// emit time. Drives the idempotence fast-path: when `gen build`
-    /// runs and the current Cargo.lock's hash matches this value,
-    /// the spec is byte-equal to what would be re-emitted and the
-    /// write is skipped entirely (fleet-wide sweep cost becomes O(N)
-    /// hash-checks rather than O(N) full regens).
+    /// emit time. Drives a TWO-SIDED idempotence fast-path:
     ///
-    /// Missing on schema < 6 specs; `gen build` treats absent hash as
-    /// "always re-emit" for backward compat. `gen check` uses the
-    /// hash to compute typed `Freshness` per repo without writing.
+    /// 1. **Rust side** (`gen build --if-stale`, `gen check-spec`):
+    ///    cheap byte-equal-or-skip via SHA-256 string compare.
     ///
-    /// Schema bumped to 6 when this lands; substrate's
-    /// lockfile-builder treats v5 and v6 identically (the field is
-    /// purely a producer-side cache key).
+    /// 2. **Nix side** (substrate `lockfile-builder.nix`):
+    ///    `builtins.hashFile "sha256"` reads the lock natively at
+    ///    eval time, compares to this field — IFD is bypassed
+    ///    entirely when fresh. THE 10-100× win for `nix run .#rebuild`
+    ///    on a clean fleet, because each consumer's gen-IFD never
+    ///    runs at all.
+    ///
+    /// SHA-256 over BLAKE3 specifically because nix has built-in
+    /// `hashFile "sha256"` but no BLAKE3 surface; the perf cost
+    /// (~3× slower hash compute) is rounding error on a 50–500 KB
+    /// `Cargo.lock`. Single hash, both languages compute it the same
+    /// way — drift is impossible by construction.
+    ///
+    /// Missing on schema < 7 specs; downstream consumers treat
+    /// absent hash as "always re-emit" / "always re-IFD" for
+    /// backward compat. `gen check-spec` reports `UnhashedSpec`,
+    /// which `needs_regen() = true` — operators see the gap
+    /// mechanically.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub cargo_lock_hash: Option<String>,
+    pub cargo_lock_sha256: Option<String>,
 }
 
 /// Per-target resolved dep edges for every crate in the workspace's
@@ -1161,20 +1171,26 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         // generate_multi_target populates it; this single-target path
         // leaves it absent so substrate falls back to per-crate edges.
         target_resolves: None,
-        cargo_lock_hash: hash_cargo_lock(root),
+        cargo_lock_sha256: hash_cargo_lock(root),
     })
 }
 
-/// Compute the BLAKE3 hex digest of the workspace's Cargo.lock.
+/// Compute the SHA-256 hex digest of the workspace's Cargo.lock.
 /// Returns `None` when the lockfile doesn't exist (rare — `cargo
 /// metadata` would have already failed) or can't be read. Embedded
-/// in the spec as a content-addressed cache key: `gen build`
-/// re-emits only when this hash differs from the spec's stored
-/// value; `gen check` returns a typed `Freshness` based on it.
+/// in the spec as a content-addressed cache key consumed by BOTH
+/// the Rust fast-path (`gen build --if-stale`, `gen check-spec`)
+/// AND the substrate Nix-side IFD gate (`builtins.hashFile "sha256"`
+/// in `lockfile-builder.nix`). SHA-256 specifically because nix
+/// has built-in hashFile but no BLAKE3 surface; the perf cost is
+/// rounding error on <500 KB lockfiles.
 fn hash_cargo_lock(root: &Path) -> Option<String> {
+    use sha2::{Digest, Sha256};
     let lock_path = root.join("Cargo.lock");
     let bytes = std::fs::read(&lock_path).ok()?;
-    Some(blake3::hash(&bytes).to_hex().to_string())
+    let mut hasher = Sha256::new();
+    hasher.update(&bytes);
+    Some(format!("{:x}", hasher.finalize()))
 }
 
 /// Parse `owner/repo` out of a GitHub-style URL. Accepts both `.git`
@@ -1327,19 +1343,24 @@ impl Freshness {
 /// `CrateSpec`, an old schema_version, etc.) still yields a useful
 /// `Freshness` reading. The only fields we consult are `version`
 /// (reserved for future "stale schema" classification) and
-/// `cargo_lock_hash`. Any failure to parse even this minimal shape
-/// is treated as `MissingSpec`.
+/// `cargo_lock_sha256`. Any failure to parse even this minimal
+/// shape is treated as `MissingSpec`.
+///
+/// Backward-compat: also reads `cargo_lock_hash` (the v6 BLAKE3
+/// field) — present-but-mismatched on a v7 fresh-check signals the
+/// repo's spec needs regeneration to gain the SHA-256 field that
+/// substrate's IFD gate consults.
 #[derive(Deserialize)]
 struct SpecHeader {
     #[serde(default)]
     #[allow(dead_code)] // reserved for future schema-staleness check
     version: Option<u32>,
     #[serde(default)]
-    cargo_lock_hash: Option<String>,
+    cargo_lock_sha256: Option<String>,
 }
 
 /// Compute the spec's freshness without touching the spec or
-/// invoking cargo. Pure file I/O + two BLAKE3 hashes.
+/// invoking cargo. Pure file I/O + two SHA-256 hashes.
 #[must_use]
 pub fn check_freshness(root: &Path) -> Freshness {
     let lock_hash = match hash_cargo_lock(root) {
@@ -1358,7 +1379,7 @@ pub fn check_freshness(root: &Path) -> Freshness {
         Ok(h) => h,
         Err(_) => return Freshness::MissingSpec { lock_hash },
     };
-    match header.cargo_lock_hash {
+    match header.cargo_lock_sha256 {
         None => Freshness::UnhashedSpec { lock_hash },
         Some(spec_hash) if spec_hash == lock_hash => {
             Freshness::Fresh { spec_hash, lock_hash }
@@ -1651,13 +1672,15 @@ mod path_helper_tests {
 
     #[test]
     fn check_freshness_unhashed_spec_old_schema() {
-        // A v5 (pre-cargo_lock_hash) spec must surface as
-        // `unhashed-spec`, NOT `missing-spec` — the permissive
-        // `SpecHeader` parse exists precisely so a schema-drift on
-        // any nested field doesn't masquerade as "no spec at all."
+        // A v6 (BLAKE3 `cargo_lock_hash`) OR v5 (no hash) spec must
+        // surface as `unhashed-spec` — the permissive `SpecHeader`
+        // parse exists precisely so a schema-drift on any nested
+        // field doesn't masquerade as "no spec at all." v6 specs are
+        // unhashed under v7 because the field name changed from
+        // `cargo_lock_hash` (BLAKE3) to `cargo_lock_sha256`.
         let dir = freshness_tmpdir();
         std::fs::write(dir.join("Cargo.lock"), b"# lock").unwrap();
-        // Spec missing `cargo_lock_hash` AND with nested fields
+        // Spec missing `cargo_lock_sha256` AND with nested fields
         // (workspace.crates) that the full BuildSpec parser would
         // reject — only the header view should drive the decision.
         std::fs::write(
@@ -1671,15 +1694,22 @@ mod path_helper_tests {
         );
     }
 
+    fn sha256_hex(bytes: &[u8]) -> String {
+        use sha2::{Digest, Sha256};
+        let mut h = Sha256::new();
+        h.update(bytes);
+        format!("{:x}", h.finalize())
+    }
+
     #[test]
     fn check_freshness_fresh_when_hashes_match() {
         let dir = freshness_tmpdir();
         let lock_body: &[u8] = b"# lock\nfresh test\n";
         std::fs::write(dir.join("Cargo.lock"), lock_body).unwrap();
-        let hash = blake3::hash(lock_body).to_hex().to_string();
+        let hash = sha256_hex(lock_body);
         std::fs::write(
             dir.join("Cargo.build-spec.json"),
-            format!(r#"{{"version": 6, "cargo_lock_hash": "{hash}"}}"#).as_bytes(),
+            format!(r#"{{"version": 7, "cargo_lock_sha256": "{hash}"}}"#).as_bytes(),
         )
         .unwrap();
         let f = super::check_freshness(&dir);
@@ -1695,7 +1725,7 @@ mod path_helper_tests {
         std::fs::write(dir.join("Cargo.lock"), lock_body).unwrap();
         std::fs::write(
             dir.join("Cargo.build-spec.json"),
-            br#"{"version": 6, "cargo_lock_hash": "deadbeef"}"#,
+            br#"{"version": 7, "cargo_lock_sha256": "deadbeef"}"#,
         )
         .unwrap();
         let f = super::check_freshness(&dir);

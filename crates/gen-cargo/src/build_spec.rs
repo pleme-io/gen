@@ -461,12 +461,32 @@ pub const FLEET_TARGETS: &[&str] = &[
 /// gen-bootstrap chicken-and-egg (gen's own committed spec being
 /// host-filtered, blocking cross-platform build of gen-cli) ends here.
 pub fn generate_multi_target(root: &Path) -> Result<BuildSpec> {
-    // Per-target specs, indexed by target triple.
+    use rayon::prelude::*;
+
+    // Per-target cargo-metadata is independent — each target spawns
+    // its own subprocess with `--filter-platform=<triple>`, hits its
+    // own dep graph, parses its own JSON. Parallelize across rayon's
+    // default thread pool (typically num_cpus). Cold-cache cost for
+    // 6 FLEET_TARGETS drops from sequential (6× metadata-seconds) to
+    // max(per-target-seconds) + small overhead — a ~5× speedup on
+    // typical 8-core machines. Hot-cache (--if-stale fast-path) is
+    // unaffected; this only matters when a regen actually fires.
+    //
+    // Order is preserved by collecting into a Vec keyed by the
+    // FLEET_TARGETS index, then folding into the IndexMap in target
+    // order — IndexMap iteration order is part of the spec's
+    // determinism contract (catalog + downstream substrate hashing).
+    let per_target_vec: Vec<(String, BuildSpec)> = FLEET_TARGETS
+        .par_iter()
+        .map(|target| {
+            eprintln!("gen build: resolving for {}", target);
+            generate_for_target(root, target)
+                .map(|spec| (target.to_string(), spec))
+        })
+        .collect::<Result<Vec<_>>>()?;
     let mut per_target: IndexMap<String, BuildSpec> = IndexMap::new();
-    for target in FLEET_TARGETS {
-        eprintln!("gen build: resolving for {}", target);
-        let spec = generate_for_target(root, target)?;
-        per_target.insert(target.to_string(), spec);
+    for (k, v) in per_target_vec {
+        per_target.insert(k, v);
     }
 
     // Pick the host target's spec as the BASE (crate-level fields,

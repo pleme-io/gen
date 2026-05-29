@@ -26,6 +26,7 @@ indexmap = { workspace = true }
 thiserror = { workspace = true }
 toml = { workspace = true }
 sha2 = "0.10"
+rayon = "1.10"
 cargo_metadata = { workspace = true }
 inventory = { workspace = true }
 

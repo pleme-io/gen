@@ -1,0 +1,77 @@
+# Verify-only spec smoke test.
+#
+# The committed `Cargo.build-spec.json` was retired 2026-05-29 — per
+# the operator-surface doctrine, **only `Cargo.toml` is operator-
+# authored**. `Cargo.build-spec.json` is substrate-internal IR,
+# always regenerated via IFD inside substrate's evaluation. Lives in
+# `.gitignore` across the fleet.
+#
+# This workflow stays as a CI canary: on every `Cargo.toml` /
+# `Cargo.lock` change, build gen-cli and run `gen build .` to
+# confirm the spec generator still produces output. No commit, no
+# auto-push. Catches "gen-cli broke spec generation" regressions
+# before they break every downstream `nix run .#rebuild`.
+
+name: gen-spec-verify
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/gen-spec-verify.yml"
+  pull_request:
+    paths:
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+      - "Cargo.toml"
+      - "Cargo.lock"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-spec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache cargo registry + git deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+          key: cargo-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            cargo-${{ runner.os }}-
+
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install --profile minimal --no-self-update stable
+          rustup default stable
+
+      - name: Build gen-cli
+        run: cargo build --release -p gen-cli
+
+      - name: Smoke-test spec generation
+        run: |
+          ./target/release/gen build .
+          if [ ! -f Cargo.build-spec.json ]; then
+            echo "::error::gen build did not produce Cargo.build-spec.json"
+            exit 1
+          fi
+          # Sanity-check: spec must include the `links` field for at
+          # least one `*-sys` crate. Catches the regression class where
+          # gen-cargo silently drops a CrateSpec field that substrate
+          # depends on (the 2026-05-29 ring CARGO_MANIFEST_LINKS bug).
+          if ! grep -q '"links":' Cargo.build-spec.json; then
+            echo "::error::Cargo.build-spec.json emits zero 'links' fields — gen-cargo regression?"
+            exit 1
+          fi
+          echo "spec generated: $(wc -c < Cargo.build-spec.json) bytes, $(grep -c '"links":' Cargo.build-spec.json) links fields"

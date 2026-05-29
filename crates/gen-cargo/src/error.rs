@@ -39,6 +39,24 @@ pub enum CargoError {
     BadVersion { raw: String, context: String },
     #[error("dependency `{name}` requirement `{raw}` could not be parsed")]
     BadVersionReq { name: String, raw: String },
+    #[error(
+        "external path-dep `{name}` (version {version}) at {abs_dir} escapes the workspace root \
+({workspace_root}) AND could not be resolved as a git source: {reason}. \
+Substrate's nix lockfile-builder cannot consume `path = \"../…\"` deps — the sibling repo's \
+source is not in the build sandbox. Either:\n\
+  1. Convert the dep to a git source in Cargo.toml:\n\
+       {name} = {{ git = \"https://github.com/<owner>/<repo>\" }}\n\
+  2. Ensure the sibling directory is a git repo with an `origin` remote pointing at a public host \
+(GitHub) so gen can auto-resolve it.\n\
+Once the Cargo.toml dep is git-based, run `gen build --if-stale` to regenerate the spec."
+    )]
+    UnresolvableExternalPath {
+        name: String,
+        version: String,
+        abs_dir: PathBuf,
+        workspace_root: PathBuf,
+        reason: String,
+    },
 }
 
 pub type Result<T> = std::result::Result<T, CargoError>;

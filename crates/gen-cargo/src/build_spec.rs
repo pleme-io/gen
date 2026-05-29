@@ -917,26 +917,61 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             });
 
         // Source resolution.
-        // Path-deps (members + external) get `Path { relative_path }`.
-        // For members, relative_path is the subdir under the workspace
-        // root. For external path-deps (e.g.
-        // `gen-platform = { path = "../gen/crates/gen-platform" }`),
-        // it's the workspace-relative path that escapes via `..`. The
-        // consuming substrate (lockfile-builder) uses this to locate
-        // the source dir when src = workspaceSrc; without an accurate
-        // relative_path, buildRustCrate looks for `src/lib.rs` at the
-        // workspace root and finds nothing.
+        // Path-dep dispatch — two distinct subcases:
+        //
+        // 1. **Workspace member** (path is inside the workspace root):
+        //    `Path { relative_path }` where `relative_path` is the
+        //    subdir under workspace root. Substrate's lockfile-builder
+        //    finds the source at `<workspaceSrc>/<relative_path>`.
+        //
+        // 2. **External path-dep** (path escapes the workspace via
+        //    `..`): the sibling repo's source is NOT in the nix build
+        //    sandbox (src = workspaceSrc). Emitting `Path { relative_path = "../foo" }`
+        //    fails closed in substrate's lockfile-builder L143.
+        //
+        //    Instead, ask the typed `PathDepResolver` to convert the
+        //    sibling directory into a `(git_url, rev)` pair (production
+        //    impl reads the sibling's git remote + HEAD; tests inject
+        //    a `MockResolver`). On success emit `Git { url, rev }`;
+        //    on failure return a typed `UnresolvableExternalPath`
+        //    error pointing the operator at the manual fix.
+        //
+        //    The auto-convert means operators can keep `path = "../"`
+        //    in Cargo.toml for local-dev ergonomics; the EMITTED spec
+        //    is always nix-safe.
         let source = if is_path_dep {
             let abs_dir = pkg.manifest_path.parent().map(|p| p.to_string()).unwrap_or_default();
-            // For external path-deps that live OUTSIDE the workspace,
-            // pathdiff_relative returns None (the prefix-strip fails).
-            // We fall back to a `..`-relative path computed manually so
-            // the consumer can find the source.
             let rel = pathdiff_relative(&abs_dir, &workspace_root_str)
                 .or_else(|| relative_path_escaping(&abs_dir, &workspace_root_str))
                 .unwrap_or_else(|| abs_dir.clone());
-            CrateSource::Path {
-                relative_path: if rel.is_empty() { ".".to_string() } else { rel },
+            // External if the resolved relative path either escapes
+            // via `..` OR remains absolute (which means pathdiff +
+            // relative_path_escaping both failed). Either way the
+            // source lives outside the workspace and must auto-convert
+            // to a git source for nix-sandbox compatibility.
+            let is_external = rel.starts_with("..") || rel.starts_with('/');
+            if is_external {
+                let resolver = crate::path_resolver::GitCliResolver;
+                use crate::path_resolver::PathDepResolver;
+                let abs_path = std::path::Path::new(&abs_dir);
+                match resolver.resolve(abs_path) {
+                    Some((url, rev)) => CrateSource::Git { url, rev, sha256: None },
+                    None => {
+                        return Err(CargoError::UnresolvableExternalPath {
+                            name: pkg.name.to_string(),
+                            version: pkg.version.to_string(),
+                            abs_dir: std::path::PathBuf::from(abs_dir.clone()),
+                            workspace_root: std::path::PathBuf::from(workspace_root_str.clone()),
+                            reason: format!(
+                                "directory at `{abs_dir}` either is not a git repository, has no `origin` remote, or its remote URL is not a GitHub URL (only github.com auto-resolution is implemented today)"
+                            ),
+                        });
+                    }
+                }
+            } else {
+                CrateSource::Path {
+                    relative_path: if rel.is_empty() { ".".to_string() } else { rel },
+                }
             }
         } else if let Some(src) = &pkg.source {
             let src_str = src.to_string();

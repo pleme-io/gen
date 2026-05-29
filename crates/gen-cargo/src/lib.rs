@@ -21,6 +21,7 @@ pub mod features;
 pub mod fleet_commit;
 pub mod fleet_sweep;
 pub mod invariants;
+pub mod lock_lifecycle;
 pub mod path_resolver;
 pub mod platform_features;
 pub mod quirks;

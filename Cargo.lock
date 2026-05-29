@@ -527,7 +527,7 @@ dependencies = [
  "gen-config",
  "gen-gomod",
  "gen-helm",
- "gen-macros",
+ "gen-macros 0.1.0",
  "gen-nix",
  "gen-npm",
  "gen-pip",

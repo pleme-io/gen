@@ -58,6 +58,22 @@ pub enum FlakeIssue {
         /// this, but the consumer doesn't declare it.
         target: String,
     },
+    /// `url = "github:pleme-io/<input>/<rev>"` rev-pinned URL in
+    /// flake.nix. Freezes the input at a historical rev; subsequent
+    /// `nix flake update <input>` calls can't move it because the
+    /// URL itself contains the pin. Substrate-grade fixes shipped to
+    /// the input's main are invisible to consumers behind a rev-
+    /// pinned URL. Doctrine (substrate/CLAUDE.md): pleme-io fleet
+    /// flakes do NOT rev-pin internal pleme-io URLs.
+    StaleInternalPin {
+        /// The input name being rev-pinned (e.g. "substrate", "blackmatter-kubernetes").
+        input: String,
+        /// The historical rev hard-coded in the URL.
+        rev: String,
+        /// The line of flake.nix where the offending URL was found
+        /// (1-indexed). Useful for the `--fix` autofix to target.
+        line: u32,
+    },
 }
 
 /// Trait-bounded source of `nix flake metadata` output. Production
@@ -120,17 +136,54 @@ pub fn parse_metadata_output(text: &str) -> Vec<FlakeIssue> {
 }
 
 /// Apply the auto-fix for the given issue set against `flake.nix`.
-/// Returns the number of lines removed. The fix is conservative:
-/// it only deletes `inputs.<target>.follows = "...";` lines INSIDE
-/// the relevant `<consumer> = { ... };` block, never touching
-/// anything else.
+/// Returns the number of fixed lines (deleted follows + de-pinned
+/// URLs). Conservative: only edits the exact lines the issues
+/// target; never touches anything else.
 pub fn apply_fix(issues: &[FlakeIssue], flake_path: &Path) -> std::io::Result<usize> {
     let text = std::fs::read_to_string(flake_path)?;
     let (new_text, removed) = rewrite(&text, issues);
-    if removed > 0 {
+    if new_text != text {
         std::fs::write(flake_path, new_text)?;
     }
     Ok(removed)
+}
+
+/// Parse a single flake.nix file for `StaleInternalPin` issues —
+/// `github:pleme-io/<input>/<rev>` URLs that hard-pin the rev.
+/// Pure-function scan: no I/O, no nix-eval, no subprocess.
+#[must_use]
+pub fn parse_flake_nix_pins(text: &str) -> Vec<FlakeIssue> {
+    let mut out = Vec::new();
+    let prefix = "github:pleme-io/";
+    for (i, line) in text.lines().enumerate() {
+        // Look for `url = "github:pleme-io/<input>/<rev>"`. Conservative:
+        // require url = "... in the same line + the prefix + a
+        // /<hex> suffix.
+        let line_trim = line.trim();
+        if !line_trim.contains("url") || !line_trim.contains(prefix) {
+            continue;
+        }
+        let Some(quote_open) = line.find(prefix) else { continue; };
+        let after = &line[quote_open + prefix.len()..];
+        let Some(quote_close) = after.find('"') else { continue; };
+        let url_body = &after[..quote_close];
+        let Some(slash) = url_body.find('/') else { continue; };
+        let input = &url_body[..slash];
+        let rev_raw = &url_body[slash + 1..];
+        // Strip any ?args= or branch params.
+        let rev = rev_raw.split('?').next().unwrap_or(rev_raw);
+        // Heuristic: a rev is 6-40 hex chars. Branch names like
+        // "main", "develop" are excluded.
+        if rev.len() < 6 || rev.len() > 40 || !rev.chars().all(|c| c.is_ascii_hexdigit()) {
+            continue;
+        }
+        out.push(FlakeIssue::StaleInternalPin {
+            input: input.to_string(),
+            rev: rev.to_string(),
+            line: (i + 1) as u32,
+        });
+    }
+    out
 }
 
 /// Pure-function rewrite — exposed for testing without touching the
@@ -138,13 +191,20 @@ pub fn apply_fix(issues: &[FlakeIssue], flake_path: &Path) -> std::io::Result<us
 /// and a count of removed lines.
 #[must_use]
 pub fn rewrite(text: &str, issues: &[FlakeIssue]) -> (String, usize) {
-    // Build a set of (consumer, target) we want to scrub.
+    // Two-step rewrite. First pass: drop StaleFollowsOverride lines.
+    // Second pass: depin StaleInternalPin URLs (strip `/<rev>` from
+    // `github:pleme-io/<input>/<rev>`).
     let mut to_remove: std::collections::HashSet<(String, String)> =
+        std::collections::HashSet::new();
+    let mut to_depin: std::collections::HashSet<(String, String)> =
         std::collections::HashSet::new();
     for i in issues {
         match i {
             FlakeIssue::StaleFollowsOverride { consumer, target } => {
                 to_remove.insert((consumer.clone(), target.clone()));
+            }
+            FlakeIssue::StaleInternalPin { input, rev, .. } => {
+                to_depin.insert((input.clone(), rev.clone()));
             }
         }
     }
@@ -179,7 +239,25 @@ pub fn rewrite(text: &str, issues: &[FlakeIssue]) -> (String, usize) {
                 }
             }
         }
-        out.push_str(line);
+        // URL-depin pass: strip `/<rev>` from
+        // `github:pleme-io/<input>/<rev>` when (input, rev) is in
+        // to_depin. Conservative: only the exact (input, rev) pair
+        // gets edited; other rev-pinned URLs (external orgs, etc)
+        // are untouched.
+        let mut depinned_line = line.to_string();
+        let mut line_changed = false;
+        for (input, rev) in &to_depin {
+            let needle = format!("github:pleme-io/{input}/{rev}");
+            let replacement = format!("github:pleme-io/{input}");
+            if depinned_line.contains(&needle) {
+                depinned_line = depinned_line.replace(&needle, &replacement);
+                line_changed = true;
+            }
+        }
+        if line_changed {
+            removed += 1;
+        }
+        out.push_str(&depinned_line);
         out.push('\n');
     }
     (out, removed)
@@ -216,11 +294,16 @@ pub fn run<S: MetadataSource>(
     fix: bool,
 ) -> std::io::Result<FlakeLintReport> {
     let text = source.metadata(flake_path)?;
-    let issues = parse_metadata_output(&text);
+    let mut issues = parse_metadata_output(&text);
+    // Also scan flake.nix directly for rev-pinned internal URLs.
+    let flake_nix = flake_path.join("flake.nix");
+    if flake_nix.exists() {
+        let flake_text = std::fs::read_to_string(&flake_nix)?;
+        issues.extend(parse_flake_nix_pins(&flake_text));
+    }
     let mut fixed = 0usize;
     if fix && !issues.is_empty() {
-        let p = flake_path.join("flake.nix");
-        fixed = apply_fix(&issues, &p)?;
+        fixed = apply_fix(&issues, &flake_nix)?;
     }
     Ok(FlakeLintReport {
         flake_path: flake_path.to_path_buf(),
@@ -333,6 +416,77 @@ warning: Git tree is dirty
     }
 
     #[test]
+    fn parse_flake_nix_pins_detects_rev_pinned_urls() {
+        let text = r#"
+{
+  inputs = {
+    substrate = {
+      url = "github:pleme-io/substrate/3594ae2dce08";
+    };
+    nixpkgs.url = "github:nixos/nixpkgs/main";
+    blackmatter-kubernetes = {
+      url = "github:pleme-io/blackmatter-kubernetes/99ba10a";
+    };
+    upstream.url = "github:some-other-org/repo/deadbeef";
+  };
+}
+"#;
+        let issues = parse_flake_nix_pins(text);
+        assert_eq!(issues.len(), 2, "expected 2 pleme-io pins, got: {:?}", issues);
+        let names: Vec<_> = issues
+            .iter()
+            .filter_map(|i| match i {
+                FlakeIssue::StaleInternalPin { input, .. } => Some(input.as_str()),
+                _ => None,
+            })
+            .collect();
+        assert!(names.contains(&"substrate"));
+        assert!(names.contains(&"blackmatter-kubernetes"));
+    }
+
+    #[test]
+    fn parse_flake_nix_pins_ignores_non_pleme_io_urls() {
+        let text = r#"
+{
+  inputs.upstream.url = "github:some-other-org/repo/deadbeefcafebabe";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/main";
+}
+"#;
+        assert!(parse_flake_nix_pins(text).is_empty());
+    }
+
+    #[test]
+    fn rewrite_depins_internal_url_only_when_issue_targets_it() {
+        let text = r#"
+{
+  inputs = {
+    substrate.url = "github:pleme-io/substrate/3594ae2";
+    untouched.url = "github:pleme-io/untouched/abcdef0";
+  };
+}
+"#;
+        let issues = vec![FlakeIssue::StaleInternalPin {
+            input: "substrate".into(),
+            rev: "3594ae2".into(),
+            line: 4,
+        }];
+        let (out, removed) = rewrite(text, &issues);
+        assert_eq!(removed, 1);
+        assert!(out.contains(r#"substrate.url = "github:pleme-io/substrate";"#));
+        // untouched stays pinned (no issue targets it)
+        assert!(out.contains(r#"untouched.url = "github:pleme-io/untouched/abcdef0";"#));
+    }
+
+    #[test]
+    fn flake_issue_now_has_two_variants() {
+        use gen_platform::TypedDispatcherTrait;
+        assert_eq!(<FlakeIssue as TypedDispatcherTrait>::variant_count(), 2);
+        let kinds = <FlakeIssue as TypedDispatcherTrait>::variant_kinds();
+        assert!(kinds.contains(&"stale-follows-override"));
+        assert!(kinds.contains(&"stale-internal-pin"));
+    }
+
+    #[test]
     fn run_with_mock_source_reports_and_optionally_fixes() {
         let src = StaticMetadataSource(
             "warning: input 'seibi' has an override for a non-existent input 'fenix'\n",
@@ -363,13 +517,12 @@ warning: Git tree is dirty
     }
 
     #[test]
-    fn flake_issue_typed_dispatcher_has_one_variant() {
+    fn flake_issue_typed_dispatcher_variant_count_is_two() {
+        // Two issue classes today: StaleFollowsOverride +
+        // StaleInternalPin. Asserts in lockstep with the
+        // substrate fleet-catalog-coverage-test snapshot.
         use gen_platform::TypedDispatcherTrait;
-        assert_eq!(<FlakeIssue as TypedDispatcherTrait>::variant_count(), 1);
-        assert_eq!(
-            <FlakeIssue as TypedDispatcherTrait>::variant_kinds(),
-            vec!["stale-follows-override"]
-        );
+        assert_eq!(<FlakeIssue as TypedDispatcherTrait>::variant_count(), 2);
     }
 
     #[test]

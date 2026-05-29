@@ -33,7 +33,15 @@ inventory = { workspace = true }
 # nix-prefetch-git shell-script call chain. See theory/RUST-NATIVE-PREFETCH.md.
 # Versions match what pleme-io/sui's sui-compat uses so the substrate
 # NAR semantics stay aligned fleet-wide.
-gix = { version = "0.83", default-features = false, features = ["sha1", "blocking-network-client", "blocking-http-transport-reqwest-rust-tls", "worktree-mutation", "revision", "max-performance-safe"] }
+# Note: curl+openssl transport — NOT reqwest+rustls. rustls pulls
+# `ring`, whose build script depends on CARGO_PKG_NAME-derived symbol
+# prefix env vars substrate's build-rust-crate doesn't reliably set,
+# producing `assertion left == right` panics in ring's build.rs.
+# Even reqwest+native-tls keeps `ring` in the Cargo.lock as an
+# optional-feature dep that substrate's lockfile-builder still tries
+# to compile. curl+openssl avoids the entire reqwest/rustls/ring
+# stack — curl + openssl are already on substrate stdenv.
+gix = { version = "0.83", default-features = false, features = ["sha1", "blocking-network-client", "blocking-http-transport-curl-openssl", "worktree-mutation", "revision", "max-performance-safe"] }
 nix-nar = "0.3"
 base64 = "0.22"
 tempfile = "3"

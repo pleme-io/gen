@@ -55,7 +55,10 @@ enum Cmd {
         path: Option<PathBuf>,
     },
     /// Parse the workspace + report on the lockfile shape only.
-    Lock {
+    /// (Read-only diagnostic; for the transient-lock operator
+    /// surface, see `gen lock`.)
+    #[command(name = "lockfile-info")]
+    LockfileInfo {
         path: Option<PathBuf>,
     },
     /// Print the typed config at the given tier (bare / discovered /
@@ -233,6 +236,32 @@ enum Cmd {
         #[arg(long)]
         fix: bool,
     },
+    /// `gen lock` — operator-facing surface for the transient-lock
+    /// pattern. Default (no mode flag): print the typed
+    /// `LockLifecycleState` (read-only). With `--snapshot`, write a
+    /// fresh `Cargo.build-spec.json` as an explicit release-time pin.
+    /// With `--update`, regenerate + emit a typed `LockDiff` against
+    /// the previously-committed spec. With `--reset`, delete the
+    /// committed spec (return to transient `Unlocked` state).
+    #[command(name = "lock")]
+    Lock {
+        /// Workspace root (defaults to CWD).
+        path: Option<PathBuf>,
+        /// Snapshot: write Cargo.build-spec.json as a deliberate
+        /// committable artifact (operator opts into the Locked state).
+        #[arg(long, conflicts_with_all = ["update", "reset"])]
+        snapshot: bool,
+        /// Regenerate from current Cargo.lock + emit typed LockDiff
+        /// (added / removed / upgraded / source-changed) against the
+        /// previously-committed spec. Writes the new spec on success.
+        #[arg(long, conflicts_with_all = ["snapshot", "reset"])]
+        update: bool,
+        /// Delete the committed Cargo.build-spec.json — return to
+        /// transient (`Unlocked`) state. Substrate IFD will regen on
+        /// next build.
+        #[arg(long, conflicts_with_all = ["snapshot", "update"])]
+        reset: bool,
+    },
     /// Commit (and optionally push) Cargo.build-spec.json across the
     /// fleet. Walks repos under <path>; for each, stages only the
     /// sidecar (never `git add -A`) and commits with the canonical
@@ -361,7 +390,7 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             let manifest = dispatch(&root, cfg)?;
             emit(&manifest, cli.format)
         }
-        Cmd::Lock { path } => {
+        Cmd::LockfileInfo { path } => {
             let root = resolve_root(path, cfg);
             let manifest = dispatch(&root, cfg)?;
             #[derive(serde::Serialize)]
@@ -642,6 +671,130 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                 std::process::exit(1);
             }
             Ok(())
+        }
+        Cmd::Lock {
+            path,
+            snapshot,
+            update,
+            reset,
+        } => {
+            use gen_cargo::build_spec;
+            use gen_cargo::lock_lifecycle::{self, LockLifecycleState};
+            let root = path.clone().unwrap_or_else(|| std::env::current_dir().unwrap_or_default());
+            let state = lock_lifecycle::current_state(&root);
+            let spec_path = root.join("Cargo.build-spec.json");
+
+            #[derive(serde::Serialize)]
+            struct LockReport<'a> {
+                root: &'a std::path::Path,
+                action: &'a str,
+                state_before: &'a LockLifecycleState,
+                #[serde(skip_serializing_if = "Option::is_none")]
+                state_after: Option<LockLifecycleState>,
+                #[serde(skip_serializing_if = "Option::is_none")]
+                diff: Option<lock_lifecycle::LockDiff>,
+            }
+
+            match (*snapshot, *update, *reset) {
+                (false, false, false) => {
+                    // Default: read-only — print state.
+                    let r = LockReport {
+                        root: &root,
+                        action: "show",
+                        state_before: &state,
+                        state_after: None,
+                        diff: None,
+                    };
+                    emit(&r, cli.format)?;
+                    if state.requires_operator_action() {
+                        std::process::exit(1);
+                    }
+                    Ok(())
+                }
+                (true, false, false) => {
+                    // Snapshot: write fresh spec.
+                    if matches!(state, LockLifecycleState::MissingLock) {
+                        return Err(CliError::Other(
+                            "gen lock --snapshot: workspace has no Cargo.lock; run \
+                             `cargo generate-lockfile` first"
+                                .into(),
+                        ));
+                    }
+                    build_spec::generate_multi_target_and_write(&root)
+                        .map_err(CliError::Cargo)?;
+                    let after = lock_lifecycle::current_state(&root);
+                    let r = LockReport {
+                        root: &root,
+                        action: "snapshot",
+                        state_before: &state,
+                        state_after: Some(after),
+                        diff: None,
+                    };
+                    emit(&r, cli.format)
+                }
+                (false, true, false) => {
+                    // Update: regen + diff.
+                    if matches!(state, LockLifecycleState::MissingLock) {
+                        return Err(CliError::Other(
+                            "gen lock --update: workspace has no Cargo.lock"
+                                .into(),
+                        ));
+                    }
+                    let old_spec = if spec_path.exists() {
+                        let bytes = std::fs::read(&spec_path).map_err(|e| {
+                            CliError::Other(format!(
+                                "gen lock --update: read {}: {e}",
+                                spec_path.display()
+                            ))
+                        })?;
+                        serde_json::from_slice::<build_spec::BuildSpec>(&bytes).ok()
+                    } else {
+                        None
+                    };
+                    build_spec::generate_multi_target_and_write(&root)
+                        .map_err(CliError::Cargo)?;
+                    let new_bytes = std::fs::read(&spec_path).map_err(|e| {
+                        CliError::Other(format!(
+                            "gen lock --update: read new spec {}: {e}",
+                            spec_path.display()
+                        ))
+                    })?;
+                    let new_spec = serde_json::from_slice::<build_spec::BuildSpec>(&new_bytes)
+                        .map_err(|e| CliError::Other(format!("parse new spec: {e}")))?;
+                    let diff = old_spec
+                        .as_ref()
+                        .map(|o| lock_lifecycle::diff_specs(o, &new_spec));
+                    let after = lock_lifecycle::current_state(&root);
+                    let r = LockReport {
+                        root: &root,
+                        action: "update",
+                        state_before: &state,
+                        state_after: Some(after),
+                        diff,
+                    };
+                    emit(&r, cli.format)
+                }
+                (false, false, true) => {
+                    if spec_path.exists() {
+                        std::fs::remove_file(&spec_path).map_err(|e| {
+                            CliError::Other(format!(
+                                "gen lock --reset: remove {}: {e}",
+                                spec_path.display()
+                            ))
+                        })?;
+                    }
+                    let after = lock_lifecycle::current_state(&root);
+                    let r = LockReport {
+                        root: &root,
+                        action: "reset",
+                        state_before: &state,
+                        state_after: Some(after),
+                        diff: None,
+                    };
+                    emit(&r, cli.format)
+                }
+                _ => unreachable!("clap conflicts_with_all prevents multi-mode"),
+            }
         }
         Cmd::CacheProbe { path } => {
             let root = resolve_root(path, cfg);

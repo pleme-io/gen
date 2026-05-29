@@ -29,19 +29,18 @@ sha2 = "0.10"
 rayon = "1.10"
 cargo_metadata = { workspace = true }
 inventory = { workspace = true }
-# Pure-Rust git fetcher + NAR-sha256 — replaces the brittle
-# nix-prefetch-git shell-script call chain. See theory/RUST-NATIVE-PREFETCH.md.
-# Versions match what pleme-io/sui's sui-compat uses so the substrate
-# NAR semantics stay aligned fleet-wide.
-# Note: curl+openssl transport — NOT reqwest+rustls. rustls pulls
-# `ring`, whose build script depends on CARGO_PKG_NAME-derived symbol
-# prefix env vars substrate's build-rust-crate doesn't reliably set,
-# producing `assertion left == right` panics in ring's build.rs.
-# Even reqwest+native-tls keeps `ring` in the Cargo.lock as an
-# optional-feature dep that substrate's lockfile-builder still tries
-# to compile. curl+openssl avoids the entire reqwest/rustls/ring
-# stack — curl + openssl are already on substrate stdenv.
-gix = { version = "0.83", default-features = false, features = ["sha1", "blocking-network-client", "blocking-http-transport-curl-openssl", "worktree-mutation", "revision", "max-performance-safe"] }
+# Pure-Rust NAR-sha256 (nix-nar streamed into Sha256) + SRI base64.
+# Replaces the brittle nix-prefetch-git shell-script call chain. The
+# git clone itself is currently a `Command::new("git")` subprocess
+# pending the destination move to `gix` (full in-process git). gix
+# was wired in 2026-05-29 but its transport features pull in
+# *-sys crates whose link deps substrate's buildRustCrate doesn't
+# propagate — `ring` (rustls path, build-script env-var bug) and
+# `curl-sys` / `libgit2-sys` (propagatedBuildInputs not bubbled to
+# consumers). Both are substrate-side fixes deferred to a focused
+# follow-up. Today's compromise: one subprocess to one binary
+# (`git`), down from the previous shell-script transitive chain.
+# See theory/RUST-NATIVE-PREFETCH.md for the destination.
 nix-nar = "0.3"
 base64 = "0.22"
 tempfile = "3"

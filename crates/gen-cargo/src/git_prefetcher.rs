@@ -1,21 +1,26 @@
-//! `GitPrefetcher` — pure-Rust git prefetch primitive.
+//! `GitPrefetcher` — Rust-native git prefetch primitive.
 //!
 //! Replaces the brittle `nix-prefetch-git` shell-script call chain
-//! that gen-cargo previously shelled out to. Every operation runs
-//! in-process: `gix` for the git fetch (no `git` binary), `nix-nar`
-//! for streaming NAR serialization into Sha256 (no `nix` binary,
-//! no `nix-prefetch-git` shell script). Aligns with sui-compat's
-//! NAR semantics — `nix-nar` is the same crate sui-compat wraps for
-//! its `NarWriter::write_path` operator.
+//! that gen-cargo previously shelled out to. The hash side is
+//! pure-Rust: `nix-nar` streamed into `Sha256`, then base64 SRI
+//! encoded. The clone side is a single `Command::new("git")`
+//! subprocess — one load-bearing binary, no shell script, no
+//! transitive-tool dependency tree. The previous nix-prefetch-git
+//! shell-script chain (bash + git + nix-hash + nix-prefetch-git
+//! itself + coreutils) is reduced to: git.
 //!
-//! Architecture: typed trait + mock for hermetic testing + production
-//! `GixPrefetcher` impl. The build-spec generator depends on the trait
-//! object so unit tests can swap in `MockPrefetcher` with hand-authored
-//! `(url, rev) → sha256` mappings, no network, no tempdirs, no flakiness.
+//! Destination: pure-`gix` (zero subprocess). Wired 2026-05-29 but
+//! deferred — `gix`'s transport features pull `ring` (rustls path,
+//! substrate build-script env-var bug) or `curl-sys`/`libgit2-sys`
+//! (substrate `propagatedBuildInputs` not bubbled through
+//! `buildRustCrate` to consumers). Both are focused substrate-side
+//! fixes scheduled in a follow-up; see `theory/RUST-NATIVE-PREFETCH.md`.
 //!
-//! Theory: `theory/RUST-NATIVE-PREFETCH.md`.
-//! Authored as `(deftyped-prefetcher gen.cargo.git-prefetcher …)`
-//! in `gen-cargo/specs/prefetcher.lisp` (forthcoming).
+//! Architecture: typed trait + Mock for hermetic testing + production
+//! `GitCliPrefetcher` impl. The build-spec generator depends on the
+//! trait object so unit tests swap in `MockPrefetcher` with hand-
+//! authored `(url, rev) → sha256` mappings — no network, no tempdirs,
+//! no flakiness.
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -89,30 +94,32 @@ pub enum PrefetchError {
     MockMappingMissing { url: String, rev: String },
 }
 
-// ── Production impl: gix + nix-nar + sha256 ────────────────────────
+// ── Production impl: `git` subprocess + nix-nar + sha256 ───────────
 
-/// Production prefetcher. `gix` for the clone (pure Rust — no `git`
-/// binary), `nix-nar` Encoder streamed into `Sha256` (pure Rust — no
-/// `nix` binary, no `nix-prefetch-git` shell script). Every transitive
-/// dependency is a crates.io crate compiled into the gen binary; the
-/// IFD sandbox needs nothing beyond the `gen` binary itself + cacert
-/// for HTTPS.
-pub struct GixPrefetcher;
+/// Production prefetcher. One `git` subprocess for the fetch + checkout,
+/// pure-Rust `nix-nar` Encoder streamed into `Sha256` for the digest.
+/// No shell script, no transitive-tool dependency tree — `git` is the
+/// single load-bearing binary.
+///
+/// **Destination**: pure-Rust via `gix` (zero subprocess). Deferred
+/// behind a substrate-side fix for *-sys propagation in
+/// `buildRustCrate`. See `theory/RUST-NATIVE-PREFETCH.md`.
+pub struct GitCliPrefetcher;
 
-impl GixPrefetcher {
+impl GitCliPrefetcher {
     #[must_use]
     pub fn new() -> Self {
         Self
     }
 }
 
-impl Default for GixPrefetcher {
+impl Default for GitCliPrefetcher {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl GitPrefetcher for GixPrefetcher {
+impl GitPrefetcher for GitCliPrefetcher {
     fn prefetch(&self, url: &str, rev: &str) -> Result<PrefetchedHash, PrefetchError> {
         // Strip cargo's `?branch=...` / `?tag=...` / `?rev=...` query
         // suffix — git URLs don't carry the query form.
@@ -126,7 +133,7 @@ impl GitPrefetcher for GixPrefetcher {
             })?;
         let work = tmp.path();
 
-        gix_fetch_and_checkout(clean_url, rev, work).map_err(|reason| PrefetchError::Fetch {
+        git_clone_at_rev(clean_url, rev, work).map_err(|reason| PrefetchError::Fetch {
             url: clean_url.into(),
             rev: rev.into(),
             reason,
@@ -154,164 +161,61 @@ impl GitPrefetcher for GixPrefetcher {
     }
 }
 
-/// Clone `url` and check out `rev` into `dest`. Uses `gix` for
-/// pure-Rust git transport. Returns a stringly-typed error reason so
-/// the caller can wrap it in the typed `PrefetchError::Fetch`.
-fn gix_fetch_and_checkout(url: &str, rev: &str, dest: &Path) -> Result<(), String> {
-    use gix::progress::Discard;
+/// Clone `url` and check out `rev` into `dest`. Uses the `git` CLI
+/// binary directly — no shell, no nix-prefetch-git wrapper. Strategy:
+///
+/// 1. `git init` the dest (empty repo).
+/// 2. `git fetch --depth=1 origin <rev>` — pulls only the rev's
+///    objects, not history. `<rev>` can be a full SHA, tag, or
+///    branch name. Shallow-clone for speed.
+/// 3. `git -c advice.detachedHead=false checkout FETCH_HEAD` to
+///    materialize the worktree.
+///
+/// This mirrors what nix-prefetch-git does internally without the
+/// surrounding bash + nix-hash + json-formatting machinery.
+fn git_clone_at_rev(url: &str, rev: &str, dest: &Path) -> Result<(), String> {
+    use std::process::Command;
 
-    let interrupt = std::sync::atomic::AtomicBool::new(false);
-
-    let mut prep =
-        gix::prepare_clone(url, dest).map_err(|e| format!("prepare_clone: {e}"))?;
-    let (mut fetch_prep, _) = prep
-        .fetch_then_checkout(Discard, &interrupt)
-        .map_err(|e| format!("fetch_then_checkout: {e}"))?;
-    let (repo, _) = fetch_prep
-        .main_worktree(Discard, &interrupt)
-        .map_err(|e| format!("main_worktree: {e}"))?;
-
-    // Resolve `rev` to a commit and update the working tree to it.
-    // `rev_parse_single` accepts full/short SHAs, branch names, tags.
-    let oid = repo
-        .rev_parse_single(rev.as_bytes())
-        .map_err(|e| format!("rev_parse_single({rev}): {e}"))?;
-
-    // Find the tree for that commit and check it out into the worktree.
-    let commit = repo
-        .find_object(oid)
-        .map_err(|e| format!("find_object({oid}): {e}"))?
-        .try_into_commit()
-        .map_err(|e| format!("try_into_commit({oid}): {e}"))?;
-    let tree = commit
-        .tree()
-        .map_err(|e| format!("commit.tree(): {e}"))?;
-
-    // Clear existing worktree contents (the initial clone may have
-    // checked out HEAD, which differs from `rev` if HEAD points at a
-    // branch tip past `rev`). Repopulate from `tree`.
-    clear_worktree(dest)?;
-    checkout_tree(&repo, &tree, dest)?;
-
-    Ok(())
-}
-
-/// Walk `dest` and delete every entry except `.git`. `gix` leaves the
-/// initial-clone HEAD in place; we want to replace it with the tree
-/// at the requested rev.
-fn clear_worktree(dest: &Path) -> Result<(), String> {
-    let entries =
-        std::fs::read_dir(dest).map_err(|e| format!("clear_worktree read_dir: {e}"))?;
-    for entry in entries {
-        let entry = entry.map_err(|e| format!("clear_worktree entry: {e}"))?;
-        let path = entry.path();
-        // Skip `.git` — we still need the index/objects to check out
-        // the requested rev. We delete it after NAR-hashing.
-        if path.file_name().and_then(|n| n.to_str()) == Some(".git") {
-            continue;
+    let run = |args: &[&str], cwd: Option<&Path>| -> Result<(), String> {
+        let mut cmd = Command::new("git");
+        cmd.args(args);
+        if let Some(c) = cwd {
+            cmd.current_dir(c);
         }
-        let meta = std::fs::symlink_metadata(&path)
-            .map_err(|e| format!("clear_worktree stat {}: {e}", path.display()))?;
-        if meta.file_type().is_dir() {
-            std::fs::remove_dir_all(&path)
-                .map_err(|e| format!("clear_worktree rm dir {}: {e}", path.display()))?;
-        } else {
-            std::fs::remove_file(&path)
-                .map_err(|e| format!("clear_worktree rm file {}: {e}", path.display()))?;
+        let output = cmd
+            .output()
+            .map_err(|e| format!("spawn `git {}`: {e}", args.join(" ")))?;
+        if !output.status.success() {
+            return Err(format!(
+                "`git {}` exited {}: {}",
+                args.join(" "),
+                output.status,
+                String::from_utf8_lossy(&output.stderr).trim()
+            ));
         }
+        Ok(())
+    };
+
+    run(&["init", "--quiet", dest.to_str().unwrap()], None)?;
+    run(&["remote", "add", "origin", url], Some(dest))?;
+    // --depth=1 keeps the fetch minimal — only the rev's tree, no
+    // history. Some servers reject shallow fetches by SHA; fall back
+    // to a full fetch + checkout if the shallow attempt fails.
+    let shallow_fetch =
+        run(&["fetch", "--quiet", "--depth=1", "origin", rev], Some(dest));
+    if shallow_fetch.is_err() {
+        run(&["fetch", "--quiet", "origin", rev], Some(dest))?;
     }
-    Ok(())
-}
-
-/// Materialize the gix `tree` into `dest`. Recursive; preserves
-/// executable bits + symlink targets so the NAR digest matches what
-/// `nix-prefetch-git` would have produced.
-fn checkout_tree(
-    repo: &gix::Repository,
-    tree: &gix::Tree<'_>,
-    dest: &Path,
-) -> Result<(), String> {
-    use gix::object::tree::EntryKind;
-
-    for entry in tree.iter() {
-        let entry = entry.map_err(|e| format!("tree entry iter: {e}"))?;
-        let name = std::str::from_utf8(entry.filename())
-            .map_err(|e| format!("non-utf8 filename: {e}"))?;
-        let path = dest.join(name);
-        let oid = entry.oid().to_owned();
-
-        match entry.mode().kind() {
-            EntryKind::Tree => {
-                std::fs::create_dir(&path)
-                    .map_err(|e| format!("create_dir {}: {e}", path.display()))?;
-                let object = repo
-                    .find_object(oid)
-                    .map_err(|e| format!("find_object(tree): {e}"))?;
-                let subtree = object
-                    .try_into_tree()
-                    .map_err(|e| format!("try_into_tree: {e}"))?;
-                checkout_tree(repo, &subtree, &path)?;
-            }
-            EntryKind::Blob => {
-                let object = repo
-                    .find_object(oid)
-                    .map_err(|e| format!("find_object(blob): {e}"))?;
-                let blob = object
-                    .try_into_blob()
-                    .map_err(|e| format!("try_into_blob: {e}"))?;
-                std::fs::write(&path, &blob.data)
-                    .map_err(|e| format!("write {}: {e}", path.display()))?;
-            }
-            EntryKind::BlobExecutable => {
-                let object = repo
-                    .find_object(oid)
-                    .map_err(|e| format!("find_object(blob-exec): {e}"))?;
-                let blob = object
-                    .try_into_blob()
-                    .map_err(|e| format!("try_into_blob: {e}"))?;
-                std::fs::write(&path, &blob.data)
-                    .map_err(|e| format!("write {}: {e}", path.display()))?;
-                #[cfg(unix)]
-                {
-                    use std::os::unix::fs::PermissionsExt;
-                    let mut perms = std::fs::metadata(&path)
-                        .map_err(|e| format!("metadata {}: {e}", path.display()))?
-                        .permissions();
-                    perms.set_mode(0o755);
-                    std::fs::set_permissions(&path, perms)
-                        .map_err(|e| format!("set_permissions {}: {e}", path.display()))?;
-                }
-            }
-            EntryKind::Link => {
-                let object = repo
-                    .find_object(oid)
-                    .map_err(|e| format!("find_object(link): {e}"))?;
-                let blob = object
-                    .try_into_blob()
-                    .map_err(|e| format!("try_into_blob: {e}"))?;
-                let target = std::str::from_utf8(&blob.data)
-                    .map_err(|e| format!("non-utf8 symlink target: {e}"))?;
-                #[cfg(unix)]
-                std::os::unix::fs::symlink(target, &path)
-                    .map_err(|e| format!("symlink {}: {e}", path.display()))?;
-                #[cfg(windows)]
-                {
-                    let _ = target;
-                    return Err(format!(
-                        "symlink at {} unsupported on windows (target: {})",
-                        path.display(),
-                        std::str::from_utf8(&blob.data).unwrap_or("<binary>")
-                    ));
-                }
-            }
-            EntryKind::Commit => {
-                // gitlink — submodule. nix-prefetch-git without
-                // --fetch-submodules leaves an empty directory.
-                std::fs::create_dir(&path)
-                    .map_err(|e| format!("submodule placeholder {}: {e}", path.display()))?;
-            }
-        }
-    }
+    run(
+        &[
+            "-c",
+            "advice.detachedHead=false",
+            "checkout",
+            "--quiet",
+            "FETCH_HEAD",
+        ],
+        Some(dest),
+    )?;
     Ok(())
 }
 
@@ -412,11 +316,11 @@ impl GitPrefetcher for MockPrefetcher {
 // ── Default factory ────────────────────────────────────────────────
 
 /// Construct the production prefetcher. Wrapped in a factory so
-/// downstream consumers don't bind to `GixPrefetcher` directly —
-/// trait-dispatched.
+/// downstream consumers don't bind to the concrete impl directly —
+/// trait-dispatched, swap-friendly for the eventual gix migration.
 #[must_use]
 pub fn default_prefetcher() -> Box<dyn GitPrefetcher> {
-    Box::new(GixPrefetcher::new())
+    Box::new(GitCliPrefetcher::new())
 }
 
 // ── Tests ──────────────────────────────────────────────────────────
@@ -524,7 +428,7 @@ mod tests {
 
     #[test]
     fn default_prefetcher_returns_gix() {
-        // Smoke test: the factory boxes a GixPrefetcher without
+        // Smoke test: the factory boxes a GitCliPrefetcher without
         // panicking. Real network calls live in integration tests.
         let _: Box<dyn GitPrefetcher> = default_prefetcher();
     }

@@ -1196,11 +1196,37 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             crate_renames,
             build_rust_crate_args,
         };
+        // Dedup policy when two packages collide on `${name}-${version}`:
+        //   1. WORKSPACE-MEMBER wins. A workspace path package and a
+        //      git/registry copy of the same (name, version) can both
+        //      appear in `cargo metadata` when a transitive git dep
+        //      references the same crate via git. The workspace
+        //      member is the source of truth (it has lib_target,
+        //      correct manifest_dir, etc.); the git copy is a stale
+        //      duplicate that shouldn't overwrite it.
+        //   2. Otherwise, prefer the entry with the richer features
+        //      set (per-target feature unification picks the union).
+        let new_is_workspace = pkg.source.is_none();
         match crates.get(&key) {
-            Some(prev) if prev.features.len() > new_entry.features.len() => {
-                // existing is richer — keep it as-is
+            Some(prev) => {
+                let prev_is_workspace = matches!(prev.source, CrateSource::Path { .. });
+                match (prev_is_workspace, new_is_workspace) {
+                    (true, false) => {
+                        // existing is workspace member; new is git/registry copy — keep existing
+                    }
+                    (false, true) => {
+                        // existing is git/registry copy; new is workspace member — replace
+                        crates.insert(key, new_entry);
+                    }
+                    _ if prev.features.len() > new_entry.features.len() => {
+                        // existing is richer — keep
+                    }
+                    _ => {
+                        crates.insert(key, new_entry);
+                    }
+                }
             }
-            _ => {
+            None => {
                 crates.insert(key, new_entry);
             }
         }

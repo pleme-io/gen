@@ -4471,6 +4471,16 @@
           "tree": "target"
         },
         {
+          "name": "gen_macros",
+          "package_key": "gen-macros-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "host"
+        },
+        {
           "name": "gen_nix",
           "package_key": "gen-nix-0.1.0",
           "kind": "normal",
@@ -4689,6 +4699,16 @@
           "tree": "target"
         },
         {
+          "name": "gen_macros",
+          "package_key": "gen-macros-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "host"
+        },
+        {
           "name": "gen_nix",
           "package_key": "gen-nix-0.1.0",
           "kind": "normal",
@@ -4867,6 +4887,12 @@
             "rename": "gen_helm"
           }
         ],
+        "gen-macros": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_macros"
+          }
+        ],
         "gen-nix": [
           {
             "version": "0.1.0",
@@ -4955,6 +4981,12 @@
             {
               "version": "0.1.0",
               "rename": "gen_helm"
+            }
+          ],
+          "gen-macros": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_macros"
             }
           ],
           "gen-nix": [
@@ -10915,8 +10947,8 @@
       "source": {
         "kind": "git",
         "url": "https://github.com/pleme-io/shikumi.git",
-        "rev": "5139dd2d37cae674912c169b4b20a03aecc08484",
-        "sha256": "07id8l8m9bpqqcwkhjk0s9qarmdhapwrv6br0dzfkm2jqj38fr55"
+        "rev": "3913d35559a65bc64a870f5633cc3130371b412e",
+        "sha256": "0lr5l669jgphrif4impp6qxp0qg9wpxlv7yplx7wyv3drcgaqjhi"
       },
       "features": [
         "default"
@@ -10962,15 +10994,43 @@
           "tree": "target"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "gen_types",
+          "package_key": "gen-types-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "notify",
           "package_key": "notify-8.2.0",
           "kind": "normal",
-          "features": [
-            "macos_kqueue"
-          ],
+          "features": [],
           "uses_default_features": false,
           "optional": false,
           "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "notify",
+          "package_key": "notify-8.2.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": false,
+          "target": "cfg(target_os = \"macos\")",
           "tree": "target"
         },
         {
@@ -11062,15 +11122,43 @@
           "tree": "target"
         },
         {
+          "name": "gen_platform",
+          "package_key": "gen-platform-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "gen_types",
+          "package_key": "gen-types-0.1.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
           "name": "notify",
           "package_key": "notify-8.2.0",
           "kind": "normal",
-          "features": [
-            "macos_kqueue"
-          ],
+          "features": [],
           "uses_default_features": false,
           "optional": false,
           "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "notify",
+          "package_key": "notify-8.2.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": false,
+          "target": "cfg(target_os = \"macos\")",
           "tree": "target"
         },
         {
@@ -11139,6 +11227,18 @@
             "version": "0.1.89",
             "rename": "async_trait"
           }
+        ],
+        "gen-platform": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_platform"
+          }
+        ],
+        "gen-types": [
+          {
+            "version": "0.1.0",
+            "rename": "gen_types"
+          }
         ]
       },
       "build_rust_crate_args": {
@@ -11159,6 +11259,18 @@
             {
               "version": "0.1.89",
               "rename": "async_trait"
+            }
+          ],
+          "gen-platform": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_platform"
+            }
+          ],
+          "gen-types": [
+            {
+              "version": "0.1.0",
+              "rename": "gen_types"
             }
           ]
         },
@@ -16696,6 +16808,16 @@
               "tree": "target"
             },
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_nix",
               "package_key": "gen-nix-0.1.0",
               "kind": "normal",
@@ -16912,6 +17034,16 @@
               "optional": false,
               "target": null,
               "tree": "target"
+            },
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
             },
             {
               "name": "gen_nix",
@@ -20951,15 +21083,43 @@
               "tree": "target"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "notify",
               "package_key": "notify-8.2.0",
               "kind": "normal",
-              "features": [
-                "macos_kqueue"
-              ],
+              "features": [],
               "uses_default_features": false,
               "optional": false,
               "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "notify",
+              "package_key": "notify-8.2.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": "cfg(target_os = \"macos\")",
               "tree": "target"
             },
             {
@@ -21051,15 +21211,43 @@
               "tree": "target"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "notify",
               "package_key": "notify-8.2.0",
               "kind": "normal",
-              "features": [
-                "macos_kqueue"
-              ],
+              "features": [],
               "uses_default_features": false,
               "optional": false,
               "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "notify",
+              "package_key": "notify-8.2.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": "cfg(target_os = \"macos\")",
               "tree": "target"
             },
             {
@@ -25250,6 +25438,16 @@
               "tree": "target"
             },
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_nix",
               "package_key": "gen-nix-0.1.0",
               "kind": "normal",
@@ -25466,6 +25664,16 @@
               "optional": false,
               "target": null,
               "tree": "target"
+            },
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
             },
             {
               "name": "gen_nix",
@@ -29505,15 +29713,43 @@
               "tree": "target"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "notify",
               "package_key": "notify-8.2.0",
               "kind": "normal",
-              "features": [
-                "macos_kqueue"
-              ],
+              "features": [],
               "uses_default_features": false,
               "optional": false,
               "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "notify",
+              "package_key": "notify-8.2.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": "cfg(target_os = \"macos\")",
               "tree": "target"
             },
             {
@@ -29605,15 +29841,43 @@
               "tree": "target"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "notify",
               "package_key": "notify-8.2.0",
               "kind": "normal",
-              "features": [
-                "macos_kqueue"
-              ],
+              "features": [],
               "uses_default_features": false,
               "optional": false,
               "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "notify",
+              "package_key": "notify-8.2.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": "cfg(target_os = \"macos\")",
               "tree": "target"
             },
             {
@@ -33795,6 +34059,16 @@
               "tree": "target"
             },
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_nix",
               "package_key": "gen-nix-0.1.0",
               "kind": "normal",
@@ -34011,6 +34285,16 @@
               "optional": false,
               "target": null,
               "tree": "target"
+            },
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
             },
             {
               "name": "gen_nix",
@@ -38041,15 +38325,43 @@
               "tree": "target"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "notify",
               "package_key": "notify-8.2.0",
               "kind": "normal",
-              "features": [
-                "macos_kqueue"
-              ],
+              "features": [],
               "uses_default_features": false,
               "optional": false,
               "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "notify",
+              "package_key": "notify-8.2.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": "cfg(target_os = \"macos\")",
               "tree": "target"
             },
             {
@@ -38141,15 +38453,43 @@
               "tree": "target"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "notify",
               "package_key": "notify-8.2.0",
               "kind": "normal",
-              "features": [
-                "macos_kqueue"
-              ],
+              "features": [],
               "uses_default_features": false,
               "optional": false,
               "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "notify",
+              "package_key": "notify-8.2.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": "cfg(target_os = \"macos\")",
               "tree": "target"
             },
             {
@@ -42331,6 +42671,16 @@
               "tree": "target"
             },
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_nix",
               "package_key": "gen-nix-0.1.0",
               "kind": "normal",
@@ -42547,6 +42897,16 @@
               "optional": false,
               "target": null,
               "tree": "target"
+            },
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
             },
             {
               "name": "gen_nix",
@@ -46577,15 +46937,43 @@
               "tree": "target"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "notify",
               "package_key": "notify-8.2.0",
               "kind": "normal",
-              "features": [
-                "macos_kqueue"
-              ],
+              "features": [],
               "uses_default_features": false,
               "optional": false,
               "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "notify",
+              "package_key": "notify-8.2.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": "cfg(target_os = \"macos\")",
               "tree": "target"
             },
             {
@@ -46677,15 +47065,43 @@
               "tree": "target"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "notify",
               "package_key": "notify-8.2.0",
               "kind": "normal",
-              "features": [
-                "macos_kqueue"
-              ],
+              "features": [],
               "uses_default_features": false,
               "optional": false,
               "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "notify",
+              "package_key": "notify-8.2.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": "cfg(target_os = \"macos\")",
               "tree": "target"
             },
             {
@@ -50923,6 +51339,16 @@
               "tree": "target"
             },
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_nix",
               "package_key": "gen-nix-0.1.0",
               "kind": "normal",
@@ -51139,6 +51565,16 @@
               "optional": false,
               "target": null,
               "tree": "target"
+            },
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
             },
             {
               "name": "gen_nix",
@@ -55169,15 +55605,43 @@
               "tree": "target"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "notify",
               "package_key": "notify-8.2.0",
               "kind": "normal",
-              "features": [
-                "macos_kqueue"
-              ],
+              "features": [],
               "uses_default_features": false,
               "optional": false,
               "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "notify",
+              "package_key": "notify-8.2.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": "cfg(target_os = \"macos\")",
               "tree": "target"
             },
             {
@@ -55269,15 +55733,43 @@
               "tree": "target"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "notify",
               "package_key": "notify-8.2.0",
               "kind": "normal",
-              "features": [
-                "macos_kqueue"
-              ],
+              "features": [],
               "uses_default_features": false,
               "optional": false,
               "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "notify",
+              "package_key": "notify-8.2.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": "cfg(target_os = \"macos\")",
               "tree": "target"
             },
             {
@@ -59515,6 +60007,16 @@
               "tree": "target"
             },
             {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
+            },
+            {
               "name": "gen_nix",
               "package_key": "gen-nix-0.1.0",
               "kind": "normal",
@@ -59731,6 +60233,16 @@
               "optional": false,
               "target": null,
               "tree": "target"
+            },
+            {
+              "name": "gen_macros",
+              "package_key": "gen-macros-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "host"
             },
             {
               "name": "gen_nix",
@@ -63761,15 +64273,43 @@
               "tree": "target"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "notify",
               "package_key": "notify-8.2.0",
               "kind": "normal",
-              "features": [
-                "macos_kqueue"
-              ],
+              "features": [],
               "uses_default_features": false,
               "optional": false,
               "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "notify",
+              "package_key": "notify-8.2.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": "cfg(target_os = \"macos\")",
               "tree": "target"
             },
             {
@@ -63861,15 +64401,43 @@
               "tree": "target"
             },
             {
+              "name": "gen_platform",
+              "package_key": "gen-platform-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "gen_types",
+              "package_key": "gen-types-0.1.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": true,
+              "optional": false,
+              "target": null,
+              "tree": "target"
+            },
+            {
               "name": "notify",
               "package_key": "notify-8.2.0",
               "kind": "normal",
-              "features": [
-                "macos_kqueue"
-              ],
+              "features": [],
               "uses_default_features": false,
               "optional": false,
               "target": null,
+              "tree": "target"
+            },
+            {
+              "name": "notify",
+              "package_key": "notify-8.2.0",
+              "kind": "normal",
+              "features": [],
+              "uses_default_features": false,
+              "optional": false,
+              "target": "cfg(target_os = \"macos\")",
               "tree": "target"
             },
             {
@@ -65344,5 +65912,5 @@
       }
     }
   },
-  "cargo_lock_sha256": "7fe4e3360288cfd535bfff8379df1f17e32520524640caa9365157d4007b2fe7"
+  "cargo_lock_sha256": "4c14f32b54d1fb580e0d4d679ce8b400786e15533ad8823b55091605eaeb0659"
 }

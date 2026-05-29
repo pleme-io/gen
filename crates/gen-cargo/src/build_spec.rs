@@ -151,24 +151,29 @@ pub struct MemberFlakeMetadata {
 }
 
 /// Complete, ready-to-pass module-trio configuration. All defaults
-/// applied IN RUST; Nix consumes the struct verbatim. This is the
-/// central-control-plane shape: changes to defaults land in gen-cargo
-/// once and propagate to every consumer's next spec emission. Nix has
-/// zero TOML knowledge and zero per-field defaulting logic.
+/// applied IN RUST; Nix consumes the struct VERBATIM (no renames, no
+/// defaulting, no logic). Serialized in camelCase to match Substrate's
+/// `mkModuleTrio` API — substrate's nix side passes the parsed JSON
+/// directly to `mkModuleTrio`, zero work in Nix.
+///
+/// This is the central-control-plane shape: changes to defaults land
+/// in gen-cargo once and propagate to every consumer's next spec
+/// emission. The Substrate Nix code has zero TOML knowledge AND zero
+/// per-field translation logic.
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ModuleTrioSpec {
     /// Final HM option leaf name. From `hm-leaf` or defaults to the
-    /// package name.
+    /// binary's tool id (`default_bin or package_name`).
     pub name: String,
     /// Operator-facing one-line description. From `description` or
     /// falls back to cargo `[package].description`.
     pub description: String,
     /// Overlay attribute name. From `package-attr` or defaults to
-    /// package name.
+    /// the tool id.
     pub package_attr: String,
     /// Binary name in `${package}/bin/`. From `binary-name` or
-    /// defaults to the first `[[bin]]` (cargo's default-bin rule)
-    /// or package name.
+    /// defaults to the tool id.
     pub binary_name: String,
     /// HM option-tree path the trio mounts under. From `hm-namespace`
     /// or defaults to `"programs"`.
@@ -1227,17 +1232,24 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             };
             // Defaults applied here so consumers (nix) get a fully
             // populated, ready-to-pass attrset.
+            //
+            // Convention: the "tool identity" defaults to the binary's
+            // name, NOT the package's name. Most pleme-io tools have
+            // identical pkg.name and bin.name, but the divergent cases
+            // matter (e.g. `hibikine` package shipping the `hibiki`
+            // binary — the HM option, overlay attr, and binary name
+            // are all `hibiki`, not `hibikine`). Substrate's pre-
+            // smart-read default was `name = toolName` where toolName
+            // = default_bin; we replicate that here in Rust.
             let pkg_name = pkg.name.to_string();
-            let name = str_or("hm-leaf", pkg_name.clone());
+            let tool_id = default_bin.clone().unwrap_or_else(|| pkg_name.clone());
+            let name = str_or("hm-leaf", tool_id.clone());
             let description = str_or(
                 "description",
-                pkg.description.clone().unwrap_or_else(|| format!("{pkg_name} CLI tool")),
+                pkg.description.clone().unwrap_or_else(|| format!("{tool_id} CLI tool")),
             );
-            let package_attr = str_or("package-attr", pkg_name.clone());
-            let binary_name = str_or(
-                "binary-name",
-                default_bin.clone().unwrap_or_else(|| pkg_name.clone()),
-            );
+            let package_attr = str_or("package-attr", tool_id.clone());
+            let binary_name = str_or("binary-name", tool_id.clone());
             let hm_namespace = str_or("hm-namespace", "programs".to_string());
             ModuleTrioSpec {
                 name,

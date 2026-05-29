@@ -16,6 +16,8 @@ use clap::{Parser, Subcommand, ValueEnum};
 use gen_config::GenConfig;
 use shikumi::{ConfigTier, TieredConfig};
 
+mod flake_lint;
+
 // Force-link every adapter crate so its `inventory::submit!` runs
 // at static-init time and gen-cli can discover the adapter via
 // `gen_types::registered_adapters()`. Without these uses, Cargo's
@@ -216,6 +218,20 @@ enum Cmd {
         /// Default false — dry-run sweep for fleet-health visibility.
         #[arg(long)]
         write: bool,
+    },
+    /// `gen flake-lint` — detect stale `inputs.X.follows = "Y"` overrides
+    /// where the consumer flake doesn't declare `Y`. Pure-eval typed
+    /// surface; substrate's auto-release CI runs this as a gate.
+    /// Exit code is non-zero iff any issue is reported.
+    #[command(name = "flake-lint")]
+    FlakeLint {
+        /// Path to the flake's directory (must contain `flake.nix`).
+        /// Defaults to CWD.
+        path: Option<PathBuf>,
+        /// Rewrite the flake.nix to remove the offending `.follows`
+        /// lines. Idempotent — safe to re-run.
+        #[arg(long)]
+        fix: bool,
     },
     /// Commit (and optionally push) Cargo.build-spec.json across the
     /// fleet. Walks repos under <path>; for each, stages only the
@@ -612,6 +628,17 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                 .collect();
             emit(&final_entries, cli.format)?;
             if needs_any_regen {
+                std::process::exit(1);
+            }
+            Ok(())
+        }
+        Cmd::FlakeLint { path, fix } => {
+            let root = path.clone().unwrap_or_else(|| std::env::current_dir().unwrap_or_default());
+            let source = flake_lint::NixCliMetadataSource;
+            let report = flake_lint::run(&source, &root, *fix)
+                .map_err(|e| CliError::Other(format!("flake-lint: {e}")))?;
+            emit(&report, cli.format)?;
+            if !report.issues.is_empty() && !*fix {
                 std::process::exit(1);
             }
             Ok(())

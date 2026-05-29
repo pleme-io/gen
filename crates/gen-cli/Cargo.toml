@@ -19,6 +19,7 @@ workspace = true
 [dependencies]
 gen-types = { workspace = true }
 gen-platform = { workspace = true }
+gen-macros = { path = "../gen-macros" }
 gen-cargo = { workspace = true }
 gen-npm = { workspace = true }
 gen-bundler = { workspace = true }

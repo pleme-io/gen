@@ -151,6 +151,20 @@ impl SweepReport {
 ///   - `true`: write `Cargo.build-spec.json` into each successful repo
 ///     so operators can commit them.
 pub fn run(root: &Path, write: bool) -> Result<SweepReport, CargoError> {
+    // Fleet-sweep context — every per-repo cargo metadata must be
+    // hermetic. Sets the build_spec offline posture (passes
+    // `--offline` + `GIT_TERMINAL_PROMPT=0`) so a stale registry
+    // entry or missing git checkout fails as a typed error rather
+    // than prompting the operator for HTTPS credentials mid-sweep.
+    // The IFD path inside nix builders does NOT set this var — it
+    // needs the default cargo-metadata behaviour because the
+    // sandbox handles the registry layout itself.
+    //
+    // Safety: process-global env var. Sweeps are short-lived; the
+    // mutation lives for the duration of the sweep and is what
+    // `build_spec::generate_for_target` checks on every invocation.
+    unsafe { std::env::set_var("GEN_CARGO_METADATA_OFFLINE", "1") };
+
     let started = Instant::now();
     let mut outcomes: IndexMap<String, SweepOutcome> = IndexMap::new();
 

@@ -583,22 +583,32 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
     // Filter the resolve graph to deps active for this target.
     // cargo's resolver does the heavy lifting; we just pass --filter-platform.
     //
-    // Hermetic-by-default: `--offline` + `GIT_TERMINAL_PROMPT=0`.
-    // The fleet sweep must never prompt the operator for credentials
-    // nor hit the network — a stale `~/.cargo/registry` or missing
-    // git checkout should surface as a typed cargo error, not as a
-    // hung HTTPS auth dialog. Operators pre-warm caches via
-    // `cargo fetch` once; from then on `gen build` stays offline.
-    // Safety: setting GIT_TERMINAL_PROMPT in-process is acceptable
-    // — gen is a CLI binary, the env mutation is bounded to this
-    // process's lifetime.
-    // Safety: setting a process-global env var. gen is a short-lived
-    // CLI; the mutation is bounded to this process's lifetime and the
-    // value matches what a hermetic invocation should always have.
-    unsafe { std::env::set_var("GIT_TERMINAL_PROMPT", "0") };
+    // Two operator contexts, two postures:
+    //
+    // 1. Fleet-sweep on a real machine — `~/.cargo/registry` is
+    //    populated; a stale entry or a missing git checkout must NOT
+    //    prompt for HTTPS auth (operator gets stuck). Fleet sets
+    //    `GEN_CARGO_METADATA_OFFLINE=1` (and `GIT_TERMINAL_PROMPT=0`
+    //    propagates), forcing `--offline` + non-interactive git.
+    //
+    // 2. Substrate IFD inside a nix builder — the sandbox has cargo
+    //    plumbing but no `~/.cargo/registry` index; `--offline` would
+    //    abort with "no matching package named X". Leaves env unset
+    //    → default cargo-metadata behaviour, which the builder
+    //    pre-populates correctly.
+    let offline_mode = std::env::var_os("GEN_CARGO_METADATA_OFFLINE").is_some();
+    if offline_mode {
+        // Safety: process-global env var. gen is a short-lived CLI;
+        // the mutation is bounded to this process's lifetime and
+        // pairs with `--offline` as a single hermetic posture.
+        unsafe { std::env::set_var("GIT_TERMINAL_PROMPT", "0") };
+    }
     let mut cmd = MetadataCommand::new();
     cmd.manifest_path(&manifest_path);
-    let mut opts: Vec<String> = vec!["--offline".to_string()];
+    let mut opts: Vec<String> = Vec::new();
+    if offline_mode {
+        opts.push("--offline".to_string());
+    }
     if !target.is_empty() {
         opts.push("--filter-platform".to_string());
         opts.push(target.to_string());

@@ -114,6 +114,16 @@ pub fn registry() -> &'static [PlatformFeature] {
             note: "Direct alias for the macos_fsevent backend. \
                    Same cross-target failure mode as macos_fsevent.",
         },
+        // kqueue is the transitive helper crate macos_kqueue pulls.
+        // Surfaces under the same name in target_resolves when a
+        // consumer activates the feature directly (rare but possible).
+        PlatformFeature {
+            crate_name: "notify",
+            feature: "kqueue",
+            tag: PlatformTag::Apple,
+            note: "Direct alias for the macos_kqueue backend. \
+                   Same cross-target failure mode as macos_kqueue.",
+        },
         PlatformFeature {
             crate_name: "notify",
             feature: "macos_fsevent",
@@ -123,6 +133,26 @@ pub fn registry() -> &'static [PlatformFeature] {
                    fail with E0455 'link kind framework is only \
                    supported on Apple targets' unless a consumer \
                    gates with `default-features = false`.",
+        },
+        // macos_kqueue is the second notify backend. Its name suggests
+        // BSD/portable but Cargo features unify globally per-target —
+        // activating it in [dependencies] adds the kqueue crate (and
+        // transitively kqueue-sys) to every target's dep graph, and
+        // kqueue-sys's BSD-specific type bindings (kevent / EventFilter
+        // / EventFlag) fail to compile on linux x86_64 (E0412). Same
+        // leak signature as macos_fsevent; same operator-side fix:
+        // cfg-gate the feature behind [target.'cfg(target_os = "macos")'].
+        // Surfaced fleet-wide via shikumi 5139dd2 (May 2026) before
+        // 3913d35 landed the target-gate.
+        PlatformFeature {
+            crate_name: "notify",
+            feature: "macos_kqueue",
+            tag: PlatformTag::Apple,
+            note: "macos_kqueue activates the kqueue → kqueue-sys chain. \
+                   kqueue-sys's BSD bindings (kevent struct, EventFilter, \
+                   EventFlag types) won't compile on linux — E0412 \
+                   'cannot find type'. Despite the portable-sounding name, \
+                   this feature is apple-only when set in [dependencies].",
         },
     ]
 }

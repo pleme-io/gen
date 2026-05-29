@@ -140,20 +140,41 @@ fn diagnose_platform_feature_leaks(spec: &BuildSpec, out: &mut Vec<Diagnostic>) 
 }
 
 /// Per-leak operator hint. Crate-specific where we know the exact
-/// drop-in replacement; falls back to a generic `default-features =
-/// false` message otherwise.
+/// drop-in replacement; falls back to a generic
+/// `default-features = false` + target-gate message otherwise.
+///
+/// Cargo features unify globally per-target — there is NO portable
+/// macOS backend feature for a crate like notify; the only
+/// kqueue-sys-free Linux build is one where the macos_* feature is
+/// gated behind `[target.'cfg(target_os = "macos")']`. The hint
+/// previously recommended `features = ["macos_kqueue"]` claiming it
+/// was portable; that advice produced shikumi 5139dd2's Linux-breaking
+/// lockfile and was corrected to the target-gated form in 3913d35.
 fn upstream_fix_hint_for(crate_name: &str, _feature: &str) -> String {
     match crate_name {
-        "notify" => "In the consumer's Cargo.toml, replace `notify = \"<v>\"` \
-                    with `notify = { version = \"<v>\", default-features = false, \
-                    features = [\"macos_kqueue\"] }`. The macos_kqueue backend is \
-                    portable (works on both apple and linux/bsd via kqueue/inotify \
-                    auto-select)."
+        "notify" => "In the consumer's Cargo.toml, set the bare notify dep with no \
+                     macOS feature flags, then opt macOS into a backend via a \
+                     target-conditional block:\n  \
+                     [dependencies]\n  \
+                     notify = { version = \"<v>\", default-features = false }\n\n  \
+                     [target.'cfg(target_os = \"macos\")'.dependencies]\n  \
+                     notify = { version = \"<v>\", default-features = false, \
+                     features = [\"macos_kqueue\"] }\n\n  \
+                     Linux falls back to inotify (notify's only Linux backend) \
+                     with no macOS-side dep activation. The target-gate is required \
+                     because Cargo features unify globally per-target — putting \
+                     `features = [\"macos_kqueue\"]` in [dependencies] would still \
+                     activate kqueue → kqueue-sys on every Linux build."
             .to_string(),
         _ => format!(
             "In the consumer's Cargo.toml, set `default-features = false` on \
-             {crate_name} and re-add only the cross-platform features the \
-             consumer actually uses."
+             {crate_name}, then re-add only the cross-platform features the \
+             consumer actually uses. Platform-specific features (apple-only / \
+             linux-only / windows-only) must live in a \
+             `[target.'cfg(target_os = \"X\")'.dependencies]` block — putting \
+             them in plain [dependencies] activates them globally per-target \
+             due to Cargo's feature unification, which is the leak this \
+             diagnostic detected."
         ),
     }
 }
@@ -312,8 +333,12 @@ mod tests {
     }
 
     #[test]
-    fn linux_only_with_no_apple_feature_yields_no_diagnostic() {
-        // Feature isn't activated on the apple target either — no leak.
+    fn linux_only_with_macos_kqueue_fires_leak_diagnostic() {
+        // Even with NO apple target in the resolve graph, activating
+        // macos_kqueue on linux is itself the leak — the feature pulls
+        // kqueue → kqueue-sys, and kqueue-sys's BSD bindings won't
+        // compile on linux. Registered as Apple-tagged so the
+        // diagnostic fires regardless of whether apple appears.
         let mut s = empty_spec();
         let (k, c) = registry_crate("notify", "8.2.0", vec!["macos_kqueue".into()]);
         s.crates.insert(k.clone(), c);
@@ -321,6 +346,39 @@ mod tests {
         tr.insert(
             "x86_64-unknown-linux-musl".to_string(),
             target_resolve_for(&k, vec!["macos_kqueue".into()]),
+        );
+        s.target_resolves = Some(tr);
+        let d = diagnose(&s);
+        assert_eq!(d.len(), 1, "macos_kqueue on linux must flag");
+        match &d[0] {
+            Diagnostic::PlatformFeatureLeakAcrossTargets {
+                name,
+                feature,
+                feature_platform,
+                triples,
+                ..
+            } => {
+                assert_eq!(name, "notify");
+                assert_eq!(feature, "macos_kqueue");
+                assert_eq!(*feature_platform, PlatformTag::Apple);
+                assert_eq!(triples, &vec!["x86_64-unknown-linux-musl".to_string()]);
+            }
+        }
+    }
+
+    #[test]
+    fn linux_only_with_unregistered_feature_yields_no_diagnostic() {
+        // Unregistered features (no platform_features.rs entry) skip the
+        // check — `lookup` returns None and the diagnostic walker
+        // continues. Preserves the "don't flag features the fleet
+        // hasn't classified yet" invariant.
+        let mut s = empty_spec();
+        let (k, c) = registry_crate("notify", "8.2.0", vec!["unregistered-feature".into()]);
+        s.crates.insert(k.clone(), c);
+        let mut tr = IndexMap::new();
+        tr.insert(
+            "x86_64-unknown-linux-musl".to_string(),
+            target_resolve_for(&k, vec!["unregistered-feature".into()]),
         );
         s.target_resolves = Some(tr);
         assert!(diagnose(&s).is_empty());
@@ -363,7 +421,12 @@ mod tests {
     }
 
     #[test]
-    fn fix_hint_for_notify_names_macos_kqueue() {
+    fn fix_hint_for_notify_recommends_target_gated_macos_kqueue() {
+        // The hint must steer the operator to the cfg-gated form —
+        // putting `features = ["macos_kqueue"]` in plain [dependencies]
+        // is the trap that produced shikumi 5139dd2's Linux-breaking
+        // lockfile. The hint must call out both halves: bare notify in
+        // [dependencies] AND the target-gated opt-in block.
         let mut s = empty_spec();
         let (k, c) = registry_crate("notify", "8.2.0", vec!["macos_fsevent".into()]);
         s.crates.insert(k.clone(), c);
@@ -379,12 +442,20 @@ mod tests {
                 upstream_fix_hint, ..
             } => {
                 assert!(
-                    upstream_fix_hint.contains("macos_kqueue"),
-                    "notify hint should name the portable macos_kqueue backend, got: {upstream_fix_hint}"
+                    upstream_fix_hint.contains("default-features = false"),
+                    "hint must name `default-features = false`, got: {upstream_fix_hint}"
                 );
                 assert!(
-                    upstream_fix_hint.contains("default-features = false"),
-                    "notify hint should name `default-features = false`, got: {upstream_fix_hint}"
+                    upstream_fix_hint.contains("target_os = \"macos\""),
+                    "hint must steer to the cfg(target_os = \"macos\") target-gate, got: {upstream_fix_hint}"
+                );
+                assert!(
+                    upstream_fix_hint.contains("macos_kqueue"),
+                    "hint must name a concrete macOS backend (macos_kqueue), got: {upstream_fix_hint}"
+                );
+                assert!(
+                    upstream_fix_hint.contains("inotify"),
+                    "hint must explain Linux falls back to inotify, got: {upstream_fix_hint}"
                 );
             }
         }

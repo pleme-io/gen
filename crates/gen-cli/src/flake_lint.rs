@@ -44,13 +44,7 @@ use serde::{Deserialize, Serialize};
 /// distinct, mechanically-recognized failure mode at flake-input
 /// resolution. New issue classes land here as variants; substrate's
 /// fleet-catalog-coverage-test asserts the count.
-#[derive(
-    Clone, Debug, PartialEq, Eq, Serialize, Deserialize,
-    gen_macros::TypedDispatcher,
-    gen_macros::Discriminant,
-    gen_macros::IsVariant,
-)]
-#[serde(tag = "kind", rename_all = "kebab-case")]
+#[gen_macros::fsm(label = "gen.flake-lint.issue")]
 pub enum FlakeIssue {
     /// `inputs.<consumer>.inputs.<target>.follows = "..."` declared
     /// in the parent flake, but `<target>` is NOT an input declared
@@ -243,11 +237,9 @@ pub struct FlakeLintReport {
     pub fixed_lines: usize,
 }
 
-// Fleet-wide dispatcher-catalog registration — 15th consumer class.
-// The flake-lint surface lives alongside gen-cargo's freshness +
-// crate-quirk catalogs; same algebra, same substrate test asserts the
-// variant count.
-gen_platform::register_dispatcher!("gen.flake-lint.issue", FlakeIssue);
+// Catalog registration emitted by the `#[gen_macros::fsm(...)]` on
+// the enum above. 15th consumer class; same algebra as freshness +
+// crate-quirk catalogs.
 
 #[cfg(test)]
 mod tests {

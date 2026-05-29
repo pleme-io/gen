@@ -1035,3 +1035,100 @@ fn to_kebab_case(s: &str) -> String {
     }
     out
 }
+
+// ── #[fsm(label = "...")] attribute macro ──────────────────────────
+//
+// Bundles the canonical typed-FSM-enum boilerplate that every typed
+// dispatcher class across pleme-io ships:
+//
+//   #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+//   #[derive(TypedDispatcher, Discriminant, IsVariant)]
+//   #[serde(tag = "kind", rename_all = "kebab-case")]
+//   pub enum Foo { ... }
+//   gen_platform::register_dispatcher!("eco.foo", Foo);
+//
+// becomes:
+//
+//   #[gen_macros::fsm(label = "eco.foo")]
+//   pub enum Foo { ... }
+//
+// Roughly 8 lines → 1 line per typed-FSM, fleet-wide. Same shape,
+// no manual catalog wiring drift.
+
+/// Attribute macro that bundles the typed-FSM derive quintet +
+/// serde tag + catalog registration. Use on a closed enum:
+///
+/// ```ignore
+/// #[gen_macros::fsm(label = "gen.cargo.lock-lifecycle-state")]
+/// pub enum LockLifecycleState {
+///     Unlocked { current_lock_hash: String },
+///     Locked   { spec_hash: String, lock_hash: String },
+///     Drifted  { committed_lock_hash: String, current_lock_hash: String },
+///     MissingLock,
+/// }
+/// ```
+///
+/// Expands to:
+///
+/// ```ignore
+/// #[derive(Clone, Debug, PartialEq, Eq,
+///          serde::Serialize, serde::Deserialize,
+///          gen_macros::TypedDispatcher,
+///          gen_macros::Discriminant,
+///          gen_macros::IsVariant)]
+/// #[serde(tag = "kind", rename_all = "kebab-case")]
+/// pub enum LockLifecycleState { /* ... */ }
+///
+/// gen_platform::register_dispatcher!(
+///     "gen.cargo.lock-lifecycle-state",
+///     LockLifecycleState
+/// );
+/// ```
+///
+/// The consumer crate must depend on `gen_macros`, `gen_platform`,
+/// and `serde` with the `derive` feature.
+#[proc_macro_attribute]
+pub fn fsm(args: TokenStream, item: TokenStream) -> TokenStream {
+    let args = parse_macro_input!(args as FsmArgs);
+    let item = parse_macro_input!(item as syn::ItemEnum);
+    let name = &item.ident;
+    let label = &args.label;
+
+    quote! {
+        #[derive(
+            ::core::clone::Clone,
+            ::core::fmt::Debug,
+            ::core::cmp::PartialEq,
+            ::core::cmp::Eq,
+            ::serde::Serialize,
+            ::serde::Deserialize,
+            ::gen_macros::TypedDispatcher,
+            ::gen_macros::Discriminant,
+            ::gen_macros::IsVariant,
+        )]
+        #[serde(tag = "kind", rename_all = "kebab-case")]
+        #item
+
+        ::gen_platform::register_dispatcher!(#label, #name);
+    }
+    .into()
+}
+
+struct FsmArgs {
+    label: String,
+}
+
+impl syn::parse::Parse for FsmArgs {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let kw: syn::Ident = input.parse()?;
+        if kw != "label" {
+            return Err(syn::Error::new(
+                kw.span(),
+                "expected `label = \"<catalog-label>\"`",
+            ));
+        }
+        input.parse::<syn::Token![=]>()?;
+        let lit: syn::LitStr = input.parse()?;
+        Ok(Self { label: lit.value() })
+    }
+}

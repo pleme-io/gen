@@ -74,13 +74,7 @@ use std::path::Path;
 /// `Drifted` → REFUSE the build with a typed error pointing the
 /// operator at `gen lock --update`; `MissingLock` → can't build at
 /// all.
-#[derive(
-    Clone, Debug, PartialEq, Eq, Serialize, Deserialize,
-    gen_macros::TypedDispatcher,
-    gen_macros::Discriminant,
-    gen_macros::IsVariant,
-)]
-#[serde(tag = "kind", rename_all = "kebab-case")]
+#[gen_macros::fsm(label = "gen.cargo.lock-lifecycle-state")]
 pub enum LockLifecycleState {
     /// No `Cargo.build-spec.json` on disk. The repository is in
     /// transient-lock mode; substrate IFD regenerates the spec at
@@ -380,8 +374,9 @@ fn source_kind_and_locator(s: &CrateSource) -> (String, String) {
 #[allow(dead_code)]
 const _: u32 = SCHEMA_VERSION;
 
-// Fleet-wide dispatcher-catalog registration — 16th consumer class.
-gen_platform::register_dispatcher!("gen.cargo.lock-lifecycle-state", LockLifecycleState);
+// Note: typed-dispatcher catalog registration is emitted by the
+// `#[gen_macros::fsm(label = "...")]` attribute on the enum above.
+// No standalone `gen_platform::register_dispatcher!` call needed.
 
 // ── LockLifecyclePrimitive trait impl ───────────────────────────────
 //

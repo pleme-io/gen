@@ -1464,13 +1464,7 @@ pub fn generate_and_write(root: &Path) -> Result<std::path::PathBuf> {
 /// shigoto.retry-outcome, etc. Adding a Freshness variant
 /// mechanically bumps `variant_count` in the fleet-catalog-coverage
 /// test — the substrate enforces no silent drift.
-#[derive(
-    Clone, Debug, PartialEq, Eq, Serialize, Deserialize,
-    gen_macros::TypedDispatcher,
-    gen_macros::Discriminant,
-    gen_macros::IsVariant,
-)]
-#[serde(tag = "kind", rename_all = "kebab-case")]
+#[gen_macros::fsm(label = "gen.cargo.freshness")]
 pub enum Freshness {
     /// `Cargo.lock` hashes match the spec's stored hash — spec is
     /// byte-equal to what a regen would produce. Skip regeneration.
@@ -1749,18 +1743,11 @@ fn pathdiff_relative(from: &str, base: &str) -> Option<String> {
     from.strip_prefix(&with_slash).map(String::from)
 }
 
-// Fleet-wide dispatcher-catalog registration for gen-cargo's typed
-// spec freshness surface. 14th consumer class in gen-platform's
-// catalog (joining gen.cargo.crate-quirk, cofre.backend-kind,
-// shigoto.retry-outcome, kura.node-kind, etc.). Adding a Freshness
-// variant mechanically bumps `variant_count` against the
-// fleet-catalog-coverage-test snapshot — silent drift is a
-// substrate-test failure, not a runtime surprise.
-//
-// Operator surface: `gen dispatchers list` reports the entry;
-// substrate emitters can generate the matching dispatch skeleton
-// from the typed shape without naming `Freshness` directly.
-gen_platform::register_dispatcher!("gen.cargo.freshness", Freshness);
+// Catalog registration (`gen.cargo.freshness`) emitted by the
+// `#[gen_macros::fsm(label = "...")]` on the enum above. 14th
+// consumer class — same algebra as cofre.backend-kind,
+// shigoto.retry-outcome, kura.node-kind. The macro keeps registration
+// in lockstep with the variant universe; silent drift impossible.
 
 #[cfg(test)]
 mod path_helper_tests {

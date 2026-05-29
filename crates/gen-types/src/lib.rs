@@ -35,6 +35,7 @@
 pub mod adapter;
 pub mod dispatcher;
 pub mod ecosystem;
+pub mod lock_lifecycle;
 pub mod constraint;
 pub mod dependency;
 pub mod derivation;
@@ -57,6 +58,7 @@ pub use adapter::{
     Sbom, SbomFormat,
 };
 pub use dispatcher::TypedDispatcher;
+pub use lock_lifecycle::{LockError, LockLifecyclePrimitive};
 pub use ecosystem::{Invariants, QuirkRegistry, Spec};
 pub use constraint::{Combinator, CompoundConstraint, ConstraintSpec, VersionConstraint};
 pub use dependency::{Dependency, DependencyKind};

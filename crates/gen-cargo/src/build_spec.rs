@@ -1310,21 +1310,37 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
 
 
     // Prefetch sha256 for every Git source so substrate's
-    // lockfile-builder can dispatch pkgs.fetchgit with a fixed hash
+    // lockfile-builder can dispatch pkgs.fetchgit with a FIXED HASH
     // (no IFD, no impure builtins.fetchGit). Sequential — could be
     // parallelized but git deps are typically few.
+    //
+    // Hard-fail on prefetch error. Earlier this was a swallowed
+    // warning: when nix-prefetch-git couldn't reach the remote
+    // (sandbox DNS, transient network), gen continued and emitted a
+    // CrateSource::Git with `sha256: None`. substrate's
+    // lockfile-builder then generated a `pkgs.fetchgit` call without
+    // outputHash — which produces a NON-FOD derivation that's denied
+    // network access in the sandbox, and the downstream fleet rebuild
+    // then explodes with "Could not resolve host: github.com" deep
+    // inside an unrelated build. Surfaced via the rio rebuild on
+    // 2026-05-29; root-causing the malformed hayai-731ad59.drv took
+    // significantly more time than the 5-line fix to write.
+    //
+    // Visibility wins: a hard failure during `gen build` points the
+    // operator at the actual missing piece (network / nix-prefetch-git
+    // / a deleted rev) instead of producing a poisoned spec that
+    // hides the bug behind layers of downstream substrate machinery.
     for crate_spec in crates.values_mut() {
         if let CrateSource::Git { url, rev, sha256, .. } = &mut crate_spec.source {
             if sha256.is_none() && !url.is_empty() && !rev.is_empty() {
-                match prefetch_git_sha256(url, rev) {
-                    Ok(hash) => *sha256 = Some(hash),
-                    Err(e) => {
-                        eprintln!(
-                            "gen lock-build: warn — failed to prefetch sha256 for {}#{}: {}",
-                            url, rev, e
-                        );
+                let hash = prefetch_git_sha256(url, rev).map_err(|e| {
+                    CargoError::PrefetchSha256Failed {
+                        url: url.clone(),
+                        rev: rev.clone(),
+                        reason: e.to_string(),
                     }
-                }
+                })?;
+                *sha256 = Some(hash);
             }
         }
     }

@@ -1,0 +1,6 @@
+{
+  "git+https://github.com/pleme-io/gen#gen-macros@0.1.0": "1mhg09cr0j3y8dmfcc4l0k426pn4faf4bwyd9arky4kcpv4npflj",
+  "git+https://github.com/pleme-io/gen#gen-platform@0.1.0": "1mhg09cr0j3y8dmfcc4l0k426pn4faf4bwyd9arky4kcpv4npflj",
+  "git+https://github.com/pleme-io/gen#gen-types@0.1.0": "1mhg09cr0j3y8dmfcc4l0k426pn4faf4bwyd9arky4kcpv4npflj",
+  "git+https://github.com/pleme-io/shikumi.git?rev=3913d35559a65bc64a870f5633cc3130371b412e#shikumi@0.1.0": "0lr5l669jgphrif4impp6qxp0qg9wpxlv7yplx7wyv3drcgaqjhi"
+}

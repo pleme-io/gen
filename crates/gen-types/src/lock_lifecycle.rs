@@ -128,21 +128,21 @@ mod tests {
     use super::*;
     use serde::{Deserialize, Serialize};
 
-    /// Hermetic mock implementor that lets any caller exercise the
-    /// trait without a real workspace. Uses `Mutex` for interior
-    /// mutability so the mock satisfies the `Send + Sync` bound on
-    /// the trait. The same pattern future adapters use for their
-    /// integration tests.
+    /// Hermetic mock implementor — pure lock-free state via
+    /// `AtomicU8`. No Mutex, no poison, no panic path. Production
+    /// adapter integration tests follow the same shape: no shared
+    /// mutable state that can fail to acquire.
     #[derive(Default)]
     struct MockLifecycle {
-        state: std::sync::Mutex<MockState>,
-        #[allow(dead_code)]
-        snapshot_called: std::sync::Mutex<bool>,
-        #[allow(dead_code)]
-        update_called: std::sync::Mutex<bool>,
-        #[allow(dead_code)]
-        reset_called: std::sync::Mutex<bool>,
+        state: std::sync::atomic::AtomicU8,
     }
+
+    // State encoding — small, totally typed, no failure mode for
+    // load/store.
+    const S_UNLOCKED: u8 = 0;
+    const S_LOCKED: u8 = 1;
+    const S_DRIFTED: u8 = 2;
+    const S_MISSING_LOCK: u8 = 3;
 
     #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
     #[serde(tag = "kind", rename_all = "kebab-case")]
@@ -154,6 +154,39 @@ mod tests {
         MissingLock,
     }
 
+    impl MockState {
+        const fn encode(&self) -> u8 {
+            match self {
+                MockState::Unlocked => S_UNLOCKED,
+                MockState::Locked => S_LOCKED,
+                MockState::Drifted => S_DRIFTED,
+                MockState::MissingLock => S_MISSING_LOCK,
+            }
+        }
+        const fn decode(byte: u8) -> Self {
+            match byte {
+                S_LOCKED => MockState::Locked,
+                S_DRIFTED => MockState::Drifted,
+                S_MISSING_LOCK => MockState::MissingLock,
+                _ => MockState::Unlocked,
+            }
+        }
+    }
+
+    impl MockLifecycle {
+        fn with_state(s: MockState) -> Self {
+            Self {
+                state: std::sync::atomic::AtomicU8::new(s.encode()),
+            }
+        }
+        fn store(&self, s: MockState) {
+            self.state.store(s.encode(), std::sync::atomic::Ordering::SeqCst);
+        }
+        fn load(&self) -> MockState {
+            MockState::decode(self.state.load(std::sync::atomic::Ordering::SeqCst))
+        }
+    }
+
     #[derive(Clone, Default, Serialize, Deserialize)]
     struct MockDiff(usize);
 
@@ -161,25 +194,22 @@ mod tests {
         type State = MockState;
         type Diff = MockDiff;
         fn ecosystem(&self) -> &'static str { "mock" }
-        fn current_state(&self, _: &Path) -> Self::State { self.state.lock().unwrap().clone() }
+        fn current_state(&self, _: &Path) -> Self::State { self.load() }
         fn requires_operator_action(&self, s: &Self::State) -> bool {
             matches!(s, MockState::Drifted | MockState::MissingLock)
         }
         fn is_locked(&self, s: &Self::State) -> bool { matches!(s, MockState::Locked) }
         fn is_missing_lock(&self, s: &Self::State) -> bool { matches!(s, MockState::MissingLock) }
         fn snapshot(&self, _: &Path) -> Result<(), LockError> {
-            *self.snapshot_called.lock().unwrap() = true;
-            *self.state.lock().unwrap() = MockState::Locked;
+            self.store(MockState::Locked);
             Ok(())
         }
         fn update(&self, _: &Path) -> Result<Self::Diff, LockError> {
-            *self.update_called.lock().unwrap() = true;
-            *self.state.lock().unwrap() = MockState::Locked;
+            self.store(MockState::Locked);
             Ok(MockDiff(0))
         }
         fn reset(&self, _: &Path) -> Result<(), LockError> {
-            *self.reset_called.lock().unwrap() = true;
-            *self.state.lock().unwrap() = MockState::Unlocked;
+            self.store(MockState::Unlocked);
             Ok(())
         }
     }

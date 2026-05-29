@@ -123,54 +123,62 @@ pub struct MemberFlakeMetadata {
     /// member doesn't declare a repository — consumer must override.
     pub repo: Option<String>,
 
-    // ── `[package.metadata.pleme]` extension ──────────────────────────
-    //
-    // Single source of truth for substrate's `rust.tool` /
-    // `rust.workspace` / `rust.library` consumer interface. The fields
-    // below let a Rust crate self-describe its substrate-side
-    // module-trio shape in Cargo.toml; gen reads them once during spec
-    // emission; substrate consumes them — so consumer flake.nix files
-    // collapse to a 3-line shim with NO module config.
-    //
-    // Authoring example:
-    //
-    //   [package.metadata.pleme]
-    //   hm-namespace  = "blackmatter.components"
-    //   hm-leaf       = "cli"
-    //   description   = "blackmatter-cli — typed orchestration"
-    //   binary-name   = "blackmatter-cli"
-    //   package-attr  = "blackmatter-cli"
-    //
-    // All fields optional. Defaults:
-    //   hm-namespace  → "programs"
-    //   hm-leaf       → package name
-    //   binary-name   → first [[bin]] or package name
-    //   package-attr  → package name
-    //   description   → cargo description
+    /// **Substrate-ready module-trio spec.** When `[package.metadata.pleme]`
+    /// is set in `Cargo.toml`, gen reads it, applies all defaults
+    /// IN RUST (not in Nix), and emits this complete struct.
+    /// Substrate's `rust.tool` consumes it as a single attrset
+    /// passed directly to `mkModuleTrio` — no nix-side field-by-field
+    /// scraping, no defaulting in Nix.
+    ///
+    /// `None` when the consumer didn't author `[package.metadata.pleme]`.
+    /// Substrate emits no module trio in that case (unless the consumer
+    /// passed an explicit `module = { ... }` arg, in which case the
+    /// flake.nix surface wins).
+    ///
+    /// Authoring in Cargo.toml:
+    ///
+    ///   [package.metadata.pleme]
+    ///   hm-namespace = "blackmatter.components"
+    ///   hm-leaf      = "cli"
+    ///   description  = "..."
+    ///   binary-name  = "blackmatter-cli"
+    ///   package-attr = "blackmatter-cli"
+    ///   with-mcp           = false
+    ///   with-http          = false
+    ///   with-system-daemon = false
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub module_trio: Option<ModuleTrioSpec>,
+}
 
-    /// Home-Manager option-tree path the module trio mounts under.
-    /// Substrate's `mkModuleTrio` reads this when constructing the HM
-    /// option leaf. `"programs"` (default) → `programs.<hm_leaf>`.
-    /// `"blackmatter.components"` → `blackmatter.components.<hm_leaf>`.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub hm_namespace: Option<String>,
-    /// Final option-name leaf. When absent substrate falls back to the
-    /// package name (the common case). Override here for the
-    /// renaming case — e.g. `blackmatter-cli` package whose HM option
-    /// must be `blackmatter.components.cli`.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub hm_leaf: Option<String>,
-    /// Operator-facing one-line description used by substrate's
-    /// module trio + meta in the derivation. Optional — falls back to
-    /// the cargo `description` if absent.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub description: Option<String>,
-    /// Binary name in `${package}/bin/`. Falls back to `default_bin`.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub binary_name: Option<String>,
-    /// Overlay attribute name. Falls back to package name.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub package_attr: Option<String>,
+/// Complete, ready-to-pass module-trio configuration. All defaults
+/// applied IN RUST; Nix consumes the struct verbatim. This is the
+/// central-control-plane shape: changes to defaults land in gen-cargo
+/// once and propagate to every consumer's next spec emission. Nix has
+/// zero TOML knowledge and zero per-field defaulting logic.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ModuleTrioSpec {
+    /// Final HM option leaf name. From `hm-leaf` or defaults to the
+    /// package name.
+    pub name: String,
+    /// Operator-facing one-line description. From `description` or
+    /// falls back to cargo `[package].description`.
+    pub description: String,
+    /// Overlay attribute name. From `package-attr` or defaults to
+    /// package name.
+    pub package_attr: String,
+    /// Binary name in `${package}/bin/`. From `binary-name` or
+    /// defaults to the first `[[bin]]` (cargo's default-bin rule)
+    /// or package name.
+    pub binary_name: String,
+    /// HM option-tree path the trio mounts under. From `hm-namespace`
+    /// or defaults to `"programs"`.
+    pub hm_namespace: String,
+    /// MCP subcommand wrapper toggle.
+    pub with_mcp: bool,
+    /// HTTP subcommand service wrapper toggle.
+    pub with_http: bool,
+    /// System-level daemon wrapper toggle.
+    pub with_system_daemon: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -1200,35 +1208,55 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         // else stays None and forces the consumer to override explicitly.
         let repo = pkg.repository.as_deref().and_then(parse_owner_repo);
 
-        // Read `[package.metadata.pleme]` from Cargo.toml. cargo-metadata
-        // exposes the whole metadata blob as a serde_json::Value — we
-        // just look up the `pleme` key + string fields. Missing fields
-        // stay None and substrate falls back to its defaults.
+        // Read `[package.metadata.pleme]` from Cargo.toml — when
+        // present, produce a complete `ModuleTrioSpec` with every
+        // default applied in Rust. Substrate's nix side consumes the
+        // struct verbatim; zero TOML scraping, zero per-field
+        // defaulting on the nix side.
         let pleme = pkg
             .metadata
             .as_object()
             .and_then(|o| o.get("pleme"))
             .and_then(|p| p.as_object());
-        let pleme_str = |k: &str| -> Option<String> {
-            pleme.and_then(|p| p.get(k)).and_then(|v| v.as_str()).map(String::from)
-        };
-        let hm_namespace = pleme_str("hm-namespace");
-        let hm_leaf = pleme_str("hm-leaf");
-        let description = pleme_str("description")
-            .or_else(|| pkg.description.clone());
-        let binary_name = pleme_str("binary-name");
-        let package_attr = pleme_str("package-attr");
+        let module_trio = pleme.map(|p| {
+            let str_or = |k: &str, default: String| -> String {
+                p.get(k).and_then(|v| v.as_str()).map(String::from).unwrap_or(default)
+            };
+            let bool_or = |k: &str, default: bool| -> bool {
+                p.get(k).and_then(|v| v.as_bool()).unwrap_or(default)
+            };
+            // Defaults applied here so consumers (nix) get a fully
+            // populated, ready-to-pass attrset.
+            let pkg_name = pkg.name.to_string();
+            let name = str_or("hm-leaf", pkg_name.clone());
+            let description = str_or(
+                "description",
+                pkg.description.clone().unwrap_or_else(|| format!("{pkg_name} CLI tool")),
+            );
+            let package_attr = str_or("package-attr", pkg_name.clone());
+            let binary_name = str_or(
+                "binary-name",
+                default_bin.clone().unwrap_or_else(|| pkg_name.clone()),
+            );
+            let hm_namespace = str_or("hm-namespace", "programs".to_string());
+            ModuleTrioSpec {
+                name,
+                description,
+                package_attr,
+                binary_name,
+                hm_namespace,
+                with_mcp: bool_or("with-mcp", false),
+                with_http: bool_or("with-http", false),
+                with_system_daemon: bool_or("with-system-daemon", false),
+            }
+        });
 
         flake_metadata.insert(
             pkg.name.to_string(),
             MemberFlakeMetadata {
                 default_bin,
                 repo,
-                hm_namespace,
-                hm_leaf,
-                description,
-                binary_name,
-                package_attr,
+                module_trio,
             },
         );
     }

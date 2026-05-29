@@ -26,7 +26,7 @@ use crate::error::{CargoError, Result};
 ///     kwargs); + `links` + universal `preBuild`. Substrate's
 ///     lockfile-builder asserts on this version — older specs MUST
 ///     be regenerated via `gen build .` (no silent fallback).
-pub const SCHEMA_VERSION: u32 = 7;
+pub const SCHEMA_VERSION: u32 = 8;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BuildSpec {
@@ -122,6 +122,55 @@ pub struct MemberFlakeMetadata {
     /// `owner/name` parsed from `[package].repository`. None when the
     /// member doesn't declare a repository — consumer must override.
     pub repo: Option<String>,
+
+    // ── `[package.metadata.pleme]` extension ──────────────────────────
+    //
+    // Single source of truth for substrate's `rust.tool` /
+    // `rust.workspace` / `rust.library` consumer interface. The fields
+    // below let a Rust crate self-describe its substrate-side
+    // module-trio shape in Cargo.toml; gen reads them once during spec
+    // emission; substrate consumes them — so consumer flake.nix files
+    // collapse to a 3-line shim with NO module config.
+    //
+    // Authoring example:
+    //
+    //   [package.metadata.pleme]
+    //   hm-namespace  = "blackmatter.components"
+    //   hm-leaf       = "cli"
+    //   description   = "blackmatter-cli — typed orchestration"
+    //   binary-name   = "blackmatter-cli"
+    //   package-attr  = "blackmatter-cli"
+    //
+    // All fields optional. Defaults:
+    //   hm-namespace  → "programs"
+    //   hm-leaf       → package name
+    //   binary-name   → first [[bin]] or package name
+    //   package-attr  → package name
+    //   description   → cargo description
+
+    /// Home-Manager option-tree path the module trio mounts under.
+    /// Substrate's `mkModuleTrio` reads this when constructing the HM
+    /// option leaf. `"programs"` (default) → `programs.<hm_leaf>`.
+    /// `"blackmatter.components"` → `blackmatter.components.<hm_leaf>`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hm_namespace: Option<String>,
+    /// Final option-name leaf. When absent substrate falls back to the
+    /// package name (the common case). Override here for the
+    /// renaming case — e.g. `blackmatter-cli` package whose HM option
+    /// must be `blackmatter.components.cli`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hm_leaf: Option<String>,
+    /// Operator-facing one-line description used by substrate's
+    /// module trio + meta in the derivation. Optional — falls back to
+    /// the cargo `description` if absent.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    /// Binary name in `${package}/bin/`. Falls back to `default_bin`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub binary_name: Option<String>,
+    /// Overlay attribute name. Falls back to package name.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub package_attr: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -1150,9 +1199,37 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         // Parse owner/name from canonical GitHub-style URLs only. Anything
         // else stays None and forces the consumer to override explicitly.
         let repo = pkg.repository.as_deref().and_then(parse_owner_repo);
+
+        // Read `[package.metadata.pleme]` from Cargo.toml. cargo-metadata
+        // exposes the whole metadata blob as a serde_json::Value — we
+        // just look up the `pleme` key + string fields. Missing fields
+        // stay None and substrate falls back to its defaults.
+        let pleme = pkg
+            .metadata
+            .as_object()
+            .and_then(|o| o.get("pleme"))
+            .and_then(|p| p.as_object());
+        let pleme_str = |k: &str| -> Option<String> {
+            pleme.and_then(|p| p.get(k)).and_then(|v| v.as_str()).map(String::from)
+        };
+        let hm_namespace = pleme_str("hm-namespace");
+        let hm_leaf = pleme_str("hm-leaf");
+        let description = pleme_str("description")
+            .or_else(|| pkg.description.clone());
+        let binary_name = pleme_str("binary-name");
+        let package_attr = pleme_str("package-attr");
+
         flake_metadata.insert(
             pkg.name.to_string(),
-            MemberFlakeMetadata { default_bin, repo },
+            MemberFlakeMetadata {
+                default_bin,
+                repo,
+                hm_namespace,
+                hm_leaf,
+                description,
+                binary_name,
+                package_attr,
+            },
         );
     }
 

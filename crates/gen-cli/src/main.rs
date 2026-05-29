@@ -678,10 +678,17 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             update,
             reset,
         } => {
-            use gen_cargo::build_spec;
-            use gen_cargo::lock_lifecycle::{self, LockLifecycleState};
-            let root = path.clone().unwrap_or_else(|| std::env::current_dir().unwrap_or_default());
-            let state = lock_lifecycle::current_state(&root);
+            // Dispatch through the typed `LockLifecyclePrimitive`
+            // trait. Future adapters (gen-npm, gen-bundler, …) get
+            // this entire surface for free by impl'ing the trait —
+            // the CLI handler stays adapter-agnostic.
+            use gen_cargo::lock_lifecycle::{self, CargoLifecycle, LockLifecycleState};
+            use gen_types::LockLifecyclePrimitive;
+            let root = path
+                .clone()
+                .unwrap_or_else(|| std::env::current_dir().unwrap_or_default());
+            let prim = CargoLifecycle::new();
+            let state = prim.current_state(&root);
             let spec_path = root.join("Cargo.build-spec.json");
 
             #[derive(serde::Serialize)]
@@ -695,6 +702,7 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                 diff: Option<lock_lifecycle::LockDiff>,
             }
 
+            let _ = spec_path; // computed inside the trait impls
             match (*snapshot, *update, *reset) {
                 (false, false, false) => {
                     // Default: read-only — print state.
@@ -706,23 +714,15 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                         diff: None,
                     };
                     emit(&r, cli.format)?;
-                    if state.requires_operator_action() {
+                    if prim.requires_operator_action(&state) {
                         std::process::exit(1);
                     }
                     Ok(())
                 }
                 (true, false, false) => {
-                    // Snapshot: write fresh spec.
-                    if matches!(state, LockLifecycleState::MissingLock) {
-                        return Err(CliError::Other(
-                            "gen lock --snapshot: workspace has no Cargo.lock; run \
-                             `cargo generate-lockfile` first"
-                                .into(),
-                        ));
-                    }
-                    build_spec::generate_multi_target_and_write(&root)
-                        .map_err(CliError::Cargo)?;
-                    let after = lock_lifecycle::current_state(&root);
+                    prim.snapshot(&root)
+                        .map_err(|e| CliError::Other(format!("gen lock --snapshot: {e}")))?;
+                    let after = prim.current_state(&root);
                     let r = LockReport {
                         root: &root,
                         action: "snapshot",
@@ -733,57 +733,23 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                     emit(&r, cli.format)
                 }
                 (false, true, false) => {
-                    // Update: regen + diff.
-                    if matches!(state, LockLifecycleState::MissingLock) {
-                        return Err(CliError::Other(
-                            "gen lock --update: workspace has no Cargo.lock"
-                                .into(),
-                        ));
-                    }
-                    let old_spec = if spec_path.exists() {
-                        let bytes = std::fs::read(&spec_path).map_err(|e| {
-                            CliError::Other(format!(
-                                "gen lock --update: read {}: {e}",
-                                spec_path.display()
-                            ))
-                        })?;
-                        serde_json::from_slice::<build_spec::BuildSpec>(&bytes).ok()
-                    } else {
-                        None
-                    };
-                    build_spec::generate_multi_target_and_write(&root)
-                        .map_err(CliError::Cargo)?;
-                    let new_bytes = std::fs::read(&spec_path).map_err(|e| {
-                        CliError::Other(format!(
-                            "gen lock --update: read new spec {}: {e}",
-                            spec_path.display()
-                        ))
-                    })?;
-                    let new_spec = serde_json::from_slice::<build_spec::BuildSpec>(&new_bytes)
-                        .map_err(|e| CliError::Other(format!("parse new spec: {e}")))?;
-                    let diff = old_spec
-                        .as_ref()
-                        .map(|o| lock_lifecycle::diff_specs(o, &new_spec));
-                    let after = lock_lifecycle::current_state(&root);
+                    let diff = prim
+                        .update(&root)
+                        .map_err(|e| CliError::Other(format!("gen lock --update: {e}")))?;
+                    let after = prim.current_state(&root);
                     let r = LockReport {
                         root: &root,
                         action: "update",
                         state_before: &state,
                         state_after: Some(after),
-                        diff,
+                        diff: Some(diff),
                     };
                     emit(&r, cli.format)
                 }
                 (false, false, true) => {
-                    if spec_path.exists() {
-                        std::fs::remove_file(&spec_path).map_err(|e| {
-                            CliError::Other(format!(
-                                "gen lock --reset: remove {}: {e}",
-                                spec_path.display()
-                            ))
-                        })?;
-                    }
-                    let after = lock_lifecycle::current_state(&root);
+                    prim.reset(&root)
+                        .map_err(|e| CliError::Other(format!("gen lock --reset: {e}")))?;
+                    let after = prim.current_state(&root);
                     let r = LockReport {
                         root: &root,
                         action: "reset",

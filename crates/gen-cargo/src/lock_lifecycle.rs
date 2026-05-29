@@ -383,6 +383,114 @@ const _: u32 = SCHEMA_VERSION;
 // Fleet-wide dispatcher-catalog registration — 16th consumer class.
 gen_platform::register_dispatcher!("gen.cargo.lock-lifecycle-state", LockLifecycleState);
 
+// ── LockLifecyclePrimitive trait impl ───────────────────────────────
+//
+// Implements gen_types::LockLifecyclePrimitive so gen-cli's `gen lock`
+// + substrate's strictTransientLock gate dispatch uniformly across
+// every adapter that ships the same trait impl. Future adapters
+// (gen-npm, gen-bundler, gen-poetry) follow this exact pattern: one
+// `impl` block, all four operator verbs + substrate refusal-on-drift
+// wired for free.
+
+/// Cargo adapter for the `LockLifecyclePrimitive` trait. Zero-sized
+/// struct — all state is filesystem-derived, no instance state to
+/// carry. Construct via `CargoLifecycle::new()`.
+#[derive(Debug, Default, Clone, Copy)]
+pub struct CargoLifecycle;
+
+impl CargoLifecycle {
+    #[must_use]
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+impl gen_types::LockLifecyclePrimitive for CargoLifecycle {
+    type State = LockLifecycleState;
+    type Diff = LockDiff;
+
+    fn ecosystem(&self) -> &'static str {
+        "cargo"
+    }
+
+    fn current_state(&self, root: &Path) -> Self::State {
+        current_state(root)
+    }
+
+    fn requires_operator_action(&self, state: &Self::State) -> bool {
+        state.requires_operator_action()
+    }
+
+    fn is_locked(&self, state: &Self::State) -> bool {
+        matches!(state, LockLifecycleState::Locked { .. })
+    }
+
+    fn is_missing_lock(&self, state: &Self::State) -> bool {
+        matches!(state, LockLifecycleState::MissingLock)
+    }
+
+    fn snapshot(&self, root: &Path) -> Result<(), gen_types::LockError> {
+        use gen_types::LockError;
+        match self.current_state(root) {
+            LockLifecycleState::MissingLock => Err(LockError::MissingLockfile {
+                path: root.join("Cargo.lock"),
+            }),
+            _ => crate::build_spec::generate_multi_target_and_write(root)
+                .map(|_| ())
+                .map_err(|e| LockError::SpecGeneration {
+                    action: "snapshot",
+                    source: Box::new(e),
+                }),
+        }
+    }
+
+    fn update(&self, root: &Path) -> Result<Self::Diff, gen_types::LockError> {
+        use gen_types::LockError;
+        let spec_path = root.join("Cargo.build-spec.json");
+        let old_spec = if spec_path.exists() {
+            match std::fs::read(&spec_path) {
+                Ok(b) => serde_json::from_slice::<BuildSpec>(&b).ok(),
+                Err(_) => None,
+            }
+        } else {
+            None
+        };
+        crate::build_spec::generate_multi_target_and_write(root).map_err(|e| {
+            LockError::SpecGeneration {
+                action: "update",
+                source: Box::new(e),
+            }
+        })?;
+        let new_bytes =
+            std::fs::read(&spec_path).map_err(|source| LockError::Io {
+                action: "update",
+                path: spec_path.clone(),
+                source,
+            })?;
+        let new_spec: BuildSpec =
+            serde_json::from_slice(&new_bytes).map_err(|e| LockError::SpecGeneration {
+                action: "update",
+                source: Box::new(e),
+            })?;
+        Ok(old_spec
+            .as_ref()
+            .map_or_else(LockDiff::default, |o| diff_specs(o, &new_spec)))
+    }
+
+    fn reset(&self, root: &Path) -> Result<(), gen_types::LockError> {
+        use gen_types::LockError;
+        let spec_path = root.join("Cargo.build-spec.json");
+        if spec_path.exists() {
+            std::fs::remove_file(&spec_path).map_err(|source| LockError::Io {
+                action: "reset",
+                path: spec_path,
+                source,
+            })?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

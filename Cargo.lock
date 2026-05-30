@@ -366,6 +366,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "dyn-clone"
+version = "1.0.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
+
+[[package]]
 name = "either"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -413,6 +419,12 @@ name = "find-msvc-tools"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5baebc0774151f905a1a2cc41989300b1e6fbb29aff0ceffa1064fdd3088d582"
+
+[[package]]
+name = "fixedbitset"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 
 [[package]]
 name = "fnv"
@@ -533,6 +545,7 @@ dependencies = [
 name = "gen-cargo"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "base64",
  "cargo_metadata",
  "gen-macros 0.1.0",
@@ -546,8 +559,14 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
+ "shigoto-budget",
+ "shigoto-dag",
+ "shigoto-emit",
+ "shigoto-scheduler",
+ "shigoto-types",
  "tempfile",
  "thiserror 2.0.18",
+ "tokio",
  "toml 0.8.23",
 ]
 
@@ -1126,6 +1145,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "petgraph"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b4c5cc86750666a3ed20bdaf5ca2a0344f9c67674cae0515bec2da16fbaa47db"
+dependencies = [
+ "fixedbitset",
+ "indexmap",
+]
+
+[[package]]
 name = "pin-project-lite"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1329,6 +1358,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "schemars"
+version = "0.8.22"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3fbf2ae1b8bc8e02df939598064d22402220cd5bbcca1c76f7d6a310974d5615"
+dependencies = [
+ "dyn-clone",
+ "schemars_derive",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "schemars_derive"
+version = "0.8.22"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32e265784ad618884abaea0600a9adf15393368d840e0222d101a072f3f7534d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "serde_derive_internals",
+ "syn",
+]
+
+[[package]]
 name = "semver"
 version = "1.0.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1362,6 +1415,17 @@ name = "serde_derive"
 version = "1.0.228"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "serde_derive_internals"
+version = "0.29.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "18d26a20a969b9e3fdf2fc2d9f21eda6c40e2de84c9408bb5d3b05d499aae711"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1421,6 +1485,91 @@ dependencies = [
  "cfg-if",
  "cpufeatures 0.2.17",
  "digest",
+]
+
+[[package]]
+name = "shigoto-budget"
+version = "0.1.0"
+source = "git+https://github.com/pleme-io/shigoto#0a30877d119a14e2238bbb254d882e10a0c83cf1"
+dependencies = [
+ "serde",
+ "shigoto-types",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "shigoto-dag"
+version = "0.1.0"
+source = "git+https://github.com/pleme-io/shigoto#0a30877d119a14e2238bbb254d882e10a0c83cf1"
+dependencies = [
+ "petgraph",
+ "serde",
+ "shigoto-types",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "shigoto-emit"
+version = "0.1.0"
+source = "git+https://github.com/pleme-io/shigoto#0a30877d119a14e2238bbb254d882e10a0c83cf1"
+dependencies = [
+ "async-trait",
+ "serde",
+ "serde_json",
+ "shigoto-types",
+ "tracing",
+]
+
+[[package]]
+name = "shigoto-gate"
+version = "0.1.0"
+source = "git+https://github.com/pleme-io/shigoto#0a30877d119a14e2238bbb254d882e10a0c83cf1"
+dependencies = [
+ "shigoto-dag",
+ "shigoto-types",
+]
+
+[[package]]
+name = "shigoto-retry"
+version = "0.1.0"
+source = "git+https://github.com/pleme-io/shigoto#0a30877d119a14e2238bbb254d882e10a0c83cf1"
+dependencies = [
+ "serde",
+ "shigoto-types",
+]
+
+[[package]]
+name = "shigoto-scheduler"
+version = "0.1.0"
+source = "git+https://github.com/pleme-io/shigoto#0a30877d119a14e2238bbb254d882e10a0c83cf1"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "chrono",
+ "shigoto-budget",
+ "shigoto-dag",
+ "shigoto-emit",
+ "shigoto-gate",
+ "shigoto-retry",
+ "shigoto-types",
+ "thiserror 2.0.18",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "shigoto-types"
+version = "0.1.0"
+source = "git+https://github.com/pleme-io/shigoto#0a30877d119a14e2238bbb254d882e10a0c83cf1"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "gen-platform 0.1.0 (git+https://github.com/pleme-io/gen)",
+ "gen-types 0.1.0 (git+https://github.com/pleme-io/gen)",
+ "schemars",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
 ]
 
 [[package]]

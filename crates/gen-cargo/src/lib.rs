@@ -20,6 +20,7 @@ pub mod error;
 pub mod features;
 pub mod fleet_commit;
 pub mod fleet_sweep;
+pub mod gen_build_job;
 pub mod git_prefetcher;
 pub mod invariants;
 pub mod lock_lifecycle;

@@ -45,5 +45,20 @@ nix-nar = "0.3"
 base64 = "0.22"
 tempfile = "3"
 
+# Shigoto — typed job system. Fleet-sweep is a Dag of GenBuildJobs
+# (one per repo) executed through InProcessScheduler with a
+# per-kind budget cap. Replaces the previous sequential
+# `for entry in entries { ... }` loop with budgeted parallelism +
+# per-repo recording sinks. The canonical model is tend's
+# StatusRepoJob / PullRepoJob pattern; gen.build-spec is the
+# fourth kind in the fleet to land on the substrate.
+shigoto-types = { git = "https://github.com/pleme-io/shigoto" }
+shigoto-scheduler = { git = "https://github.com/pleme-io/shigoto" }
+shigoto-emit = { git = "https://github.com/pleme-io/shigoto" }
+shigoto-budget = { git = "https://github.com/pleme-io/shigoto" }
+shigoto-dag = { git = "https://github.com/pleme-io/shigoto" }
+async-trait = "0.1"
+tokio = { version = "1.40", features = ["rt-multi-thread", "macros", "sync"] }
+
 [dev-dependencies]
 proptest = "1"

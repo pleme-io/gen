@@ -71,6 +71,8 @@ auth tokens for private repos) and the rev exists, then re-run `gen build`."
         rev: String,
         reason: String,
     },
+    #[error("fleet-sweep scheduler error: {0}")]
+    FleetSweep(String),
 }
 
 pub type Result<T> = std::result::Result<T, CargoError>;

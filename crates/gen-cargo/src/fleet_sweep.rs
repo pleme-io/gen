@@ -70,7 +70,7 @@ impl FailureCategory {
     /// Classify a cargo-metadata error string into a structural
     /// category. The classification is pattern-based + algorithmic
     /// (one match arm per category), not corner-case-dispatched.
-    fn classify(detail: &str) -> Self {
+    pub fn classify(detail: &str) -> Self {
         if detail.contains("Updating git repository") {
             Self::GitFetchFailed
         } else if detail.contains("failed to select a version") {
@@ -143,7 +143,21 @@ impl SweepReport {
     }
 }
 
+/// Per-kind concurrent-job cap for the fleet-sweep Dag. Sized to
+/// balance throughput (more jobs = faster sweep) against
+/// cargo-metadata's own concurrency cost (each job runs an offline
+/// cargo subprocess). 16 matches tend's reconcile default + has
+/// been validated on the 118-repo pleme-io workspace.
+pub const DEFAULT_BUDGET: u32 = 16;
+
 /// Run a fleet sweep over every immediate sub-directory of `root`.
+///
+/// Shigoto-native: each repo is one `GenBuildJob` in a `Dag`, run
+/// through `InProcessScheduler` with the per-kind budget capping
+/// concurrency at [`DEFAULT_BUDGET`]. Outputs flow through an
+/// `InMemorySink<SweepOutcome>`; post-tick drain assembles the
+/// `SweepReport` with the same shape the sequential predecessor
+/// produced.
 ///
 /// `write` controls whether the BuildSpec is persisted to disk:
 ///   - `false` (default): dry-run, generate-and-discard mode for
@@ -166,7 +180,6 @@ pub fn run(root: &Path, write: bool) -> Result<SweepReport, CargoError> {
     unsafe { std::env::set_var("GEN_CARGO_METADATA_OFFLINE", "1") };
 
     let started = Instant::now();
-    let mut outcomes: IndexMap<String, SweepOutcome> = IndexMap::new();
 
     let dirs = std::fs::read_dir(root).map_err(|source| CargoError::Io {
         path: root.to_path_buf(),
@@ -178,17 +191,22 @@ pub fn run(root: &Path, write: bool) -> Result<SweepReport, CargoError> {
         .collect();
     entries.sort();
 
-    for entry in entries {
-        let repo_name = entry
-            .file_name()
-            .map(|s| s.to_string_lossy().into_owned())
-            .unwrap_or_default();
-        if repo_name.is_empty() || repo_name.starts_with('.') {
-            continue;
-        }
-        let outcome = sweep_one(&entry, write);
-        outcomes.insert(repo_name, outcome);
-    }
+    let repos: Vec<(String, PathBuf)> = entries
+        .into_iter()
+        .filter_map(|entry| {
+            let repo_name = entry
+                .file_name()
+                .map(|s| s.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            if repo_name.is_empty() || repo_name.starts_with('.') {
+                None
+            } else {
+                Some((repo_name, entry))
+            }
+        })
+        .collect();
+
+    let outcomes = run_via_scheduler(&repos, write)?;
 
     Ok(SweepReport {
         root: root.to_path_buf(),
@@ -197,46 +215,108 @@ pub fn run(root: &Path, write: bool) -> Result<SweepReport, CargoError> {
     })
 }
 
-fn sweep_one(repo: &Path, write: bool) -> SweepOutcome {
-    if !repo.join("Cargo.toml").exists() {
-        return SweepOutcome::Skipped {
-            reason: SkipReason::NoCargoToml,
-        };
-    }
-    if !repo.join("Cargo.lock").exists() {
-        return SweepOutcome::Skipped {
-            reason: SkipReason::NoCargoLock,
-        };
-    }
-    let started = Instant::now();
-    // Fast-path through `cargo_lock_hash`: if the committed spec
-    // already matches the current Cargo.lock's BLAKE3 digest, the
-    // write path is a two-hash no-op instead of a full cargo
-    // metadata + serde emission. Fleet sweep over a clean fleet
-    // drops from O(N seconds) to O(N milliseconds). Same shape as
-    // the `gen build --if-stale` operator-facing flag.
-    let spec_result = if write {
-        build_spec::generate_and_write_if_stale(repo).map(|(_freshness, path)| {
-            std::fs::metadata(&path).map(|m| m.len() as usize).unwrap_or(0)
-        })
-    } else {
-        build_spec::generate(repo).map(|spec| {
-            serde_json::to_string(&spec).map(|s| s.len()).unwrap_or(0)
-        })
-    };
-    let elapsed_ms = started.elapsed().as_millis() as u64;
-    match spec_result {
-        Ok(spec_bytes) => SweepOutcome::Ok { spec_bytes, elapsed_ms },
-        Err(e) => {
-            let detail = e.to_string();
-            let category = FailureCategory::classify(&detail);
-            SweepOutcome::Failed {
-                category,
-                detail,
-                elapsed_ms,
+/// Scheduler-driven fan-out. Builds a Dag of one `GenBuildJob` per
+/// repo, registers them all, and ticks until every Job has
+/// terminated. Outputs come back via `InMemorySink<SweepOutcome>`;
+/// `SweepReport` ordering matches the input order via the
+/// `repos` slice (operators see deterministic by-name iteration
+/// in the JSON report).
+fn run_via_scheduler(
+    repos: &[(String, PathBuf)],
+    write: bool,
+) -> Result<IndexMap<String, SweepOutcome>, CargoError> {
+    use std::sync::Arc;
+
+    use shigoto_budget::{BudgetSpec, BudgetTree};
+    use shigoto_dag::Dag;
+    use shigoto_emit::{InMemorySink, NullEmitter};
+    use shigoto_scheduler::{InProcessScheduler, Scheduler};
+    use shigoto_types::{JobKindId, JobPhase, OutputSink};
+
+    use crate::gen_build_job::{GenBuildJob, GEN_BUILD_KIND};
+
+    let rt = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .thread_name("fleet-sweep")
+        .build()
+        .map_err(|e| CargoError::FleetSweep(format!("tokio runtime: {e}")))?;
+
+    rt.block_on(async {
+        let scheduler = InProcessScheduler::new("fleet-sweep")
+            .with_emitter(Arc::new(NullEmitter));
+
+        let mut budget = BudgetTree::new();
+        budget
+            .by_kind
+            .insert(JobKindId::new(GEN_BUILD_KIND), BudgetSpec::max_concurrent(DEFAULT_BUDGET));
+        scheduler.install_budget(budget).await;
+
+        let sink: Arc<InMemorySink<SweepOutcome>> = Arc::new(InMemorySink::new());
+        let sink_for_jobs: Arc<dyn OutputSink<SweepOutcome>> = sink.clone();
+
+        let mut dag = Dag::new();
+        let mut id_to_repo: IndexMap<shigoto_types::JobId, String> = IndexMap::new();
+
+        for (repo_name, repo_path) in repos {
+            let job = Arc::new(
+                GenBuildJob::new(repo_name.clone(), repo_path.clone(), write)
+                    .with_output_sink(sink_for_jobs.clone()),
+            );
+            let id = <GenBuildJob as shigoto_types::Job>::id(&job);
+            id_to_repo.insert(id.clone(), repo_name.clone());
+            dag.ensure_node(id);
+            scheduler.register_job(job).await;
+        }
+
+        // Per-tick drain until no Job transitions in a tick. Same
+        // termination criterion tend's reconcile uses.
+        const MAX_TICKS: usize = 4096;
+        for _ in 0..MAX_TICKS {
+            let receipt = scheduler.tick(&mut dag).await
+                .map_err(|e| CargoError::FleetSweep(format!("scheduler tick: {e}")))?;
+            if receipt.transitions_this_tick.is_empty() {
+                break;
             }
         }
-    }
+
+        let snap = scheduler.snapshot(&dag).await;
+        let drained = sink.drain();
+
+        // Map outputs by JobId, then walk repos in input order so
+        // the IndexMap honours the operator-facing sort order.
+        let mut by_repo: IndexMap<String, SweepOutcome> = IndexMap::new();
+        for (job_id, outcome) in drained {
+            if let Some(repo_name) = id_to_repo.get(&job_id) {
+                by_repo.insert(repo_name.clone(), outcome);
+            }
+        }
+
+        // Cover Jobs that never produced an Output — typically
+        // scheduler-level invocation failures. Surface them with a
+        // synthetic Failed outcome so the report covers every repo.
+        for (id, repo_name) in &id_to_repo {
+            if !by_repo.contains_key(repo_name) {
+                let phase = snap.phases.get(id).cloned().unwrap_or(JobPhase::Pending);
+                by_repo.insert(
+                    repo_name.clone(),
+                    SweepOutcome::Failed {
+                        category: FailureCategory::OtherCargoError,
+                        detail: format!("Job terminated without output (phase = {phase:?})"),
+                        elapsed_ms: 0,
+                    },
+                );
+            }
+        }
+
+        // Re-sort outcomes by the input repo order (deterministic).
+        let mut sorted: IndexMap<String, SweepOutcome> = IndexMap::new();
+        for (repo_name, _) in repos {
+            if let Some(outcome) = by_repo.shift_remove(repo_name) {
+                sorted.insert(repo_name.clone(), outcome);
+            }
+        }
+        Ok(sorted)
+    })
 }
 
 #[cfg(test)]

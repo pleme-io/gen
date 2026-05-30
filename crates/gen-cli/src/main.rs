@@ -327,6 +327,47 @@ enum Cmd {
         #[arg(long)]
         dir: Option<PathBuf>,
     },
+    /// `gen kanshou` — operator-facing reflection over every
+    /// introspectable process on this host. Subcommands list live
+    /// consumers, dump their schema, and ship typed queries through
+    /// the kanshou Unix socket. The substrate-side operator surface
+    /// for the kanshou wave.
+    #[command(subcommand)]
+    Kanshou(KanshouCmd),
+}
+
+#[derive(Subcommand, Debug)]
+enum KanshouCmd {
+    /// Enumerate every introspectable process on this host. Walks
+    /// `$HOME/Library/Application Support/kanshou` (darwin) /
+    /// `$XDG_RUNTIME_DIR/kanshou` (linux) for the per-(app, pid)
+    /// sockets and prints them as JSON.
+    List {
+        /// Filter to a single app name (e.g. `mado`, `frost`).
+        #[arg(long)]
+        app: Option<String>,
+    },
+    /// Ship a typed query against a live consumer. Path is a
+    /// dot-separated leaf list — `frame_perf`, `sessions.count`,
+    /// `vt.pending_responses`. By default the most-recent PID for
+    /// the named app is targeted; `--pid` overrides.
+    Query {
+        /// App name to target (matches `kanshou::discover(Some(app))`).
+        app: String,
+        /// Dot-separated path into the consumer's AppState.
+        path: String,
+        /// Target a specific PID rather than the most-recent one.
+        #[arg(long)]
+        pid: Option<u32>,
+    },
+    /// Print the consumer's declared schema — the top-level field
+    /// list returned by `Introspect::schema()`. Useful for "what
+    /// can I query on this app?" reconnaissance.
+    Schema {
+        app: String,
+        #[arg(long)]
+        pid: Option<u32>,
+    },
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -840,6 +881,8 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             );
             Ok(())
         }
+        Cmd::Kanshou(sub) => kanshou_dispatch(sub)
+            .map_err(|e| CliError::Other(format!("kanshou: {e}"))),
         Cmd::Dispatchers { ecosystem, from_catalog } => {
             if *from_catalog {
                 #[derive(serde::Serialize)]
@@ -1515,4 +1558,102 @@ fn pascalize(s: &str) -> String {
         }
     }
     out
+}
+
+// ── `gen kanshou` — live process introspection operator surface ──────
+
+fn kanshou_dispatch(sub: &KanshouCmd) -> Result<(), Box<dyn std::error::Error>> {
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()?;
+    rt.block_on(async move { kanshou_run(sub).await })
+}
+
+async fn kanshou_run(sub: &KanshouCmd) -> Result<(), Box<dyn std::error::Error>> {
+    match sub {
+        KanshouCmd::List { app } => {
+            let mut instances = kanshou::discover(app.as_deref());
+            instances.sort_by(|a, b| a.app_name.cmp(&b.app_name).then(a.pid.cmp(&b.pid)));
+            #[derive(serde::Serialize)]
+            struct Row<'a> {
+                app: &'a str,
+                pid: u32,
+                socket: String,
+            }
+            let rows: Vec<Row> = instances
+                .iter()
+                .map(|i| Row {
+                    app: &i.app_name,
+                    pid: i.pid,
+                    socket: i.socket_path.display().to_string(),
+                })
+                .collect();
+            println!("{}", serde_json::to_string_pretty(&rows)?);
+            Ok(())
+        }
+        KanshouCmd::Query { app, path, pid } => {
+            let target = pick_target(app, *pid)?;
+            let mut client = kanshou::Client::connect(&target.socket_path).await?;
+            let segments: Vec<String> = path.split('.').map(str::to_string).collect();
+            let result = client
+                .query(&kanshou::Query::field(segments))
+                .await?;
+            match result {
+                Ok(value) => println!("{}", serde_json::to_string_pretty(&value)?),
+                Err(e) => {
+                    eprintln!(
+                        "kanshou: query error from {} pid={}: {}",
+                        target.app_name, target.pid, e
+                    );
+                    std::process::exit(1);
+                }
+            }
+            Ok(())
+        }
+        KanshouCmd::Schema { app, pid } => {
+            // Best-effort: query each top-level path on the consumer.
+            // Today's Introspect trait exposes `schema()` server-side
+            // but not as a wire-level query — phase 1+'s wire shape
+            // is a plain value query. Fall back to an empty path
+            // query which returns `unknown-field ""` plus a schema
+            // hint we render verbatim.
+            let target = pick_target(app, *pid)?;
+            let mut client = kanshou::Client::connect(&target.socket_path).await?;
+            let empty: Vec<String> = vec![];
+            let probe = client
+                .query(&kanshou::Query::field(empty))
+                .await?;
+            #[derive(serde::Serialize)]
+            struct SchemaOut<'a> {
+                app: &'a str,
+                pid: u32,
+                schema_probe: kanshou::QueryResult,
+            }
+            let out = SchemaOut {
+                app: &target.app_name,
+                pid: target.pid,
+                schema_probe: probe,
+            };
+            println!("{}", serde_json::to_string_pretty(&out)?);
+            Ok(())
+        }
+    }
+}
+
+fn pick_target(
+    app: &str,
+    pid: Option<u32>,
+) -> Result<kanshou::DiscoveredInstance, Box<dyn std::error::Error>> {
+    let mut instances = kanshou::discover(Some(app));
+    if let Some(want) = pid {
+        instances.retain(|i| i.pid == want);
+    }
+    instances.sort_by_key(|i| std::cmp::Reverse(i.pid));
+    instances.into_iter().next().ok_or_else(|| {
+        format!(
+            "no live kanshou consumer for app={app}{}; check `gen kanshou list`",
+            pid.map(|p| format!(" pid={p}")).unwrap_or_default()
+        )
+        .into()
+    })
 }

@@ -43,6 +43,11 @@ indexmap = { workspace = true }
 clap = { workspace = true }
 shikumi = { workspace = true }
 thiserror = { workspace = true }
+# Kanshou — live process introspection. `gen kanshou list/query/schema`
+# is the operator-facing reflection over every introspectable process
+# on this host. See pleme-io/kanshou.
+kanshou = { git = "https://github.com/pleme-io/kanshou" }
+tokio = { version = "1", features = ["rt", "macros", "net", "io-util"] }
 
 [dev-dependencies]
 # Cross-adapter catalog sweep test pulls every adapter so its

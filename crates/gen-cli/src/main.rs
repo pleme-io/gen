@@ -185,6 +185,19 @@ enum Cmd {
         /// it off so the operator can force a regen on demand.
         #[arg(long)]
         if_stale: bool,
+        /// Atomically commit the regenerated spec to git. Useful for
+        /// bootstrap-exception repos (gen, engenho with private deps)
+        /// where the spec is intentionally committed and freshness is
+        /// maintained at the operator boundary. Combined with `cargo
+        /// update`, the operator's workflow becomes:
+        ///
+        ///   cargo update && gen build . --commit
+        ///
+        /// The commit lands as `gen-spec-bot` so the regen is
+        /// distinct from operator-authored commits. No-op when the
+        /// spec hasn't drifted (idempotent).
+        #[arg(long)]
+        commit: bool,
     },
     /// Typed read-only freshness check of `Cargo.build-spec.json`.
     /// Returns the `Freshness` variants (Fresh / Drifted /
@@ -584,7 +597,7 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             };
             emit(&summary, cli.format)
         }
-        Cmd::Build { path, filter_platform, single_target, if_stale } => {
+        Cmd::Build { path, filter_platform, single_target, if_stale, commit } => {
             let root = resolve_root(path, cfg);
             // Atomic: regenerate every sidecar the substrate consumer
             // needs based on the adapter the workspace declares. Today
@@ -624,6 +637,9 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                             .map_err(CliError::Cargo)?
                     };
                     eprintln!("gen build: wrote {}", out.display());
+                    if *commit {
+                        commit_spec_if_drifted(&root)?;
+                    }
                 }
                 other => {
                     return Err(CliError::RenderNotImplementedForAdapter(other.to_string()));
@@ -1541,6 +1557,66 @@ fn invariants_run_clean_against_minimal_spec() {{
         snake = name.replace('-', "_"),
     );
     fs::write(tests_dir.join("trait_surface.rs"), trait_surface_test)?;
+    Ok(())
+}
+
+/// Stage + commit Cargo.build-spec.json when it drifted from the
+/// previously-committed copy. Idempotent: no-op when nothing
+/// changed. Author is `gen-spec-bot` so the commit is distinct from
+/// operator-authored work — same identity gen's CI uses.
+///
+/// Pairs with `gen build --commit`: the local operator workflow
+/// becomes `cargo update && gen build . --commit`, matching the
+/// CI shape where gen-spec-bot keeps committed-bootstrap-exception
+/// specs fresh by construction.
+fn commit_spec_if_drifted(root: &std::path::Path) -> Result<(), CliError> {
+    use std::process::Command;
+    let spec_rel = std::path::Path::new("Cargo.build-spec.json");
+    let status = Command::new("git")
+        .arg("-C")
+        .arg(root)
+        .args(["diff", "--quiet", "--", "Cargo.build-spec.json"])
+        .status()
+        .map_err(|e| CliError::Other(format!("git diff: {e}")))?;
+    if status.success() {
+        eprintln!("gen build --commit: spec unchanged; no commit");
+        return Ok(());
+    }
+    let stage = Command::new("git")
+        .arg("-C")
+        .arg(root)
+        .args(["add", "--"])
+        .arg(spec_rel)
+        .output()
+        .map_err(|e| CliError::Other(format!("git add: {e}")))?;
+    if !stage.status.success() {
+        return Err(CliError::Other(format!(
+            "git add failed: {}",
+            String::from_utf8_lossy(&stage.stderr).trim()
+        )));
+    }
+    let commit = Command::new("git")
+        .arg("-C")
+        .arg(root)
+        .args([
+            "-c",
+            "user.name=gen-spec-bot",
+            "-c",
+            "user.email=gen-spec-bot@pleme-io.invalid",
+            "commit",
+            "--quiet",
+            "-m",
+            "gen: regen Cargo.build-spec.json (atomic via gen build --commit)",
+        ])
+        .output()
+        .map_err(|e| CliError::Other(format!("git commit: {e}")))?;
+    if !commit.status.success() {
+        return Err(CliError::Other(format!(
+            "git commit failed: {}",
+            String::from_utf8_lossy(&commit.stderr).trim()
+        )));
+    }
+    eprintln!("gen build --commit: spec committed (gen-spec-bot)");
     Ok(())
 }
 

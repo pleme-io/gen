@@ -1,16 +1,24 @@
-# Verify-only spec smoke test.
+# Auto-commit + verify spec freshness on push.
 #
-# The committed `Cargo.build-spec.json` was retired 2026-05-29 — per
-# the operator-surface doctrine, **only `Cargo.toml` is operator-
-# authored**. `Cargo.build-spec.json` is substrate-internal IR,
-# always regenerated via IFD inside substrate's evaluation. Lives in
-# `.gitignore` across the fleet.
+# Gen is a bootstrap exception under the operator-surface doctrine —
+# it legitimately commits Cargo.build-spec.json because gen IS the
+# spec generator. Per the aligned primitive (substrate trusts
+# committed, gen owns freshness), this workflow is the load-bearing
+# mechanism that keeps the committed spec in sync with operator-
+# driven Cargo.toml / Cargo.lock changes.
 #
-# This workflow stays as a CI canary: on every `Cargo.toml` /
-# `Cargo.lock` change, build gen-cli and run `gen build .` to
-# confirm the spec generator still produces output. No commit, no
-# auto-push. Catches "gen-cli broke spec generation" regressions
-# before they break every downstream `nix run .#rebuild`.
+# Conditional logic lives in Rust: `gen build . --commit` regenerates
+# the spec AND atomically commits if drifted (no-op when unchanged).
+# Push uses the typed `pleme-io/actions/git-push-with-token`. The
+# workflow itself is thin glue — no shell conditionals, no for-loops.
+#
+# Behavior:
+#   - On pull request: regenerate the spec, fail PR if drifted.
+#     Author runs `gen build . --commit` locally + includes the
+#     regen commit in their PR.
+#   - On push to main: regenerate the spec, atomically commit via
+#     gen's --commit (gen-spec-bot identity), push back via the
+#     typed git-push-with-token action.
 
 name: gen-spec-verify
 
@@ -30,17 +38,23 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
 
+concurrency:
+  group: gen-spec-verify-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify-spec:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
-      - name: Cache cargo registry + git deps
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry/index
@@ -51,27 +65,42 @@ jobs:
           restore-keys: |
             cargo-${{ runner.os }}-
 
-      - name: Install Rust toolchain
-        run: |
-          rustup toolchain install --profile minimal --no-self-update stable
-          rustup default stable
+      - uses: dtolnay/rust-toolchain@stable
 
       - name: Build gen-cli
         run: cargo build --release -p gen-cli
 
-      - name: Smoke-test spec generation
+      # On main: regen + atomically commit if drifted (gen-spec-bot
+      # identity is baked into the --commit flag). On PR: regen
+      # without committing so the next step can detect drift and
+      # fail the PR with a clear diff.
+      - name: Regen + commit (push to main)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: ./target/release/gen build . --commit
+
+      - name: Regen (PR — no commit)
+        if: github.event_name == 'pull_request'
+        run: ./target/release/gen build .
+
+      - name: Sanity-check spec content
+        run: ./target/release/gen check-spec
+
+      # Drift = PR didn't include a fresh regen. Surface the diff +
+      # fail so the author re-runs locally and pushes.
+      - name: Fail PR if author didn't include the regen
+        if: github.event_name == 'pull_request'
         run: |
-          ./target/release/gen build .
-          if [ ! -f Cargo.build-spec.json ]; then
-            echo "::error::gen build did not produce Cargo.build-spec.json"
+          if ! git diff --quiet -- Cargo.build-spec.json; then
+            echo "::error::Cargo.build-spec.json is stale. Run \`gen build . --commit\` locally and include the regen commit in this PR."
+            git --no-pager diff -- Cargo.build-spec.json | head -200
             exit 1
           fi
-          # Sanity-check: spec must include the `links` field for at
-          # least one `*-sys` crate. Catches the regression class where
-          # gen-cargo silently drops a CrateSpec field that substrate
-          # depends on (the 2026-05-29 ring CARGO_MANIFEST_LINKS bug).
-          if ! grep -q '"links":' Cargo.build-spec.json; then
-            echo "::error::Cargo.build-spec.json emits zero 'links' fields — gen-cargo regression?"
-            exit 1
-          fi
-          echo "spec generated: $(wc -c < Cargo.build-spec.json) bytes, $(grep -c '"links":' Cargo.build-spec.json) links fields"
+
+      # Push the gen-spec-bot commit back to main via the typed
+      # action — no inline shell URL rewriting.
+      - uses: pleme-io/actions/git-push-with-token@v1
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          push-tags: "false"

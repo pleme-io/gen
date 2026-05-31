@@ -1601,6 +1601,7 @@ pub fn generate_multi_target_and_write(root: &Path) -> Result<std::path::PathBuf
         path: out.clone(),
         source,
     })?;
+    prune_and_log(root);
     Ok(out)
 }
 
@@ -1636,7 +1637,49 @@ pub fn generate_for_target_and_write(root: &Path, target: &str) -> Result<std::p
         path: out.clone(),
         source,
     })?;
+    prune_and_log(root);
     Ok(out)
+}
+
+/// Remove deprecated crate2nix-era sidecars that the typed build-spec
+/// supersedes. Returns the removed path (for logging) or `None` when
+/// absent.
+///
+/// `crate-hashes.json` mapped each git dependency to a base32 nar hash
+/// for crate2nix. The gen pipeline replaced it: git-source hashes now
+/// live in `Cargo.build-spec.json` (`source.sha256`, SRI, computed from
+/// `Cargo.lock`), and substrate's `lockfile-builder` fetches git deps
+/// from there. The file is never read on the gen path — substrate only
+/// touches it in the legacy crate2nix fallback, which `rm`s and
+/// regenerates it anyway — so a committed copy is pure drift that goes
+/// stale on every dependency bump. Every spec write (`gen build`,
+/// `lock-build`, `fleet-sweep`, and substrate's IFD regen) prunes it so
+/// the cleanup is mechanical and new repos never accumulate it.
+pub fn prune_deprecated_sidecars(root: &Path) -> std::io::Result<Option<std::path::PathBuf>> {
+    let legacy = root.join("crate-hashes.json");
+    if legacy.is_file() {
+        std::fs::remove_file(&legacy)?;
+        Ok(Some(legacy))
+    } else {
+        Ok(None)
+    }
+}
+
+/// Prune deprecated sidecars and emit a one-line operator notice.
+/// Called after each successful spec write. A removal failure (e.g. a
+/// read-only tree) is a warning, never fatal — the fresh spec has
+/// already landed and is what every consumer reads.
+fn prune_and_log(root: &Path) {
+    match prune_deprecated_sidecars(root) {
+        Ok(Some(path)) => eprintln!(
+            "gen: pruned deprecated {} (superseded by Cargo.build-spec.json source hashes)",
+            path.display()
+        ),
+        Ok(None) => {}
+        Err(e) => eprintln!(
+            "gen: warning — could not prune deprecated crate-hashes.json: {e}"
+        ),
+    }
 }
 
 /// Pre-shape crateRenames into the exact attrset shape nixpkgs's
@@ -1823,6 +1866,22 @@ mod path_helper_tests {
             super::check_freshness(&dir).summary(),
             "missing-lock"
         );
+    }
+
+    #[test]
+    fn prune_removes_deprecated_crate_hashes_json() {
+        // gen treats crate-hashes.json (a crate2nix-era sidecar) as
+        // deprecated: every spec write prunes it. The build-spec's
+        // SRI source hashes supersede it.
+        let dir = freshness_tmpdir();
+        let legacy = dir.join("crate-hashes.json");
+        std::fs::write(&legacy, b"{}").unwrap();
+        // First prune removes it and reports the path.
+        let removed = super::prune_deprecated_sidecars(&dir).unwrap();
+        assert_eq!(removed.as_deref(), Some(legacy.as_path()));
+        assert!(!legacy.exists(), "crate-hashes.json should be pruned");
+        // Idempotent: a second prune on a clean tree is a no-op.
+        assert!(super::prune_deprecated_sidecars(&dir).unwrap().is_none());
     }
 
     #[test]

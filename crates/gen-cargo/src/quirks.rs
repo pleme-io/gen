@@ -38,7 +38,13 @@ pub enum CrateQuirk {
     /// path). Optional `extern_crate` injects `extern crate <name>;`
     /// into build.rs for edition-2021+ crates that omit it. Maps to
     /// substrate's `foldNormalIntoBuild { externCrate = …; }`.
-    FoldNormalIntoBuild { extern_crate: Option<String> },
+    FoldNormalIntoBuild {
+        // `Option` in a struct variant is NOT auto-defaulted by serde —
+        // without `default`, a spec that omits `externCrate` fails the
+        // full-`BuildSpec` round-trip with `missing field externCrate`.
+        #[serde(default)]
+        extern_crate: Option<String>,
+    },
     /// Substitute a one-line patch into a source file. Used for
     /// upstream source bugs whose fix is a single-string replacement
     /// (e.g. openraft's type-inference ambiguity). Maps to substrate's

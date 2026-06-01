@@ -26,36 +26,55 @@ use crate::error::{CargoError, Result};
 ///     kwargs); + `links` + universal `preBuild`. Substrate's
 ///     lockfile-builder asserts on this version — older specs MUST
 ///     be regenerated via `gen build .` (no silent fallback).
-pub const SCHEMA_VERSION: u32 = 8;
+/// v9: drop redundant `dependencies` union from JSON — Nix consumes only
+///     runtime_dependencies + build_dependencies; the union is
+///     reconstructable and was never read.
+/// v10: compact `target_resolves` = `base` (cross-target-identical edges,
+///     stored once) + per-target `overrides`; Nix decodes
+///     `base // overrides[triple]`. Collapses the ~41% of the spec spent
+///     restating byte-identical per-crate edges across all six fleet
+///     targets — only cfg/platform-gated crates land in `overrides`.
+pub const SCHEMA_VERSION: u32 = 10;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BuildSpec {
     pub version: u32,
     pub workspace: WorkspaceSpec,
+    #[serde(default)]
     pub crates: IndexMap<String, CrateSpec>,
     /// The workspace's primary buildable crate's key in `crates`. Always
     /// populated — either a single-crate workspace's only member or the
     /// first workspace member by declaration order.
     pub root_crate: String,
+    #[serde(default)]
     pub workspace_members: Vec<String>,
     /// Per-workspace-member metadata the Nix flake builder needs
     /// (toolName, repo, bin targets) — keyed by package name. Mirrors
     /// `cargo metadata`'s package.repository + targets without forcing
     /// Nix to re-parse Cargo.toml.
+    #[serde(default)]
     pub flake_metadata: IndexMap<String, MemberFlakeMetadata>,
     /// Schema v5+: per-target resolved dep edges. When present,
-    /// substrate's lockfile-builder reads dependencies from
-    /// `target_resolves[currentTarget]` instead of the per-crate
+    /// substrate's lockfile-builder reads dependencies for a given
+    /// triple as `base // overrides[triple]` instead of the per-crate
     /// fields. Eliminates the gen-bootstrap chicken-and-egg —
     /// one committed spec serves every fleet target, no Nix-side
     /// cfg evaluation needed (cargo's resolver does cfg per-target,
     /// once per target, at spec-emission time).
     ///
+    /// Schema v10+: the COMPACT shape — `base` carries the per-crate
+    /// edges that are byte-identical across every target (the common
+    /// case: most crates resolve the same edges on every triple), and
+    /// `targets[triple].overrides` carries only the crates that differ
+    /// on that triple (cfg/platform-gated deps + features). The Nix
+    /// consumer reconstructs the full per-triple crates map as
+    /// `base // overrides[triple]`. See `CompactTargetResolves`.
+    ///
     /// Old shape (top-level runtime_dependencies / build_dependencies
     /// on CrateSpec) is kept for backward compatibility. Substrate
     /// falls back when target_resolves is None.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub target_resolves: Option<IndexMap<String, TargetResolve>>,
+    pub target_resolves: Option<CompactTargetResolves>,
     /// BLAKE3 hex (64 chars) of the workspace's Cargo.lock content at
     /// emit time. Drives a TWO-SIDED idempotence fast-path:
     ///
@@ -85,19 +104,148 @@ pub struct BuildSpec {
 }
 
 /// Per-target resolved dep edges for every crate in the workspace's
-/// resolve graph. Substrate's lockfile-builder picks the entry that
-/// matches the build's `targetTriple`.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+/// resolve graph. This is the FULL in-memory shape produced by the
+/// resolver (one complete crates map per target). It is NOT the
+/// serialized shape — `CompactTargetResolves` is what lands in
+/// `Cargo.build-spec.json`. `TargetResolve` is the round-trip pivot:
+/// `CompactTargetResolves::from_full` compacts a
+/// `IndexMap<triple, TargetResolve>` for emission; `expand` reconstructs
+/// it for tests / any full-fidelity consumer.
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TargetResolve {
     /// Per-crate edge sets for this target. Keyed by the same
     /// `<name>-<version>` key as BuildSpec.crates.
+    #[serde(default)]
     pub crates: IndexMap<String, CrateTargetEdges>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+/// Compact serialized representation of per-target resolves (schema v10).
+///
+/// `base` holds the per-crate edges that are present in EVERY target with
+/// byte-identical `CrateTargetEdges` — stored exactly once. `targets`
+/// holds, per triple, only the crates that are NOT in `base` (either not
+/// universally present, or present-everywhere but differing on some
+/// target). The decode contract the Nix consumer obeys is:
+///
+/// ```text
+/// crates(triple) = base // targets[triple].overrides
+/// ```
+///
+/// `base` and `targets` are reserved keys — no target triple is ever
+/// named `base` or `targets`, so the shape is unambiguous.
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CompactTargetResolves {
+    /// Per-crate edges identical across every target — stored once.
+    #[serde(default)]
+    pub base: IndexMap<String, CrateTargetEdges>,
+    /// Per-triple overrides — only the crates that differ from `base`
+    /// (or are absent from it) on that triple.
+    #[serde(default)]
+    pub targets: IndexMap<String, TargetOverrides>,
+}
+
+/// Per-triple override set inside `CompactTargetResolves`.
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct TargetOverrides {
+    /// Crates whose edges on this triple differ from (or are absent
+    /// from) `base`. Keyed by the same `<name>-<version>` key.
+    #[serde(default)]
+    pub overrides: IndexMap<String, CrateTargetEdges>,
+}
+
+impl CompactTargetResolves {
+    /// Split a full per-target resolve map into the compact base +
+    /// overrides representation.
+    ///
+    /// Algorithm (rust-for-logic, computed once at emit time):
+    /// - `base` = every crate key present in EVERY target with a
+    ///   byte-identical `CrateTargetEdges` value across all targets.
+    ///   The single shared copy is taken from the first target.
+    /// - `overrides[T]` = every crate present in target `T` that is NOT
+    ///   in `base` (i.e. either not universally-present, or
+    ///   present-everywhere-but-differs-on-some-target).
+    ///
+    /// Lossless by construction: for every triple `T`,
+    /// `base // overrides[T]` reconstructs exactly the original crates
+    /// map for `T` (same key set, same edges per key). Proven by
+    /// `expand`'s round-trip test.
+    ///
+    /// Single-target input: `base` = all of that target's crates,
+    /// every `overrides` empty — still correct, still lossless.
+    #[must_use]
+    pub fn from_full(full: IndexMap<String, TargetResolve>) -> Self {
+        // Empty input → empty compact form (no targets).
+        let Some((_first_triple, first_resolve)) = full.iter().next() else {
+            return Self::default();
+        };
+
+        // A crate is universal+identical iff: it appears in every
+        // target, and its edges are equal to the first target's copy
+        // in every target. Iterate the first target's crates as the
+        // candidate set (a crate absent from the first target can't be
+        // present in EVERY target). The per-target loop below visits
+        // every target, so `present_in_all` implies true universality.
+        let mut base: IndexMap<String, CrateTargetEdges> = IndexMap::new();
+        for (key, first_edges) in &first_resolve.crates {
+            let present_in_all = full
+                .values()
+                .all(|resolve| resolve.crates.get(key) == Some(first_edges));
+            if present_in_all {
+                base.insert(key.clone(), first_edges.clone());
+            }
+        }
+
+        // overrides[T] = crates in T not captured by base.
+        let mut targets: IndexMap<String, TargetOverrides> = IndexMap::new();
+        for (triple, resolve) in &full {
+            let mut overrides: IndexMap<String, CrateTargetEdges> = IndexMap::new();
+            for (key, edges) in &resolve.crates {
+                if !base.contains_key(key) {
+                    overrides.insert(key.clone(), edges.clone());
+                }
+            }
+            targets.insert(triple.clone(), TargetOverrides { overrides });
+        }
+
+        Self { base, targets }
+    }
+
+    /// Reconstruct the full per-target resolve map: for every triple,
+    /// `base // overrides[triple]` (overrides win on key collision,
+    /// though by construction `base` and `overrides` never share a
+    /// key). Inverse of `from_full`.
+    #[must_use]
+    pub fn expand(&self) -> IndexMap<String, TargetResolve> {
+        let mut out: IndexMap<String, TargetResolve> = IndexMap::new();
+        for (triple, target_overrides) in &self.targets {
+            // base first (so override entries that share a key win),
+            // then overrides.
+            let mut crates = self.base.clone();
+            for (key, edges) in &target_overrides.overrides {
+                crates.insert(key.clone(), edges.clone());
+            }
+            out.insert(triple.clone(), TargetResolve { crates });
+        }
+        out
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct CrateTargetEdges {
+    /// Per-target Normal ∪ Build union. Same rationale as
+    /// `CrateSpec.dependencies` — NOT serialized into
+    /// `Cargo.build-spec.json` (schema v9+) because the Nix consumer
+    /// reads only `runtime_dependencies` + `build_dependencies` inside
+    /// `target_resolves[triple].crates[key]`. This was the single
+    /// largest redundant block in the spec (the union restated across
+    /// all six fleet targets). `#[serde(default)]` keeps the round-trip
+    /// deserialize working; reconstructable as the union of the two
+    /// split lists if ever needed.
+    #[serde(default, skip_serializing)]
     pub dependencies: Vec<CrateDepSpec>,
+    #[serde(default)]
     pub runtime_dependencies: Vec<CrateDepSpec>,
+    #[serde(default)]
     pub build_dependencies: Vec<CrateDepSpec>,
     /// Per-target resolved feature list. Cargo's resolver computes
     /// features differently per target (cfg-conditional feature
@@ -118,9 +266,11 @@ pub struct CrateTargetEdges {
 pub struct MemberFlakeMetadata {
     /// Default binary name — first `[[bin]]`'s name or, if no explicit
     /// bin section, the package name (cargo's default-bin rule).
+    #[serde(default)]
     pub default_bin: Option<String>,
     /// `owner/name` parsed from `[package].repository`. None when the
     /// member doesn't declare a repository — consumer must override.
+    #[serde(default)]
     pub repo: Option<String>,
 
     /// **Substrate-ready module-trio spec.** When `[package.metadata.pleme]`
@@ -189,6 +339,7 @@ pub struct ModuleTrioSpec {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WorkspaceSpec {
     pub root: String,
+    #[serde(default)]
     pub members: Vec<WorkspaceMemberSpec>,
 }
 
@@ -205,6 +356,7 @@ pub struct CrateSpec {
     pub version: String,
     pub edition: String,
     pub source: CrateSource,
+    #[serde(default)]
     pub features: Vec<String>,
     pub proc_macro: bool,
     /// Path to the crate's `build.rs` relative to the unpacked
@@ -219,6 +371,7 @@ pub struct CrateSpec {
     /// layouts. Without this field, rustversion-style crates fail
     /// at link time with "no such file" for the build-script
     /// output.
+    #[serde(default)]
     pub build_script: Option<String>,
     /// `[package] links = "<symbol>"` declaration. Cargo passes this
     /// through as `CARGO_MANIFEST_LINKS` and ring's build.rs (and the
@@ -226,6 +379,7 @@ pub struct CrateSpec {
     /// libz-sys, …) asserts on it. nixpkgs' buildRustCrate honors a
     /// `links` arg verbatim. Emitting this from spec avoids per-crate
     /// `links = ...` overrides in pleme-crate-overrides.nix.
+    #[serde(default)]
     pub links: Option<String>,
     /// Typed quirks for known third-party upstream crates whose
     /// buildRustCrate compile fails without a class-helper fix.
@@ -243,6 +397,7 @@ pub struct CrateSpec {
     /// don't compile in isolation (e.g. alloc-no-stdlib's heap_alloc).
     /// Each entry: { name, path } where path is relative to the
     /// unpacked source root.
+    #[serde(default)]
     pub binaries: Vec<CrateBinSpec>,
     /// Library target when the crate exposes one. None for bin-only or
     /// build-script-only crates. Carries the crate-name override (e.g.
@@ -250,21 +405,40 @@ pub struct CrateSpec {
     /// `lib.rs` instead of the default `src/lib.rs`). Without this,
     /// buildRustCrate's auto-discovery misses crates that put their
     /// library at the root or rename it.
+    #[serde(default)]
     pub lib_target: Option<LibTargetSpec>,
-    /// All non-dev deps. Kept as a flat list for cross-tool consumers
-    /// that need to walk the union (e.g. SBOM emitters).
+    /// All non-dev deps (Normal ∪ Build). Internal derivation source:
+    /// `runtime_dependencies` (kind == Normal) and `build_dependencies`
+    /// (kind == Build) are filtered FROM this field at emit time, and
+    /// the in-Rust invariants (`invariants::check_unresolved_deps`)
+    /// walk it before serialization. NOT serialized into
+    /// `Cargo.build-spec.json` (schema v9+): the Nix consumer
+    /// (`substrate/lib/build/rust/lockfile-builder.nix`) reads ONLY
+    /// `runtime_dependencies` + `build_dependencies`, so emitting the
+    /// union was pure redundant weight (it restated those two lists a
+    /// third time). The union is trivially reconstructable as
+    /// `runtime_dependencies ∪ build_dependencies` if a future
+    /// cross-tool consumer (e.g. an SBOM emitter) needs it.
+    /// `#[serde(default)]` keeps deserialization of newly-emitted
+    /// specs working — `diff_specs` (the only full-`BuildSpec`
+    /// deserialize path) never reads this field, so an empty Vec on
+    /// the read side is correct, not a silent bug.
+    #[serde(default, skip_serializing)]
     pub dependencies: Vec<CrateDepSpec>,
     /// Pre-split: deps with kind == "normal". The substrate consumer
     /// passes this list straight to buildRustCrate's `dependencies`
     /// arg — no Nix-side filtering.
+    #[serde(default)]
     pub runtime_dependencies: Vec<CrateDepSpec>,
     /// Pre-split: deps with kind == "build". Threads into
     /// buildRustCrate's `buildDependencies`.
+    #[serde(default)]
     pub build_dependencies: Vec<CrateDepSpec>,
     /// Pre-shaped crateRenames table — keyed by canonical
     /// published-name, valued as `[{ version, rename }]` records.
     /// Threads through to buildRustCrate's `crateRenames` arg
     /// verbatim. Nix doesn't do any synthesis here.
+    #[serde(default)]
     pub crate_renames: IndexMap<String, Vec<CrateRenameRecord>>,
     /// Pre-computed kwarg attrset for nixpkgs `buildRustCrate`.
     /// Field names match buildRustCrate's exact arg names so that the
@@ -281,33 +455,52 @@ pub struct CrateSpec {
     pub build_rust_crate_args: BuildRustCrateArgs,
 }
 
+// AUDIT (schema v9): `build_rust_crate_args` already pairs default+skip,
+// as do `quirks`, `dependencies`, `target_resolves`, and
+// `cargo_lock_sha256`. The fields with `skip_serializing_if` that were
+// MISSING `default` — the round-trip bug class — were every member of
+// `BuildRustCrateArgs` (fixed above). `CrateSpec`'s always-emitted
+// fields (`name`/`version`/`edition`/`source`/`features`/`proc_macro`/
+// `binaries`/`runtime_dependencies`/`build_dependencies`/`crate_renames`/
+// `lib_target`/`build_script`/`links`) are never skipped, so they're
+// safe; the `Option`/`Vec`/`IndexMap` among them gain `default` below
+// defensively so a hand-trimmed or partial spec still deserializes.
+
 /// Pre-shaped attrset that the substrate consumer spreads directly
 /// into `buildRustCrate { … }`. Field names match buildRustCrate's
 /// `mkArgs` signature verbatim (camelCase). Optional fields are
 /// emitted-iff-present so consumers see absence as "use default."
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct BuildRustCrateArgs {
-    #[serde(rename = "crateName", skip_serializing_if = "Option::is_none")]
+    // ROUND-TRIP INVARIANT (schema v9+): every field here pairs
+    // `skip_serializing_if` with `#[serde(default)]`. The skip omits
+    // empty fields on serialize; the default supplies the empty value
+    // on deserialize when the field is absent. Without the default,
+    // `from_slice::<BuildSpec>(to_vec(&spec))` errors with
+    // `missing field <name>` for any spec where the field was empty
+    // (the documented `crateRenames` regression). Asserted forever by
+    // `strict_pipeline::roundtrip_lossless`.
+    #[serde(rename = "crateName", default, skip_serializing_if = "Option::is_none")]
     pub crate_name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub edition: Option<String>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub features: Vec<String>,
-    #[serde(rename = "crateRenames", skip_serializing_if = "IndexMap::is_empty")]
+    #[serde(rename = "crateRenames", default, skip_serializing_if = "IndexMap::is_empty")]
     pub crate_renames: IndexMap<String, Vec<CrateRenameRecord>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub release: Option<bool>,
-    #[serde(rename = "procMacro", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "procMacro", default, skip_serializing_if = "Option::is_none")]
     pub proc_macro: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub build: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub links: Option<String>,
-    #[serde(rename = "libName", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "libName", default, skip_serializing_if = "Option::is_none")]
     pub lib_name: Option<String>,
-    #[serde(rename = "libPath", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "libPath", default, skip_serializing_if = "Option::is_none")]
     pub lib_path: Option<String>,
     /// Pre-rustc shell snippet. Set for EVERY crate to export
     /// `CARGO_CRATE_NAME` (cargo's standard env, which buildRustCrate
@@ -315,7 +508,7 @@ pub struct BuildRustCrateArgs {
     /// future crate that reads the same env now Just Works without a
     /// per-crate override). Caller overrides should APPEND to this
     /// (not replace) to preserve the export.
-    #[serde(rename = "preBuild", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "preBuild", default, skip_serializing_if = "Option::is_none")]
     pub pre_build: Option<String>,
 }
 
@@ -375,13 +568,18 @@ pub enum CrateSource {
     Git {
         url: String,
         rev: String,
+        // `sha256` is prefetched before emission, but a hand-trimmed or
+        // pre-prefetch spec may omit it — `default` keeps the round-trip
+        // lossless (serde does NOT auto-default `Option` in struct
+        // variants).
+        #[serde(default)]
         sha256: Option<String>,
     },
     /// Path source (workspace member) — relative to workspace root.
     Path { relative_path: String },
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct CrateDepSpec {
     /// Consumer-side identifier (`extern crate <name>`); equal to
     /// `package_key` after `/version` stripping when no rename.
@@ -390,9 +588,11 @@ pub struct CrateDepSpec {
     /// dep. Format: `<canonical-name>-<version>`.
     pub package_key: String,
     pub kind: DepKind,
+    #[serde(default)]
     pub features: Vec<String>,
     pub uses_default_features: bool,
     pub optional: bool,
+    #[serde(default)]
     pub target: Option<String>,
     /// Typed tree placement (#12 — substrate dispatch in Rust, not Nix).
     ///
@@ -431,7 +631,7 @@ pub enum BuildTree {
     Host,
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum DepKind {
     Normal,
@@ -647,7 +847,11 @@ pub fn generate_multi_target(root: &Path) -> Result<BuildSpec> {
         }
         resolves.insert(target.clone(), TargetResolve { crates });
     }
-    base.target_resolves = Some(resolves);
+    // Compact the full per-target map for emission (schema v10):
+    // crates with cross-target-identical edges collapse into `base`
+    // (stored once); only differing crates land in per-target
+    // `overrides`. Lossless — substrate decodes `base // overrides[T]`.
+    base.target_resolves = Some(CompactTargetResolves::from_full(resolves));
 
     Ok(base)
 }

@@ -85,18 +85,22 @@ pub fn diagnose(spec: &BuildSpec) -> Vec<Diagnostic> {
 /// operator sees the full leak footprint, not one diagnostic per
 /// (crate, feature, triple) row.
 fn diagnose_platform_feature_leaks(spec: &BuildSpec, out: &mut Vec<Diagnostic>) {
-    let Some(target_resolves) = spec.target_resolves.as_ref() else {
+    let Some(compact) = spec.target_resolves.as_ref() else {
         // Old-shape spec without per-target resolves — no
         // diagnostic surface to inspect.
         return;
     };
+    // Expand the compact (base + overrides) form back to the full
+    // per-target crates map so the leak walk sees each triple's
+    // complete effective edge set (`base // overrides[triple]`).
+    let target_resolves = compact.expand();
 
     // Group leaks: (crate_key, feature) -> Vec<triple>.
     // Use indexmap to keep deterministic order (registry-then-triple).
     let mut grouped: indexmap::IndexMap<(String, String, String, PlatformTag), Vec<String>> =
         indexmap::IndexMap::new();
 
-    for (triple, resolve) in target_resolves {
+    for (triple, resolve) in &target_resolves {
         for (key, edges) in &resolve.crates {
             let Some(crate_spec) = spec.crates.get(key) else {
                 // Spec consistency error — would be caught by
@@ -183,7 +187,8 @@ fn upstream_fix_hint_for(crate_name: &str, _feature: &str) -> String {
 mod tests {
     use super::*;
     use crate::build_spec::{
-        BuildRustCrateArgs, CrateSource, CrateSpec, CrateTargetEdges, TargetResolve, WorkspaceSpec,
+        BuildRustCrateArgs, CompactTargetResolves, CrateSource, CrateSpec, CrateTargetEdges,
+        TargetResolve, WorkspaceSpec,
     };
     use indexmap::IndexMap;
 
@@ -293,7 +298,7 @@ mod tests {
             "aarch64-apple-darwin".to_string(),
             target_resolve_for(&k, vec!["default".into(), "macos_fsevent".into()]),
         );
-        s.target_resolves = Some(tr);
+        s.target_resolves = Some(CompactTargetResolves::from_full(tr));
         let d = diagnose(&s);
         assert_eq!(d.len(), 1, "expected exactly one leak diagnostic");
         match &d[0] {
@@ -328,7 +333,7 @@ mod tests {
             "x86_64-apple-darwin".to_string(),
             target_resolve_for(&k, vec!["macos_fsevent".into()]),
         );
-        s.target_resolves = Some(tr);
+        s.target_resolves = Some(CompactTargetResolves::from_full(tr));
         assert!(diagnose(&s).is_empty());
     }
 
@@ -347,7 +352,7 @@ mod tests {
             "x86_64-unknown-linux-musl".to_string(),
             target_resolve_for(&k, vec!["macos_kqueue".into()]),
         );
-        s.target_resolves = Some(tr);
+        s.target_resolves = Some(CompactTargetResolves::from_full(tr));
         let d = diagnose(&s);
         assert_eq!(d.len(), 1, "macos_kqueue on linux must flag");
         match &d[0] {
@@ -380,7 +385,7 @@ mod tests {
             "x86_64-unknown-linux-musl".to_string(),
             target_resolve_for(&k, vec!["unregistered-feature".into()]),
         );
-        s.target_resolves = Some(tr);
+        s.target_resolves = Some(CompactTargetResolves::from_full(tr));
         assert!(diagnose(&s).is_empty());
     }
 
@@ -404,7 +409,7 @@ mod tests {
             "aarch64-apple-darwin".to_string(),
             target_resolve_for(&k, vec!["macos_fsevent".into()]),
         );
-        s.target_resolves = Some(tr);
+        s.target_resolves = Some(CompactTargetResolves::from_full(tr));
         let d = diagnose(&s);
         assert_eq!(d.len(), 1);
         match &d[0] {
@@ -435,7 +440,7 @@ mod tests {
             "x86_64-unknown-linux-musl".to_string(),
             target_resolve_for(&k, vec!["macos_fsevent".into()]),
         );
-        s.target_resolves = Some(tr);
+        s.target_resolves = Some(CompactTargetResolves::from_full(tr));
         let d = diagnose(&s);
         match &d[0] {
             Diagnostic::PlatformFeatureLeakAcrossTargets {

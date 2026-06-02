@@ -53,13 +53,13 @@ tokio = { version = "1", features = ["rt", "macros", "net", "io-util"] }
 # Cross-adapter catalog sweep test pulls every adapter so its
 # inventory::submit! lands at link time.
 gen-ansible = { version = "0.1.0", path = "../gen-ansible" }
-gen-bundler = { workspace = true }
-gen-cargo = { workspace = true }
+gen-bundler = { path = "../gen-bundler" }
+gen-cargo = { path = "../gen-cargo" }
 gen-gomod = { version = "0.1.0", path = "../gen-gomod" }
 gen-helm = { version = "0.1.0", path = "../gen-helm" }
-gen-npm = { workspace = true }
+gen-npm = { path = "../gen-npm" }
 gen-pip = { version = "0.1.0", path = "../gen-pip" }
 gen-poetry = { version = "0.1.0", path = "../gen-poetry" }
 gen-swift = { version = "0.1.0", path = "../gen-swift" }
-gen-platform = { workspace = true }
+gen-platform = { path = "../gen-platform" }
 tempfile = "3"

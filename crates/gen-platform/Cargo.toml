@@ -25,5 +25,10 @@ thiserror = { workspace = true }
 inventory = { workspace = true }
 
 [dev-dependencies]
-gen-cargo = { workspace = true }
-gen-npm = { workspace = true }
+# Explicit versionless path (NOT `workspace = true`): the workspace gen-cargo
+# entry carries a version, and a versioned dev-dep is NOT stripped at the
+# registry-upload step — which would make gen-platform wait for gen-cargo,
+# gen-cargo wait for shigoto, and shigoto wait for gen-platform (a publish
+# cycle). Versionless path deps are dropped on upload, breaking the cycle.
+gen-cargo = { path = "../gen-cargo" }
+gen-npm = { path = "../gen-npm" }

@@ -206,10 +206,22 @@ fn check_workspace_member_lib_targets(spec: &BuildSpec, out: &mut Vec<Violation>
             continue; // separately reported by check_workspace_members.
         };
         if c.binaries.is_empty() && c.lib_target.is_none() {
-            out.push(Violation::WorkspaceMemberMissingLibTarget {
-                key: key.clone(),
-                name: c.name.clone(),
-            });
+            // Only a PATH-sourced member is genuinely unbuildable without a
+            // lib_target: substrate resolves it to `workspaceSrc` (the
+            // workspace ROOT) where a default `src/lib.rs` doesn't exist.
+            // A GIT-sourced "member" — a transitive git self-reference,
+            // where cargo resolved a workspace crate to its own git repo —
+            // is fetched and NARROWED to its subdir by `mkSrcOf`
+            // (full/<name>, full/crates/<name>), where the default
+            // `src/lib.rs` auto-detects and rustc builds it as-is. Such a
+            // crate is buildable, so don't hard-fail spec generation on it;
+            // it degrades to a lateral git build, not an unbuildable member.
+            if matches!(c.source, CrateSource::Path { .. }) {
+                out.push(Violation::WorkspaceMemberMissingLibTarget {
+                    key: key.clone(),
+                    name: c.name.clone(),
+                });
+            }
         }
     }
 }

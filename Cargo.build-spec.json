@@ -1,7 +1,7 @@
 {
   "version": 10,
   "workspace": {
-    "root": "/home/runner/work/gen/gen",
+    "root": "/Users/luis.d/code/github/pleme-io/gen",
     "members": [
       {
         "name": "gen-types",
@@ -779,16 +779,6 @@
           "uses_default_features": false,
           "optional": false,
           "target": null,
-          "tree": "target"
-        },
-        {
-          "name": "cpufeatures",
-          "package_key": "cpufeatures-0.3.0",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": "cfg(any(target_arch = \"x86\", target_arch = \"x86_64\"))",
           "tree": "target"
         }
       ],
@@ -1654,6 +1644,40 @@
         "preBuild": "export CARGO_CRATE_NAME=constant_time_eq;"
       }
     },
+    "core-foundation-sys-0.8.7": {
+      "name": "core-foundation-sys",
+      "version": "0.8.7",
+      "edition": "2018",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/core-foundation-sys/core-foundation-sys-0.8.7.crate",
+        "sha256": "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b",
+        "name_with_ext": "core-foundation-sys-0.8.7.tar.gz"
+      },
+      "features": [
+        "default",
+        "link"
+      ],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "runtime_dependencies": [],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "core-foundation-sys",
+        "version": "0.8.7",
+        "edition": "2018",
+        "features": [
+          "default",
+          "link"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=core_foundation_sys;"
+      }
+    },
     "cpufeatures-0.2.17": {
       "name": "cpufeatures",
       "version": "0.2.17",
@@ -1670,40 +1694,54 @@
       "links": null,
       "binaries": [],
       "lib_target": null,
-      "runtime_dependencies": [],
+      "runtime_dependencies": [
+        {
+          "name": "libc",
+          "package_key": "libc-0.2.186",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": false,
+          "target": "aarch64-linux-android",
+          "tree": "target"
+        },
+        {
+          "name": "libc",
+          "package_key": "libc-0.2.186",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": false,
+          "target": "cfg(all(target_arch = \"aarch64\", target_os = \"linux\"))",
+          "tree": "target"
+        },
+        {
+          "name": "libc",
+          "package_key": "libc-0.2.186",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": false,
+          "target": "cfg(all(target_arch = \"aarch64\", target_vendor = \"apple\"))",
+          "tree": "target"
+        },
+        {
+          "name": "libc",
+          "package_key": "libc-0.2.186",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": false,
+          "target": "cfg(all(target_arch = \"loongarch64\", target_os = \"linux\"))",
+          "tree": "target"
+        }
+      ],
       "build_dependencies": [],
       "crate_renames": {},
       "build_rust_crate_args": {
         "crateName": "cpufeatures",
         "version": "0.2.17",
         "edition": "2018",
-        "release": true,
-        "preBuild": "export CARGO_CRATE_NAME=cpufeatures;"
-      }
-    },
-    "cpufeatures-0.3.0": {
-      "name": "cpufeatures",
-      "version": "0.3.0",
-      "edition": "2024",
-      "source": {
-        "kind": "registry",
-        "url": "https://static.crates.io/crates/cpufeatures/cpufeatures-0.3.0.crate",
-        "sha256": "8b2a41393f66f16b0823bb79094d54ac5fbd34ab292ddafb9a0456ac9f87d201",
-        "name_with_ext": "cpufeatures-0.3.0.tar.gz"
-      },
-      "features": [],
-      "proc_macro": false,
-      "build_script": null,
-      "links": null,
-      "binaries": [],
-      "lib_target": null,
-      "runtime_dependencies": [],
-      "build_dependencies": [],
-      "crate_renames": {},
-      "build_rust_crate_args": {
-        "crateName": "cpufeatures",
-        "version": "0.3.0",
-        "edition": "2024",
         "release": true,
         "preBuild": "export CARGO_CRATE_NAME=cpufeatures;"
       }
@@ -2419,9 +2457,9 @@
         "preBuild": "export CARGO_CRATE_NAME=fnv;"
       }
     },
-    "gen-adapter-forge-0.1.0": {
+    "gen-adapter-forge-0.1.3": {
       "name": "gen-adapter-forge",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -2439,7 +2477,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -2486,19 +2524,19 @@
       "crate_renames": {
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-adapter-forge",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -2509,9 +2547,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_adapter_forge;"
       }
     },
-    "gen-ansible-0.1.0": {
+    "gen-ansible-0.1.3": {
       "name": "gen-ansible",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -2529,7 +2567,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_macros",
-          "package_key": "gen-macros-0.1.0",
+          "package_key": "gen-macros-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -2539,7 +2577,7 @@
         },
         {
           "name": "gen_platform",
-          "package_key": "gen-platform-0.1.0",
+          "package_key": "gen-platform-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -2549,7 +2587,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -2616,43 +2654,43 @@
       "crate_renames": {
         "gen-macros": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_macros"
           }
         ],
         "gen-platform": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_platform"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-ansible",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-macros": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_macros"
             }
           ],
           "gen-platform": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_platform"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -2663,9 +2701,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_ansible;"
       }
     },
-    "gen-bazel-0.1.0": {
+    "gen-bazel-0.1.3": {
       "name": "gen-bazel",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -2683,7 +2721,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -2718,19 +2756,19 @@
       "crate_renames": {
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-bazel",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -2741,9 +2779,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_bazel;"
       }
     },
-    "gen-buck-0.1.0": {
+    "gen-buck-0.1.3": {
       "name": "gen-buck",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -2761,7 +2799,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_bazel",
-          "package_key": "gen-bazel-0.1.0",
+          "package_key": "gen-bazel-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -2771,7 +2809,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -2806,31 +2844,31 @@
       "crate_renames": {
         "gen-bazel": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_bazel"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-buck",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-bazel": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_bazel"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -2841,9 +2879,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_buck;"
       }
     },
-    "gen-bundler-0.1.0": {
+    "gen-bundler-0.1.3": {
       "name": "gen-bundler",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -2861,7 +2899,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_macros",
-          "package_key": "gen-macros-0.1.0",
+          "package_key": "gen-macros-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -2871,7 +2909,7 @@
         },
         {
           "name": "gen_platform",
-          "package_key": "gen-platform-0.1.0",
+          "package_key": "gen-platform-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -2881,7 +2919,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -2948,43 +2986,43 @@
       "crate_renames": {
         "gen-macros": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_macros"
           }
         ],
         "gen-platform": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_platform"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-bundler",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-macros": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_macros"
             }
           ],
           "gen-platform": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_platform"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -2995,9 +3033,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_bundler;"
       }
     },
-    "gen-cache-attic-0.1.0": {
+    "gen-cache-attic-0.1.3": {
       "name": "gen-cache-attic",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -3015,7 +3053,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_config",
-          "package_key": "gen-config-0.1.0",
+          "package_key": "gen-config-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3025,7 +3063,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3072,31 +3110,31 @@
       "crate_renames": {
         "gen-config": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_config"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-cache-attic",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-config": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_config"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -3107,9 +3145,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_cache_attic;"
       }
     },
-    "gen-caixa-bridge-0.1.0": {
+    "gen-caixa-bridge-0.1.3": {
       "name": "gen-caixa-bridge",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -3127,7 +3165,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_config",
-          "package_key": "gen-config-0.1.0",
+          "package_key": "gen-config-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3137,7 +3175,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3184,31 +3222,31 @@
       "crate_renames": {
         "gen-config": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_config"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-caixa-bridge",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-config": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_config"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -3219,9 +3257,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_caixa_bridge;"
       }
     },
-    "gen-cargo-0.1.0": {
+    "gen-cargo-0.1.3": {
       "name": "gen-cargo",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -3269,7 +3307,7 @@
         },
         {
           "name": "gen_macros",
-          "package_key": "gen-macros-0.1.0",
+          "package_key": "gen-macros-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3279,7 +3317,7 @@
         },
         {
           "name": "gen_platform",
-          "package_key": "gen-platform-0.1.0",
+          "package_key": "gen-platform-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3289,7 +3327,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3476,19 +3514,19 @@
         ],
         "gen-macros": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_macros"
           }
         ],
         "gen-platform": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_platform"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ],
@@ -3531,7 +3569,7 @@
       },
       "build_rust_crate_args": {
         "crateName": "gen-cargo",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "async-trait": [
@@ -3542,19 +3580,19 @@
           ],
           "gen-macros": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_macros"
             }
           ],
           "gen-platform": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_platform"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ],
@@ -3601,9 +3639,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_cargo;"
       }
     },
-    "gen-cli-0.1.0": {
+    "gen-cli-0.1.3": {
       "name": "gen-cli",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -3635,7 +3673,7 @@
         },
         {
           "name": "gen_ansible",
-          "package_key": "gen-ansible-0.1.0",
+          "package_key": "gen-ansible-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3645,7 +3683,7 @@
         },
         {
           "name": "gen_bundler",
-          "package_key": "gen-bundler-0.1.0",
+          "package_key": "gen-bundler-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3655,7 +3693,7 @@
         },
         {
           "name": "gen_cache_attic",
-          "package_key": "gen-cache-attic-0.1.0",
+          "package_key": "gen-cache-attic-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3665,7 +3703,7 @@
         },
         {
           "name": "gen_cargo",
-          "package_key": "gen-cargo-0.1.0",
+          "package_key": "gen-cargo-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3675,7 +3713,7 @@
         },
         {
           "name": "gen_config",
-          "package_key": "gen-config-0.1.0",
+          "package_key": "gen-config-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3685,7 +3723,7 @@
         },
         {
           "name": "gen_gomod",
-          "package_key": "gen-gomod-0.1.0",
+          "package_key": "gen-gomod-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3695,7 +3733,7 @@
         },
         {
           "name": "gen_helm",
-          "package_key": "gen-helm-0.1.0",
+          "package_key": "gen-helm-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3705,7 +3743,7 @@
         },
         {
           "name": "gen_macros",
-          "package_key": "gen-macros-0.1.0",
+          "package_key": "gen-macros-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3715,7 +3753,7 @@
         },
         {
           "name": "gen_nix",
-          "package_key": "gen-nix-0.1.0",
+          "package_key": "gen-nix-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3725,7 +3763,7 @@
         },
         {
           "name": "gen_npm",
-          "package_key": "gen-npm-0.1.0",
+          "package_key": "gen-npm-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3735,7 +3773,7 @@
         },
         {
           "name": "gen_pip",
-          "package_key": "gen-pip-0.1.0",
+          "package_key": "gen-pip-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3745,7 +3783,7 @@
         },
         {
           "name": "gen_platform",
-          "package_key": "gen-platform-0.1.0",
+          "package_key": "gen-platform-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3755,7 +3793,7 @@
         },
         {
           "name": "gen_poetry",
-          "package_key": "gen-poetry-0.1.0",
+          "package_key": "gen-poetry-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3765,7 +3803,7 @@
         },
         {
           "name": "gen_swift",
-          "package_key": "gen-swift-0.1.0",
+          "package_key": "gen-swift-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3775,7 +3813,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -3877,187 +3915,187 @@
       "crate_renames": {
         "gen-ansible": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_ansible"
           }
         ],
         "gen-bundler": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_bundler"
           }
         ],
         "gen-cache-attic": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_cache_attic"
           }
         ],
         "gen-cargo": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_cargo"
           }
         ],
         "gen-config": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_config"
           }
         ],
         "gen-gomod": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_gomod"
           }
         ],
         "gen-helm": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_helm"
           }
         ],
         "gen-macros": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_macros"
           }
         ],
         "gen-nix": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_nix"
           }
         ],
         "gen-npm": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_npm"
           }
         ],
         "gen-pip": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_pip"
           }
         ],
         "gen-platform": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_platform"
           }
         ],
         "gen-poetry": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_poetry"
           }
         ],
         "gen-swift": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_swift"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-cli",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-ansible": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_ansible"
             }
           ],
           "gen-bundler": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_bundler"
             }
           ],
           "gen-cache-attic": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_cache_attic"
             }
           ],
           "gen-cargo": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_cargo"
             }
           ],
           "gen-config": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_config"
             }
           ],
           "gen-gomod": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_gomod"
             }
           ],
           "gen-helm": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_helm"
             }
           ],
           "gen-macros": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_macros"
             }
           ],
           "gen-nix": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_nix"
             }
           ],
           "gen-npm": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_npm"
             }
           ],
           "gen-pip": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_pip"
             }
           ],
           "gen-platform": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_platform"
             }
           ],
           "gen-poetry": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_poetry"
             }
           ],
           "gen-swift": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_swift"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -4066,9 +4104,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_cli;"
       }
     },
-    "gen-config-0.1.0": {
+    "gen-config-0.1.3": {
       "name": "gen-config",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -4086,7 +4124,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4143,19 +4181,19 @@
       "crate_renames": {
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-config",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -4166,9 +4204,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_config;"
       }
     },
-    "gen-gomod-0.1.0": {
+    "gen-gomod-0.1.3": {
       "name": "gen-gomod",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -4186,7 +4224,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_macros",
-          "package_key": "gen-macros-0.1.0",
+          "package_key": "gen-macros-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4196,7 +4234,7 @@
         },
         {
           "name": "gen_platform",
-          "package_key": "gen-platform-0.1.0",
+          "package_key": "gen-platform-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4206,7 +4244,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4273,43 +4311,43 @@
       "crate_renames": {
         "gen-macros": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_macros"
           }
         ],
         "gen-platform": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_platform"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-gomod",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-macros": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_macros"
             }
           ],
           "gen-platform": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_platform"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -4320,9 +4358,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_gomod;"
       }
     },
-    "gen-helm-0.1.0": {
+    "gen-helm-0.1.3": {
       "name": "gen-helm",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -4340,7 +4378,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_macros",
-          "package_key": "gen-macros-0.1.0",
+          "package_key": "gen-macros-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4350,7 +4388,7 @@
         },
         {
           "name": "gen_platform",
-          "package_key": "gen-platform-0.1.0",
+          "package_key": "gen-platform-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4360,7 +4398,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4427,43 +4465,43 @@
       "crate_renames": {
         "gen-macros": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_macros"
           }
         ],
         "gen-platform": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_platform"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-helm",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-macros": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_macros"
             }
           ],
           "gen-platform": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_platform"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -4474,9 +4512,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_helm;"
       }
     },
-    "gen-macros-0.1.0": {
+    "gen-macros-0.1.3": {
       "name": "gen-macros",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -4537,7 +4575,7 @@
       },
       "build_rust_crate_args": {
         "crateName": "gen-macros",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "proc-macro2": [
@@ -4554,9 +4592,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_macros;"
       }
     },
-    "gen-nix-0.1.0": {
+    "gen-nix-0.1.3": {
       "name": "gen-nix",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -4574,7 +4612,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4609,19 +4647,19 @@
       "crate_renames": {
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-nix",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -4632,9 +4670,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_nix;"
       }
     },
-    "gen-nix-bulk-0.1.0": {
+    "gen-nix-bulk-0.1.3": {
       "name": "gen-nix-bulk",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -4652,7 +4690,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_nix",
-          "package_key": "gen-nix-0.1.0",
+          "package_key": "gen-nix-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4662,7 +4700,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4697,31 +4735,31 @@
       "crate_renames": {
         "gen-nix": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_nix"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-nix-bulk",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-nix": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_nix"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -4732,9 +4770,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_nix_bulk;"
       }
     },
-    "gen-npm-0.1.0": {
+    "gen-npm-0.1.3": {
       "name": "gen-npm",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -4752,7 +4790,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_macros",
-          "package_key": "gen-macros-0.1.0",
+          "package_key": "gen-macros-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4762,7 +4800,7 @@
         },
         {
           "name": "gen_platform",
-          "package_key": "gen-platform-0.1.0",
+          "package_key": "gen-platform-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4772,7 +4810,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4849,43 +4887,43 @@
       "crate_renames": {
         "gen-macros": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_macros"
           }
         ],
         "gen-platform": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_platform"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-npm",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-macros": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_macros"
             }
           ],
           "gen-platform": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_platform"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -4896,9 +4934,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_npm;"
       }
     },
-    "gen-pip-0.1.0": {
+    "gen-pip-0.1.3": {
       "name": "gen-pip",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -4916,7 +4954,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_macros",
-          "package_key": "gen-macros-0.1.0",
+          "package_key": "gen-macros-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4926,7 +4964,7 @@
         },
         {
           "name": "gen_platform",
-          "package_key": "gen-platform-0.1.0",
+          "package_key": "gen-platform-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -4936,7 +4974,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -5003,43 +5041,43 @@
       "crate_renames": {
         "gen-macros": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_macros"
           }
         ],
         "gen-platform": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_platform"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-pip",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-macros": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_macros"
             }
           ],
           "gen-platform": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_platform"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -5050,9 +5088,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_pip;"
       }
     },
-    "gen-platform-0.1.0": {
+    "gen-platform-0.1.3": {
       "name": "gen-platform",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -5070,7 +5108,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_macros",
-          "package_key": "gen-macros-0.1.0",
+          "package_key": "gen-macros-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -5080,7 +5118,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -5135,31 +5173,31 @@
       "crate_renames": {
         "gen-macros": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_macros"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-platform",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-macros": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_macros"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -5170,9 +5208,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_platform;"
       }
     },
-    "gen-poetry-0.1.0": {
+    "gen-poetry-0.1.3": {
       "name": "gen-poetry",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -5190,7 +5228,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_macros",
-          "package_key": "gen-macros-0.1.0",
+          "package_key": "gen-macros-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -5200,7 +5238,7 @@
         },
         {
           "name": "gen_platform",
-          "package_key": "gen-platform-0.1.0",
+          "package_key": "gen-platform-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -5210,7 +5248,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -5277,43 +5315,43 @@
       "crate_renames": {
         "gen-macros": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_macros"
           }
         ],
         "gen-platform": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_platform"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-poetry",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-macros": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_macros"
             }
           ],
           "gen-platform": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_platform"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -5324,9 +5362,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_poetry;"
       }
     },
-    "gen-polyglot-0.1.0": {
+    "gen-polyglot-0.1.3": {
       "name": "gen-polyglot",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -5344,7 +5382,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_bundler",
-          "package_key": "gen-bundler-0.1.0",
+          "package_key": "gen-bundler-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -5354,7 +5392,7 @@
         },
         {
           "name": "gen_cargo",
-          "package_key": "gen-cargo-0.1.0",
+          "package_key": "gen-cargo-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -5364,7 +5402,7 @@
         },
         {
           "name": "gen_config",
-          "package_key": "gen-config-0.1.0",
+          "package_key": "gen-config-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -5374,7 +5412,7 @@
         },
         {
           "name": "gen_npm",
-          "package_key": "gen-npm-0.1.0",
+          "package_key": "gen-npm-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -5384,7 +5422,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -5431,67 +5469,67 @@
       "crate_renames": {
         "gen-bundler": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_bundler"
           }
         ],
         "gen-cargo": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_cargo"
           }
         ],
         "gen-config": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_config"
           }
         ],
         "gen-npm": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_npm"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-polyglot",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-bundler": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_bundler"
             }
           ],
           "gen-cargo": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_cargo"
             }
           ],
           "gen-config": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_config"
             }
           ],
           "gen-npm": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_npm"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -5502,9 +5540,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_polyglot;"
       }
     },
-    "gen-swift-0.1.0": {
+    "gen-swift-0.1.3": {
       "name": "gen-swift",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -5522,7 +5560,7 @@
       "runtime_dependencies": [
         {
           "name": "gen_macros",
-          "package_key": "gen-macros-0.1.0",
+          "package_key": "gen-macros-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -5532,7 +5570,7 @@
         },
         {
           "name": "gen_platform",
-          "package_key": "gen-platform-0.1.0",
+          "package_key": "gen-platform-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -5542,7 +5580,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -5609,43 +5647,43 @@
       "crate_renames": {
         "gen-macros": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_macros"
           }
         ],
         "gen-platform": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_platform"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
       },
       "build_rust_crate_args": {
         "crateName": "gen-swift",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "crateRenames": {
           "gen-macros": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_macros"
             }
           ],
           "gen-platform": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_platform"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -5656,9 +5694,9 @@
         "preBuild": "export CARGO_CRATE_NAME=gen_swift;"
       }
     },
-    "gen-types-0.1.0": {
+    "gen-types-0.1.3": {
       "name": "gen-types",
-      "version": "0.1.0",
+      "version": "0.1.3",
       "edition": "2024",
       "source": {
         "kind": "path",
@@ -5755,7 +5793,7 @@
       "crate_renames": {},
       "build_rust_crate_args": {
         "crateName": "gen-types",
-        "version": "0.1.0",
+        "version": "0.1.3",
         "edition": "2024",
         "release": true,
         "libName": "gen_types",
@@ -6190,7 +6228,18 @@
       "links": null,
       "binaries": [],
       "lib_target": null,
-      "runtime_dependencies": [],
+      "runtime_dependencies": [
+        {
+          "name": "core_foundation_sys",
+          "package_key": "core-foundation-sys-0.8.7",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": "cfg(target_vendor = \"apple\")",
+          "tree": "target"
+        }
+      ],
       "build_dependencies": [],
       "crate_renames": {
         "core-foundation-sys": [
@@ -6311,117 +6360,6 @@
         "edition": "2018",
         "release": true,
         "preBuild": "export CARGO_CRATE_NAME=inlinable_string;"
-      }
-    },
-    "inotify-0.11.1": {
-      "name": "inotify",
-      "version": "0.11.1",
-      "edition": "2018",
-      "source": {
-        "kind": "registry",
-        "url": "https://static.crates.io/crates/inotify/inotify-0.11.1.crate",
-        "sha256": "bd5b3eaf1a28b758ac0faa5a4254e8ab2705605496f1b1f3fbbc3988ad73d199",
-        "name_with_ext": "inotify-0.11.1.tar.gz"
-      },
-      "features": [],
-      "proc_macro": false,
-      "build_script": null,
-      "links": null,
-      "binaries": [],
-      "lib_target": null,
-      "runtime_dependencies": [
-        {
-          "name": "bitflags",
-          "package_key": "bitflags-2.11.1",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": null,
-          "tree": "target"
-        },
-        {
-          "name": "inotify_sys",
-          "package_key": "inotify-sys-0.1.5",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": null,
-          "tree": "target"
-        },
-        {
-          "name": "libc",
-          "package_key": "libc-0.2.186",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": null,
-          "tree": "target"
-        }
-      ],
-      "build_dependencies": [],
-      "crate_renames": {
-        "inotify-sys": [
-          {
-            "version": "0.1.5",
-            "rename": "inotify_sys"
-          }
-        ]
-      },
-      "build_rust_crate_args": {
-        "crateName": "inotify",
-        "version": "0.11.1",
-        "edition": "2018",
-        "crateRenames": {
-          "inotify-sys": [
-            {
-              "version": "0.1.5",
-              "rename": "inotify_sys"
-            }
-          ]
-        },
-        "release": true,
-        "preBuild": "export CARGO_CRATE_NAME=inotify;"
-      }
-    },
-    "inotify-sys-0.1.5": {
-      "name": "inotify-sys",
-      "version": "0.1.5",
-      "edition": "2015",
-      "source": {
-        "kind": "registry",
-        "url": "https://static.crates.io/crates/inotify-sys/inotify-sys-0.1.5.crate",
-        "sha256": "e05c02b5e89bff3b946cedeca278abc628fe811e604f027c45a8aa3cf793d0eb",
-        "name_with_ext": "inotify-sys-0.1.5.tar.gz"
-      },
-      "features": [],
-      "proc_macro": false,
-      "build_script": null,
-      "links": null,
-      "binaries": [],
-      "lib_target": null,
-      "runtime_dependencies": [
-        {
-          "name": "libc",
-          "package_key": "libc-0.2.186",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": null,
-          "tree": "target"
-        }
-      ],
-      "build_dependencies": [],
-      "crate_renames": {},
-      "build_rust_crate_args": {
-        "crateName": "inotify-sys",
-        "version": "0.1.5",
-        "edition": "2015",
-        "release": true,
-        "preBuild": "export CARGO_CRATE_NAME=inotify_sys;"
       }
     },
     "inventory-0.3.24": {
@@ -6732,6 +6670,117 @@
         "preBuild": "export CARGO_CRATE_NAME=kanshou_derive;"
       }
     },
+    "kqueue-1.1.1": {
+      "name": "kqueue",
+      "version": "1.1.1",
+      "edition": "2021",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/kqueue/kqueue-1.1.1.crate",
+        "sha256": "eac30106d7dce88daf4a3fcb4879ea939476d5074a9b7ddd0fb97fa4bed5596a",
+        "name_with_ext": "kqueue-1.1.1.tar.gz"
+      },
+      "features": [],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "runtime_dependencies": [
+        {
+          "name": "kqueue_sys",
+          "package_key": "kqueue-sys-1.1.2",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "libc",
+          "package_key": "libc-0.2.186",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "build_dependencies": [],
+      "crate_renames": {
+        "kqueue-sys": [
+          {
+            "version": "1.1.2",
+            "rename": "kqueue_sys"
+          }
+        ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "kqueue",
+        "version": "1.1.1",
+        "edition": "2021",
+        "crateRenames": {
+          "kqueue-sys": [
+            {
+              "version": "1.1.2",
+              "rename": "kqueue_sys"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=kqueue;"
+      }
+    },
+    "kqueue-sys-1.1.2": {
+      "name": "kqueue-sys",
+      "version": "1.1.2",
+      "edition": "2021",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/kqueue-sys/kqueue-sys-1.1.2.crate",
+        "sha256": "07293a4e297ac234359b510362495713f75ea345d5307140414f20c69ffeb087",
+        "name_with_ext": "kqueue-sys-1.1.2.tar.gz"
+      },
+      "features": [],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "runtime_dependencies": [
+        {
+          "name": "bitflags",
+          "package_key": "bitflags-2.11.1",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "libc",
+          "package_key": "libc-0.2.186",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "kqueue-sys",
+        "version": "1.1.2",
+        "edition": "2021",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=kqueue_sys;"
+      }
+    },
     "libc-0.2.186": {
       "name": "libc",
       "version": "0.2.186",
@@ -6765,48 +6814,6 @@
         "release": true,
         "build": "build.rs",
         "preBuild": "export CARGO_CRATE_NAME=libc;"
-      }
-    },
-    "linux-raw-sys-0.12.1": {
-      "name": "linux-raw-sys",
-      "version": "0.12.1",
-      "edition": "2021",
-      "source": {
-        "kind": "registry",
-        "url": "https://static.crates.io/crates/linux-raw-sys/linux-raw-sys-0.12.1.crate",
-        "sha256": "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53",
-        "name_with_ext": "linux-raw-sys-0.12.1.tar.gz"
-      },
-      "features": [
-        "auxvec",
-        "elf",
-        "errno",
-        "general",
-        "ioctl",
-        "no_std"
-      ],
-      "proc_macro": false,
-      "build_script": null,
-      "links": null,
-      "binaries": [],
-      "lib_target": null,
-      "runtime_dependencies": [],
-      "build_dependencies": [],
-      "crate_renames": {},
-      "build_rust_crate_args": {
-        "crateName": "linux-raw-sys",
-        "version": "0.12.1",
-        "edition": "2021",
-        "features": [
-          "auxvec",
-          "elf",
-          "errno",
-          "general",
-          "ioctl",
-          "no_std"
-        ],
-        "release": true,
-        "preBuild": "export CARGO_CRATE_NAME=linux_raw_sys;"
       }
     },
     "log-0.4.30": {
@@ -7021,13 +7028,33 @@
       "lib_target": null,
       "runtime_dependencies": [
         {
-          "name": "inotify",
-          "package_key": "inotify-0.11.1",
+          "name": "bitflags",
+          "package_key": "bitflags-2.11.1",
           "kind": "normal",
           "features": [],
-          "uses_default_features": false,
+          "uses_default_features": true,
           "optional": false,
-          "target": "cfg(any(target_os = \"linux\", target_os = \"android\"))",
+          "target": "cfg(target_os = \"macos\")",
+          "tree": "target"
+        },
+        {
+          "name": "kqueue",
+          "package_key": "kqueue-1.1.1",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": "cfg(any(target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\", target_os = \"dragonflybsd\", target_os = \"ios\"))",
+          "tree": "target"
+        },
+        {
+          "name": "kqueue",
+          "package_key": "kqueue-1.1.1",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": "cfg(target_os = \"macos\")",
           "tree": "target"
         },
         {
@@ -8511,26 +8538,6 @@
           "optional": true,
           "target": "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
           "tree": "target"
-        },
-        {
-          "name": "linux_raw_sys",
-          "package_key": "linux-raw-sys-0.12.1",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
-          "tree": "target"
-        },
-        {
-          "name": "linux_raw_sys",
-          "package_key": "linux-raw-sys-0.12.1",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": "cfg(all(any(target_os = \"linux\", target_os = \"android\"), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
-          "tree": "target"
         }
       ],
       "build_dependencies": [],
@@ -8550,10 +8557,6 @@
           }
         ],
         "linux-raw-sys": [
-          {
-            "version": "0.12.1",
-            "rename": "linux_raw_sys"
-          },
           {
             "version": "0.12.1",
             "rename": "linux_raw_sys"
@@ -8586,10 +8589,6 @@
             }
           ],
           "linux-raw-sys": [
-            {
-              "version": "0.12.1",
-              "rename": "linux_raw_sys"
-            },
             {
               "version": "0.12.1",
               "rename": "linux_raw_sys"
@@ -10333,7 +10332,7 @@
         },
         {
           "name": "gen_platform",
-          "package_key": "gen-platform-0.1.0",
+          "package_key": "gen-platform-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -10343,7 +10342,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -10406,13 +10405,13 @@
         ],
         "gen-platform": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_platform"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
@@ -10430,13 +10429,13 @@
           ],
           "gen-platform": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_platform"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -10500,7 +10499,7 @@
         },
         {
           "name": "gen_platform",
-          "package_key": "gen-platform-0.1.0",
+          "package_key": "gen-platform-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -10510,7 +10509,7 @@
         },
         {
           "name": "gen_types",
-          "package_key": "gen-types-0.1.0",
+          "package_key": "gen-types-0.1.3",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -10607,13 +10606,13 @@
         ],
         "gen-platform": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_platform"
           }
         ],
         "gen-types": [
           {
-            "version": "0.1.0",
+            "version": "0.1.3",
             "rename": "gen_types"
           }
         ]
@@ -10640,13 +10639,13 @@
           ],
           "gen-platform": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_platform"
             }
           ],
           "gen-types": [
             {
-              "version": "0.1.0",
+              "version": "0.1.3",
               "rename": "gen_types"
             }
           ]
@@ -12900,20 +12899,17 @@
         "preBuild": "export CARGO_CRATE_NAME=zmij;"
       }
     },
-    "core-foundation-sys-0.8.7": {
-      "name": "core-foundation-sys",
-      "version": "0.8.7",
-      "edition": "2018",
+    "cpufeatures-0.3.0": {
+      "name": "cpufeatures",
+      "version": "0.3.0",
+      "edition": "2024",
       "source": {
         "kind": "registry",
-        "url": "https://static.crates.io/crates/core-foundation-sys/core-foundation-sys-0.8.7.crate",
-        "sha256": "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b",
-        "name_with_ext": "core-foundation-sys-0.8.7.tar.gz"
+        "url": "https://static.crates.io/crates/cpufeatures/cpufeatures-0.3.0.crate",
+        "sha256": "8b2a41393f66f16b0823bb79094d54ac5fbd34ab292ddafb9a0456ac9f87d201",
+        "name_with_ext": "cpufeatures-0.3.0.tar.gz"
       },
-      "features": [
-        "default",
-        "link"
-      ],
+      "features": [],
       "proc_macro": false,
       "build_script": null,
       "links": null,
@@ -12923,26 +12919,22 @@
       "build_dependencies": [],
       "crate_renames": {},
       "build_rust_crate_args": {
-        "crateName": "core-foundation-sys",
-        "version": "0.8.7",
-        "edition": "2018",
-        "features": [
-          "default",
-          "link"
-        ],
+        "crateName": "cpufeatures",
+        "version": "0.3.0",
+        "edition": "2024",
         "release": true,
-        "preBuild": "export CARGO_CRATE_NAME=core_foundation_sys;"
+        "preBuild": "export CARGO_CRATE_NAME=cpufeatures;"
       }
     },
-    "kqueue-1.1.1": {
-      "name": "kqueue",
-      "version": "1.1.1",
-      "edition": "2021",
+    "inotify-0.11.1": {
+      "name": "inotify",
+      "version": "0.11.1",
+      "edition": "2018",
       "source": {
         "kind": "registry",
-        "url": "https://static.crates.io/crates/kqueue/kqueue-1.1.1.crate",
-        "sha256": "eac30106d7dce88daf4a3fcb4879ea939476d5074a9b7ddd0fb97fa4bed5596a",
-        "name_with_ext": "kqueue-1.1.1.tar.gz"
+        "url": "https://static.crates.io/crates/inotify/inotify-0.11.1.crate",
+        "sha256": "bd5b3eaf1a28b758ac0faa5a4254e8ab2705605496f1b1f3fbbc3988ad73d199",
+        "name_with_ext": "inotify-0.11.1.tar.gz"
       },
       "features": [],
       "proc_macro": false,
@@ -12952,8 +12944,18 @@
       "lib_target": null,
       "runtime_dependencies": [
         {
-          "name": "kqueue_sys",
-          "package_key": "kqueue-sys-1.1.2",
+          "name": "bitflags",
+          "package_key": "bitflags-2.11.1",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "inotify_sys",
+          "package_key": "inotify-sys-0.1.5",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -12974,38 +12976,38 @@
       ],
       "build_dependencies": [],
       "crate_renames": {
-        "kqueue-sys": [
+        "inotify-sys": [
           {
-            "version": "1.1.2",
-            "rename": "kqueue_sys"
+            "version": "0.1.5",
+            "rename": "inotify_sys"
           }
         ]
       },
       "build_rust_crate_args": {
-        "crateName": "kqueue",
-        "version": "1.1.1",
-        "edition": "2021",
+        "crateName": "inotify",
+        "version": "0.11.1",
+        "edition": "2018",
         "crateRenames": {
-          "kqueue-sys": [
+          "inotify-sys": [
             {
-              "version": "1.1.2",
-              "rename": "kqueue_sys"
+              "version": "0.1.5",
+              "rename": "inotify_sys"
             }
           ]
         },
         "release": true,
-        "preBuild": "export CARGO_CRATE_NAME=kqueue;"
+        "preBuild": "export CARGO_CRATE_NAME=inotify;"
       }
     },
-    "kqueue-sys-1.1.2": {
-      "name": "kqueue-sys",
-      "version": "1.1.2",
-      "edition": "2021",
+    "inotify-sys-0.1.5": {
+      "name": "inotify-sys",
+      "version": "0.1.5",
+      "edition": "2015",
       "source": {
         "kind": "registry",
-        "url": "https://static.crates.io/crates/kqueue-sys/kqueue-sys-1.1.2.crate",
-        "sha256": "07293a4e297ac234359b510362495713f75ea345d5307140414f20c69ffeb087",
-        "name_with_ext": "kqueue-sys-1.1.2.tar.gz"
+        "url": "https://static.crates.io/crates/inotify-sys/inotify-sys-0.1.5.crate",
+        "sha256": "e05c02b5e89bff3b946cedeca278abc628fe811e604f027c45a8aa3cf793d0eb",
+        "name_with_ext": "inotify-sys-0.1.5.tar.gz"
       },
       "features": [],
       "proc_macro": false,
@@ -13014,16 +13016,6 @@
       "binaries": [],
       "lib_target": null,
       "runtime_dependencies": [
-        {
-          "name": "bitflags",
-          "package_key": "bitflags-2.11.1",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": false,
-          "optional": false,
-          "target": null,
-          "tree": "target"
-        },
         {
           "name": "libc",
           "package_key": "libc-0.2.186",
@@ -13038,38 +13030,80 @@
       "build_dependencies": [],
       "crate_renames": {},
       "build_rust_crate_args": {
-        "crateName": "kqueue-sys",
-        "version": "1.1.2",
-        "edition": "2021",
+        "crateName": "inotify-sys",
+        "version": "0.1.5",
+        "edition": "2015",
         "release": true,
-        "preBuild": "export CARGO_CRATE_NAME=kqueue_sys;"
+        "preBuild": "export CARGO_CRATE_NAME=inotify_sys;"
+      }
+    },
+    "linux-raw-sys-0.12.1": {
+      "name": "linux-raw-sys",
+      "version": "0.12.1",
+      "edition": "2021",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/linux-raw-sys/linux-raw-sys-0.12.1.crate",
+        "sha256": "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53",
+        "name_with_ext": "linux-raw-sys-0.12.1.tar.gz"
+      },
+      "features": [
+        "auxvec",
+        "elf",
+        "errno",
+        "general",
+        "ioctl",
+        "no_std"
+      ],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "runtime_dependencies": [],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "linux-raw-sys",
+        "version": "0.12.1",
+        "edition": "2021",
+        "features": [
+          "auxvec",
+          "elf",
+          "errno",
+          "general",
+          "ioctl",
+          "no_std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=linux_raw_sys;"
       }
     }
   },
-  "root_crate": "gen-types-0.1.0",
+  "root_crate": "gen-types-0.1.3",
   "workspace_members": [
-    "gen-types-0.1.0",
-    "gen-macros-0.1.0",
-    "gen-platform-0.1.0",
-    "gen-cargo-0.1.0",
-    "gen-npm-0.1.0",
-    "gen-helm-0.1.0",
-    "gen-pip-0.1.0",
-    "gen-gomod-0.1.0",
-    "gen-ansible-0.1.0",
-    "gen-poetry-0.1.0",
-    "gen-swift-0.1.0",
-    "gen-bundler-0.1.0",
-    "gen-adapter-forge-0.1.0",
-    "gen-polyglot-0.1.0",
-    "gen-config-0.1.0",
-    "gen-nix-0.1.0",
-    "gen-nix-bulk-0.1.0",
-    "gen-bazel-0.1.0",
-    "gen-buck-0.1.0",
-    "gen-cache-attic-0.1.0",
-    "gen-caixa-bridge-0.1.0",
-    "gen-cli-0.1.0"
+    "gen-types-0.1.3",
+    "gen-macros-0.1.3",
+    "gen-platform-0.1.3",
+    "gen-cargo-0.1.3",
+    "gen-npm-0.1.3",
+    "gen-helm-0.1.3",
+    "gen-pip-0.1.3",
+    "gen-gomod-0.1.3",
+    "gen-ansible-0.1.3",
+    "gen-poetry-0.1.3",
+    "gen-swift-0.1.3",
+    "gen-bundler-0.1.3",
+    "gen-adapter-forge-0.1.3",
+    "gen-polyglot-0.1.3",
+    "gen-config-0.1.3",
+    "gen-nix-0.1.3",
+    "gen-nix-bulk-0.1.3",
+    "gen-bazel-0.1.3",
+    "gen-buck-0.1.3",
+    "gen-cache-attic-0.1.3",
+    "gen-caixa-bridge-0.1.3",
+    "gen-cli-0.1.3"
   ],
   "flake_metadata": {
     "gen-types": {
@@ -14030,11 +14064,11 @@
           "std"
         ]
       },
-      "gen-adapter-forge-0.1.0": {
+      "gen-adapter-forge-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14080,11 +14114,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-ansible-0.1.0": {
+      "gen-ansible-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.0",
+            "package_key": "gen-macros-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14094,7 +14128,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.0",
+            "package_key": "gen-platform-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14104,7 +14138,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14170,11 +14204,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-bazel-0.1.0": {
+      "gen-bazel-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14208,11 +14242,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-buck-0.1.0": {
+      "gen-buck-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_bazel",
-            "package_key": "gen-bazel-0.1.0",
+            "package_key": "gen-bazel-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14222,7 +14256,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14256,11 +14290,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-bundler-0.1.0": {
+      "gen-bundler-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.0",
+            "package_key": "gen-macros-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14270,7 +14304,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.0",
+            "package_key": "gen-platform-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14280,7 +14314,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14346,11 +14380,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-cache-attic-0.1.0": {
+      "gen-cache-attic-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_config",
-            "package_key": "gen-config-0.1.0",
+            "package_key": "gen-config-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14360,7 +14394,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14406,11 +14440,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-caixa-bridge-0.1.0": {
+      "gen-caixa-bridge-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_config",
-            "package_key": "gen-config-0.1.0",
+            "package_key": "gen-config-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14420,7 +14454,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14466,7 +14500,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-cargo-0.1.0": {
+      "gen-cargo-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "async_trait",
@@ -14500,7 +14534,7 @@
           },
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.0",
+            "package_key": "gen-macros-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14510,7 +14544,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.0",
+            "package_key": "gen-platform-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14520,7 +14554,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14700,7 +14734,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-cli-0.1.0": {
+      "gen-cli-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "clap",
@@ -14716,7 +14750,7 @@
           },
           {
             "name": "gen_ansible",
-            "package_key": "gen-ansible-0.1.0",
+            "package_key": "gen-ansible-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14726,7 +14760,7 @@
           },
           {
             "name": "gen_bundler",
-            "package_key": "gen-bundler-0.1.0",
+            "package_key": "gen-bundler-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14736,7 +14770,7 @@
           },
           {
             "name": "gen_cache_attic",
-            "package_key": "gen-cache-attic-0.1.0",
+            "package_key": "gen-cache-attic-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14746,7 +14780,7 @@
           },
           {
             "name": "gen_cargo",
-            "package_key": "gen-cargo-0.1.0",
+            "package_key": "gen-cargo-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14756,7 +14790,7 @@
           },
           {
             "name": "gen_config",
-            "package_key": "gen-config-0.1.0",
+            "package_key": "gen-config-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14766,7 +14800,7 @@
           },
           {
             "name": "gen_gomod",
-            "package_key": "gen-gomod-0.1.0",
+            "package_key": "gen-gomod-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14776,7 +14810,7 @@
           },
           {
             "name": "gen_helm",
-            "package_key": "gen-helm-0.1.0",
+            "package_key": "gen-helm-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14786,7 +14820,7 @@
           },
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.0",
+            "package_key": "gen-macros-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14796,7 +14830,7 @@
           },
           {
             "name": "gen_nix",
-            "package_key": "gen-nix-0.1.0",
+            "package_key": "gen-nix-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14806,7 +14840,7 @@
           },
           {
             "name": "gen_npm",
-            "package_key": "gen-npm-0.1.0",
+            "package_key": "gen-npm-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14816,7 +14850,7 @@
           },
           {
             "name": "gen_pip",
-            "package_key": "gen-pip-0.1.0",
+            "package_key": "gen-pip-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14826,7 +14860,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.0",
+            "package_key": "gen-platform-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14836,7 +14870,7 @@
           },
           {
             "name": "gen_poetry",
-            "package_key": "gen-poetry-0.1.0",
+            "package_key": "gen-poetry-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14846,7 +14880,7 @@
           },
           {
             "name": "gen_swift",
-            "package_key": "gen-swift-0.1.0",
+            "package_key": "gen-swift-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14856,7 +14890,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -14957,11 +14991,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-config-0.1.0": {
+      "gen-config-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15017,11 +15051,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-gomod-0.1.0": {
+      "gen-gomod-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.0",
+            "package_key": "gen-macros-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15031,7 +15065,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.0",
+            "package_key": "gen-platform-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15041,7 +15075,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15107,11 +15141,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-helm-0.1.0": {
+      "gen-helm-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.0",
+            "package_key": "gen-macros-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15121,7 +15155,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.0",
+            "package_key": "gen-platform-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15131,7 +15165,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15197,7 +15231,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-macros-0.1.0": {
+      "gen-macros-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "proc_macro2",
@@ -15236,11 +15270,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-nix-0.1.0": {
+      "gen-nix-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15274,11 +15308,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-nix-bulk-0.1.0": {
+      "gen-nix-bulk-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_nix",
-            "package_key": "gen-nix-0.1.0",
+            "package_key": "gen-nix-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15288,7 +15322,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15322,11 +15356,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-npm-0.1.0": {
+      "gen-npm-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.0",
+            "package_key": "gen-macros-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15336,7 +15370,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.0",
+            "package_key": "gen-platform-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15346,7 +15380,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15422,11 +15456,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-pip-0.1.0": {
+      "gen-pip-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.0",
+            "package_key": "gen-macros-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15436,7 +15470,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.0",
+            "package_key": "gen-platform-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15446,7 +15480,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15512,11 +15546,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-platform-0.1.0": {
+      "gen-platform-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.0",
+            "package_key": "gen-macros-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15526,7 +15560,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15580,11 +15614,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-poetry-0.1.0": {
+      "gen-poetry-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.0",
+            "package_key": "gen-macros-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15594,7 +15628,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.0",
+            "package_key": "gen-platform-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15604,7 +15638,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15670,11 +15704,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-polyglot-0.1.0": {
+      "gen-polyglot-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_bundler",
-            "package_key": "gen-bundler-0.1.0",
+            "package_key": "gen-bundler-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15684,7 +15718,7 @@
           },
           {
             "name": "gen_cargo",
-            "package_key": "gen-cargo-0.1.0",
+            "package_key": "gen-cargo-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15694,7 +15728,7 @@
           },
           {
             "name": "gen_config",
-            "package_key": "gen-config-0.1.0",
+            "package_key": "gen-config-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15704,7 +15738,7 @@
           },
           {
             "name": "gen_npm",
-            "package_key": "gen-npm-0.1.0",
+            "package_key": "gen-npm-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15714,7 +15748,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15760,11 +15794,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-swift-0.1.0": {
+      "gen-swift-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.0",
+            "package_key": "gen-macros-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15774,7 +15808,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.0",
+            "package_key": "gen-platform-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15784,7 +15818,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -15850,7 +15884,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-types-0.1.0": {
+      "gen-types-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "blake3",
@@ -17890,7 +17924,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.0",
+            "package_key": "gen-platform-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -17900,7 +17934,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -17994,7 +18028,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.0",
+            "package_key": "gen-platform-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -18004,7 +18038,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.0",
+            "package_key": "gen-types-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -21247,5 +21281,5 @@
       }
     }
   },
-  "cargo_lock_sha256": "b7873f295d8681ca87331164fac0974ab7aa2db97d56b0692602237b3f8d1cb1"
+  "cargo_lock_sha256": "1af30fa46f7ef8380082040b594155d1ccde26017889acf0a4665476a722c2b6"
 }

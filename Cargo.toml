@@ -77,3 +77,18 @@ codegen-units = 1
 lto = true
 opt-level = "z"
 strip = true
+
+# ★ GEN SELF-REFERENCE PATCH — gen depends on shikumi/shigoto (git),
+# which in turn depend on gen-types/gen-macros/gen-platform via the
+# gen git URL. Without this patch cargo resolves those three from
+# git+https://github.com/pleme-io/gen instead of the local workspace
+# members, so gen-cargo sees is_path_dep=false → omits lib_target →
+# the workspace-member-missing-lib-target invariant trips and gen
+# cannot emit a clean v10 build-spec FOR ITSELF (the one repo the
+# delta migration could not reach). Redirecting the git URL to the
+# path members closes the transitive self-reference. See
+# [[project_gen_delta_migration]].
+[patch."https://github.com/pleme-io/gen"]
+gen-types = { path = "crates/gen-types" }
+gen-macros = { path = "crates/gen-macros" }
+gen-platform = { path = "crates/gen-platform" }

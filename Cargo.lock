@@ -464,9 +464,9 @@ dependencies = [
 
 [[package]]
 name = "gen-adapter-forge"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "gen-types 0.1.0",
+ "gen-types 0.1.1",
  "indexmap",
  "serde",
  "thiserror 2.0.18",
@@ -474,11 +474,11 @@ dependencies = [
 
 [[package]]
 name = "gen-ansible"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "gen-macros 0.1.0",
- "gen-platform 0.1.0",
- "gen-types 0.1.0",
+ "gen-macros 0.1.1",
+ "gen-platform 0.1.1",
+ "gen-types 0.1.1",
  "indexmap",
  "inventory",
  "serde",
@@ -488,30 +488,30 @@ dependencies = [
 
 [[package]]
 name = "gen-bazel"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "gen-types 0.1.0",
+ "gen-types 0.1.1",
  "indexmap",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "gen-buck"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "gen-bazel",
- "gen-types 0.1.0",
+ "gen-types 0.1.1",
  "indexmap",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "gen-bundler"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "gen-macros 0.1.0",
- "gen-platform 0.1.0",
- "gen-types 0.1.0",
+ "gen-macros 0.1.1",
+ "gen-platform 0.1.1",
+ "gen-types 0.1.1",
  "indexmap",
  "inventory",
  "serde",
@@ -521,10 +521,10 @@ dependencies = [
 
 [[package]]
 name = "gen-cache-attic"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "gen-config",
- "gen-types 0.1.0",
+ "gen-types 0.1.1",
  "indexmap",
  "serde",
  "thiserror 2.0.18",
@@ -532,10 +532,10 @@ dependencies = [
 
 [[package]]
 name = "gen-caixa-bridge"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "gen-config",
- "gen-types 0.1.0",
+ "gen-types 0.1.1",
  "indexmap",
  "serde",
  "thiserror 2.0.18",
@@ -543,14 +543,14 @@ dependencies = [
 
 [[package]]
 name = "gen-cargo"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "async-trait",
  "base64",
  "cargo_metadata",
- "gen-macros 0.1.0",
- "gen-platform 0.1.0",
- "gen-types 0.1.0",
+ "gen-macros 0.1.1",
+ "gen-platform 0.1.1",
+ "gen-types 0.1.1",
  "indexmap",
  "inventory",
  "nix-nar",
@@ -572,7 +572,7 @@ dependencies = [
 
 [[package]]
 name = "gen-cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "gen-ansible",
@@ -582,14 +582,14 @@ dependencies = [
  "gen-config",
  "gen-gomod",
  "gen-helm",
- "gen-macros 0.1.0",
+ "gen-macros 0.1.1",
  "gen-nix",
  "gen-npm",
  "gen-pip",
- "gen-platform 0.1.0",
+ "gen-platform 0.1.1",
  "gen-poetry",
  "gen-swift",
- "gen-types 0.1.0",
+ "gen-types 0.1.1",
  "indexmap",
  "kanshou",
  "serde",
@@ -603,9 +603,9 @@ dependencies = [
 
 [[package]]
 name = "gen-config"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "gen-types 0.1.0",
+ "gen-types 0.1.1",
  "indexmap",
  "serde",
  "serde_yaml",
@@ -614,11 +614,11 @@ dependencies = [
 
 [[package]]
 name = "gen-gomod"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "gen-macros 0.1.0",
- "gen-platform 0.1.0",
- "gen-types 0.1.0",
+ "gen-macros 0.1.1",
+ "gen-platform 0.1.1",
+ "gen-types 0.1.1",
  "indexmap",
  "inventory",
  "serde",
@@ -628,26 +628,16 @@ dependencies = [
 
 [[package]]
 name = "gen-helm"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "gen-macros 0.1.0",
- "gen-platform 0.1.0",
- "gen-types 0.1.0",
+ "gen-macros 0.1.1",
+ "gen-platform 0.1.1",
+ "gen-types 0.1.1",
  "indexmap",
  "inventory",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
-]
-
-[[package]]
-name = "gen-macros"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
- "trybuild",
 ]
 
 [[package]]
@@ -661,31 +651,41 @@ dependencies = [
 ]
 
 [[package]]
-name = "gen-nix"
-version = "0.1.0"
+name = "gen-macros"
+version = "0.1.1"
 dependencies = [
- "gen-types 0.1.0",
+ "proc-macro2",
+ "quote",
+ "syn",
+ "trybuild",
+]
+
+[[package]]
+name = "gen-nix"
+version = "0.1.1"
+dependencies = [
+ "gen-types 0.1.1",
  "indexmap",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "gen-nix-bulk"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "gen-nix",
- "gen-types 0.1.0",
+ "gen-types 0.1.1",
  "indexmap",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "gen-npm"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "gen-macros 0.1.0",
- "gen-platform 0.1.0",
- "gen-types 0.1.0",
+ "gen-macros 0.1.1",
+ "gen-platform 0.1.1",
+ "gen-types 0.1.1",
  "indexmap",
  "inventory",
  "serde",
@@ -696,26 +696,12 @@ dependencies = [
 
 [[package]]
 name = "gen-pip"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "gen-macros 0.1.0",
- "gen-platform 0.1.0",
- "gen-types 0.1.0",
+ "gen-macros 0.1.1",
+ "gen-platform 0.1.1",
+ "gen-types 0.1.1",
  "indexmap",
- "inventory",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
-]
-
-[[package]]
-name = "gen-platform"
-version = "0.1.0"
-dependencies = [
- "gen-cargo",
- "gen-macros 0.1.0",
- "gen-npm",
- "gen-types 0.1.0",
  "inventory",
  "serde",
  "serde_json",
@@ -727,8 +713,22 @@ name = "gen-platform"
 version = "0.1.0"
 source = "git+https://github.com/pleme-io/gen#d00e26d465565cf93e46febf39440177e2b50891"
 dependencies = [
- "gen-macros 0.1.0 (git+https://github.com/pleme-io/gen)",
- "gen-types 0.1.0 (git+https://github.com/pleme-io/gen)",
+ "gen-macros 0.1.0",
+ "gen-types 0.1.0",
+ "inventory",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "gen-platform"
+version = "0.1.1"
+dependencies = [
+ "gen-cargo",
+ "gen-macros 0.1.1",
+ "gen-npm",
+ "gen-types 0.1.1",
  "inventory",
  "serde",
  "serde_json",
@@ -737,11 +737,11 @@ dependencies = [
 
 [[package]]
 name = "gen-poetry"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "gen-macros 0.1.0",
- "gen-platform 0.1.0",
- "gen-types 0.1.0",
+ "gen-macros 0.1.1",
+ "gen-platform 0.1.1",
+ "gen-types 0.1.1",
  "indexmap",
  "inventory",
  "serde",
@@ -751,13 +751,13 @@ dependencies = [
 
 [[package]]
 name = "gen-polyglot"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "gen-bundler",
  "gen-cargo",
  "gen-config",
  "gen-npm",
- "gen-types 0.1.0",
+ "gen-types 0.1.1",
  "indexmap",
  "serde",
  "shikumi",
@@ -766,11 +766,11 @@ dependencies = [
 
 [[package]]
 name = "gen-swift"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "gen-macros 0.1.0",
- "gen-platform 0.1.0",
- "gen-types 0.1.0",
+ "gen-macros 0.1.1",
+ "gen-platform 0.1.1",
+ "gen-types 0.1.1",
  "indexmap",
  "inventory",
  "serde",
@@ -781,6 +781,7 @@ dependencies = [
 [[package]]
 name = "gen-types"
 version = "0.1.0"
+source = "git+https://github.com/pleme-io/gen#d00e26d465565cf93e46febf39440177e2b50891"
 dependencies = [
  "blake3",
  "chrono",
@@ -793,8 +794,7 @@ dependencies = [
 
 [[package]]
 name = "gen-types"
-version = "0.1.0"
-source = "git+https://github.com/pleme-io/gen#d00e26d465565cf93e46febf39440177e2b50891"
+version = "0.1.1"
 dependencies = [
  "blake3",
  "chrono",
@@ -1564,8 +1564,8 @@ source = "git+https://github.com/pleme-io/shigoto#0a30877d119a14e2238bbb254d882e
 dependencies = [
  "async-trait",
  "chrono",
- "gen-platform 0.1.0 (git+https://github.com/pleme-io/gen)",
- "gen-types 0.1.0 (git+https://github.com/pleme-io/gen)",
+ "gen-platform 0.1.0",
+ "gen-types 0.1.0",
  "schemars",
  "serde",
  "serde_json",
@@ -1580,8 +1580,8 @@ dependencies = [
  "arc-swap",
  "async-trait",
  "figment",
- "gen-platform 0.1.0 (git+https://github.com/pleme-io/gen)",
- "gen-types 0.1.0 (git+https://github.com/pleme-io/gen)",
+ "gen-platform 0.1.0",
+ "gen-types 0.1.0",
  "notify",
  "serde",
  "serde_json",

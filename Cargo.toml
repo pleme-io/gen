@@ -64,7 +64,7 @@ chrono = { version = "0.4", features = ["serde"] }
 toml = "0.8"
 cargo_metadata = "0.18"
 clap = { version = "4", features = ["derive"] }
-shikumi = { git = "https://github.com/pleme-io/shikumi.git", rev = "3913d35559a65bc64a870f5633cc3130371b412e" }
+shikumi = { version = "0.1", git = "https://github.com/pleme-io/shikumi.git", rev = "3913d35559a65bc64a870f5633cc3130371b412e" }
 
 [workspace.lints.clippy]
 pedantic = { level = "warn", priority = -1 }

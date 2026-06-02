@@ -28,7 +28,12 @@
   ;;                  re-resolves Cargo.lock. Needs a [patch] first (the
   ;;                  engine skips it as lock-mutated regardless).
   ;;   tatara-lisp  — authoring surface this plan depends on; leave alone.
-  :exclude ("gen" "ishou" "tatara-lisp")
+  ;;   lava-*       — stale git pin (lava-forge@33a92f8 unreachable);
+  ;;                  `gen build` would hang fetching it. Unblock by
+  ;;                  refreshing the lava-forge rev, then drop from here.
+  :exclude ("gen" "ishou" "tatara-lisp"
+            "lava-api-forge" "lava-arch" "lava-contracts" "lava-core"
+            "lava-forge" "lava-runtime" "lava-schema" "lava-stack" "lava-types")
 
   ;; Push with fetch + ff-only + SHA verification after each commit.
   :push #t

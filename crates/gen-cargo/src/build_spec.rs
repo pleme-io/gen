@@ -1805,6 +1805,13 @@ pub fn generate_multi_target_and_write(root: &Path) -> Result<std::path::PathBuf
         path: out.clone(),
         source,
     })?;
+    // Additive: emit the slim `Cargo.gen.lock` delta alongside the full
+    // spec. Multi-target always carries `target_resolves`, so the delta is
+    // always derivable here. A failed emit fails the build — never skipped.
+    crate::gen_delta::write_gen_delta(root, &spec).map_err(|e| CargoError::Io {
+        path: root.join("Cargo.gen.lock"),
+        source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+    })?;
     prune_and_log(root);
     Ok(out)
 }

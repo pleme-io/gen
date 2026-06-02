@@ -1,7 +1,7 @@
 {
   "version": 10,
   "workspace": {
-    "root": "/Users/luis.d/code/github/pleme-io/gen",
+    "root": "/home/runner/work/gen/gen",
     "members": [
       {
         "name": "gen-types",
@@ -779,6 +779,16 @@
           "uses_default_features": false,
           "optional": false,
           "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "cpufeatures",
+          "package_key": "cpufeatures-0.3.0",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": "cfg(any(target_arch = \"x86\", target_arch = \"x86_64\"))",
           "tree": "target"
         }
       ],
@@ -1644,40 +1654,6 @@
         "preBuild": "export CARGO_CRATE_NAME=constant_time_eq;"
       }
     },
-    "core-foundation-sys-0.8.7": {
-      "name": "core-foundation-sys",
-      "version": "0.8.7",
-      "edition": "2018",
-      "source": {
-        "kind": "registry",
-        "url": "https://static.crates.io/crates/core-foundation-sys/core-foundation-sys-0.8.7.crate",
-        "sha256": "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b",
-        "name_with_ext": "core-foundation-sys-0.8.7.tar.gz"
-      },
-      "features": [
-        "default",
-        "link"
-      ],
-      "proc_macro": false,
-      "build_script": null,
-      "links": null,
-      "binaries": [],
-      "lib_target": null,
-      "runtime_dependencies": [],
-      "build_dependencies": [],
-      "crate_renames": {},
-      "build_rust_crate_args": {
-        "crateName": "core-foundation-sys",
-        "version": "0.8.7",
-        "edition": "2018",
-        "features": [
-          "default",
-          "link"
-        ],
-        "release": true,
-        "preBuild": "export CARGO_CRATE_NAME=core_foundation_sys;"
-      }
-    },
     "cpufeatures-0.2.17": {
       "name": "cpufeatures",
       "version": "0.2.17",
@@ -1694,54 +1670,40 @@
       "links": null,
       "binaries": [],
       "lib_target": null,
-      "runtime_dependencies": [
-        {
-          "name": "libc",
-          "package_key": "libc-0.2.186",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": false,
-          "optional": false,
-          "target": "aarch64-linux-android",
-          "tree": "target"
-        },
-        {
-          "name": "libc",
-          "package_key": "libc-0.2.186",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": false,
-          "optional": false,
-          "target": "cfg(all(target_arch = \"aarch64\", target_os = \"linux\"))",
-          "tree": "target"
-        },
-        {
-          "name": "libc",
-          "package_key": "libc-0.2.186",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": false,
-          "optional": false,
-          "target": "cfg(all(target_arch = \"aarch64\", target_vendor = \"apple\"))",
-          "tree": "target"
-        },
-        {
-          "name": "libc",
-          "package_key": "libc-0.2.186",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": false,
-          "optional": false,
-          "target": "cfg(all(target_arch = \"loongarch64\", target_os = \"linux\"))",
-          "tree": "target"
-        }
-      ],
+      "runtime_dependencies": [],
       "build_dependencies": [],
       "crate_renames": {},
       "build_rust_crate_args": {
         "crateName": "cpufeatures",
         "version": "0.2.17",
         "edition": "2018",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=cpufeatures;"
+      }
+    },
+    "cpufeatures-0.3.0": {
+      "name": "cpufeatures",
+      "version": "0.3.0",
+      "edition": "2024",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/cpufeatures/cpufeatures-0.3.0.crate",
+        "sha256": "8b2a41393f66f16b0823bb79094d54ac5fbd34ab292ddafb9a0456ac9f87d201",
+        "name_with_ext": "cpufeatures-0.3.0.tar.gz"
+      },
+      "features": [],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "runtime_dependencies": [],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "cpufeatures",
+        "version": "0.3.0",
+        "edition": "2024",
         "release": true,
         "preBuild": "export CARGO_CRATE_NAME=cpufeatures;"
       }
@@ -6228,18 +6190,7 @@
       "links": null,
       "binaries": [],
       "lib_target": null,
-      "runtime_dependencies": [
-        {
-          "name": "core_foundation_sys",
-          "package_key": "core-foundation-sys-0.8.7",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": "cfg(target_vendor = \"apple\")",
-          "tree": "target"
-        }
-      ],
+      "runtime_dependencies": [],
       "build_dependencies": [],
       "crate_renames": {
         "core-foundation-sys": [
@@ -6360,6 +6311,117 @@
         "edition": "2018",
         "release": true,
         "preBuild": "export CARGO_CRATE_NAME=inlinable_string;"
+      }
+    },
+    "inotify-0.11.1": {
+      "name": "inotify",
+      "version": "0.11.1",
+      "edition": "2018",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/inotify/inotify-0.11.1.crate",
+        "sha256": "bd5b3eaf1a28b758ac0faa5a4254e8ab2705605496f1b1f3fbbc3988ad73d199",
+        "name_with_ext": "inotify-0.11.1.tar.gz"
+      },
+      "features": [],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "runtime_dependencies": [
+        {
+          "name": "bitflags",
+          "package_key": "bitflags-2.11.1",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "inotify_sys",
+          "package_key": "inotify-sys-0.1.5",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
+        {
+          "name": "libc",
+          "package_key": "libc-0.2.186",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "build_dependencies": [],
+      "crate_renames": {
+        "inotify-sys": [
+          {
+            "version": "0.1.5",
+            "rename": "inotify_sys"
+          }
+        ]
+      },
+      "build_rust_crate_args": {
+        "crateName": "inotify",
+        "version": "0.11.1",
+        "edition": "2018",
+        "crateRenames": {
+          "inotify-sys": [
+            {
+              "version": "0.1.5",
+              "rename": "inotify_sys"
+            }
+          ]
+        },
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=inotify;"
+      }
+    },
+    "inotify-sys-0.1.5": {
+      "name": "inotify-sys",
+      "version": "0.1.5",
+      "edition": "2015",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/inotify-sys/inotify-sys-0.1.5.crate",
+        "sha256": "e05c02b5e89bff3b946cedeca278abc628fe811e604f027c45a8aa3cf793d0eb",
+        "name_with_ext": "inotify-sys-0.1.5.tar.gz"
+      },
+      "features": [],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "runtime_dependencies": [
+        {
+          "name": "libc",
+          "package_key": "libc-0.2.186",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        }
+      ],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "inotify-sys",
+        "version": "0.1.5",
+        "edition": "2015",
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=inotify_sys;"
       }
     },
     "inventory-0.3.24": {
@@ -6670,117 +6732,6 @@
         "preBuild": "export CARGO_CRATE_NAME=kanshou_derive;"
       }
     },
-    "kqueue-1.1.1": {
-      "name": "kqueue",
-      "version": "1.1.1",
-      "edition": "2021",
-      "source": {
-        "kind": "registry",
-        "url": "https://static.crates.io/crates/kqueue/kqueue-1.1.1.crate",
-        "sha256": "eac30106d7dce88daf4a3fcb4879ea939476d5074a9b7ddd0fb97fa4bed5596a",
-        "name_with_ext": "kqueue-1.1.1.tar.gz"
-      },
-      "features": [],
-      "proc_macro": false,
-      "build_script": null,
-      "links": null,
-      "binaries": [],
-      "lib_target": null,
-      "runtime_dependencies": [
-        {
-          "name": "kqueue_sys",
-          "package_key": "kqueue-sys-1.1.2",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": null,
-          "tree": "target"
-        },
-        {
-          "name": "libc",
-          "package_key": "libc-0.2.186",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": null,
-          "tree": "target"
-        }
-      ],
-      "build_dependencies": [],
-      "crate_renames": {
-        "kqueue-sys": [
-          {
-            "version": "1.1.2",
-            "rename": "kqueue_sys"
-          }
-        ]
-      },
-      "build_rust_crate_args": {
-        "crateName": "kqueue",
-        "version": "1.1.1",
-        "edition": "2021",
-        "crateRenames": {
-          "kqueue-sys": [
-            {
-              "version": "1.1.2",
-              "rename": "kqueue_sys"
-            }
-          ]
-        },
-        "release": true,
-        "preBuild": "export CARGO_CRATE_NAME=kqueue;"
-      }
-    },
-    "kqueue-sys-1.1.2": {
-      "name": "kqueue-sys",
-      "version": "1.1.2",
-      "edition": "2021",
-      "source": {
-        "kind": "registry",
-        "url": "https://static.crates.io/crates/kqueue-sys/kqueue-sys-1.1.2.crate",
-        "sha256": "07293a4e297ac234359b510362495713f75ea345d5307140414f20c69ffeb087",
-        "name_with_ext": "kqueue-sys-1.1.2.tar.gz"
-      },
-      "features": [],
-      "proc_macro": false,
-      "build_script": null,
-      "links": null,
-      "binaries": [],
-      "lib_target": null,
-      "runtime_dependencies": [
-        {
-          "name": "bitflags",
-          "package_key": "bitflags-2.11.1",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": false,
-          "optional": false,
-          "target": null,
-          "tree": "target"
-        },
-        {
-          "name": "libc",
-          "package_key": "libc-0.2.186",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": null,
-          "tree": "target"
-        }
-      ],
-      "build_dependencies": [],
-      "crate_renames": {},
-      "build_rust_crate_args": {
-        "crateName": "kqueue-sys",
-        "version": "1.1.2",
-        "edition": "2021",
-        "release": true,
-        "preBuild": "export CARGO_CRATE_NAME=kqueue_sys;"
-      }
-    },
     "libc-0.2.186": {
       "name": "libc",
       "version": "0.2.186",
@@ -6814,6 +6765,48 @@
         "release": true,
         "build": "build.rs",
         "preBuild": "export CARGO_CRATE_NAME=libc;"
+      }
+    },
+    "linux-raw-sys-0.12.1": {
+      "name": "linux-raw-sys",
+      "version": "0.12.1",
+      "edition": "2021",
+      "source": {
+        "kind": "registry",
+        "url": "https://static.crates.io/crates/linux-raw-sys/linux-raw-sys-0.12.1.crate",
+        "sha256": "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53",
+        "name_with_ext": "linux-raw-sys-0.12.1.tar.gz"
+      },
+      "features": [
+        "auxvec",
+        "elf",
+        "errno",
+        "general",
+        "ioctl",
+        "no_std"
+      ],
+      "proc_macro": false,
+      "build_script": null,
+      "links": null,
+      "binaries": [],
+      "lib_target": null,
+      "runtime_dependencies": [],
+      "build_dependencies": [],
+      "crate_renames": {},
+      "build_rust_crate_args": {
+        "crateName": "linux-raw-sys",
+        "version": "0.12.1",
+        "edition": "2021",
+        "features": [
+          "auxvec",
+          "elf",
+          "errno",
+          "general",
+          "ioctl",
+          "no_std"
+        ],
+        "release": true,
+        "preBuild": "export CARGO_CRATE_NAME=linux_raw_sys;"
       }
     },
     "log-0.4.30": {
@@ -7028,33 +7021,13 @@
       "lib_target": null,
       "runtime_dependencies": [
         {
-          "name": "bitflags",
-          "package_key": "bitflags-2.11.1",
+          "name": "inotify",
+          "package_key": "inotify-0.11.1",
           "kind": "normal",
           "features": [],
-          "uses_default_features": true,
+          "uses_default_features": false,
           "optional": false,
-          "target": "cfg(target_os = \"macos\")",
-          "tree": "target"
-        },
-        {
-          "name": "kqueue",
-          "package_key": "kqueue-1.1.1",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": "cfg(any(target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\", target_os = \"dragonflybsd\", target_os = \"ios\"))",
-          "tree": "target"
-        },
-        {
-          "name": "kqueue",
-          "package_key": "kqueue-1.1.1",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": "cfg(target_os = \"macos\")",
+          "target": "cfg(any(target_os = \"linux\", target_os = \"android\"))",
           "tree": "target"
         },
         {
@@ -8538,6 +8511,26 @@
           "optional": true,
           "target": "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
           "tree": "target"
+        },
+        {
+          "name": "linux_raw_sys",
+          "package_key": "linux-raw-sys-0.12.1",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
+          "tree": "target"
+        },
+        {
+          "name": "linux_raw_sys",
+          "package_key": "linux-raw-sys-0.12.1",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": true,
+          "optional": false,
+          "target": "cfg(all(any(target_os = \"linux\", target_os = \"android\"), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
+          "tree": "target"
         }
       ],
       "build_dependencies": [],
@@ -8557,6 +8550,10 @@
           }
         ],
         "linux-raw-sys": [
+          {
+            "version": "0.12.1",
+            "rename": "linux_raw_sys"
+          },
           {
             "version": "0.12.1",
             "rename": "linux_raw_sys"
@@ -8589,6 +8586,10 @@
             }
           ],
           "linux-raw-sys": [
+            {
+              "version": "0.12.1",
+              "rename": "linux_raw_sys"
+            },
             {
               "version": "0.12.1",
               "rename": "linux_raw_sys"
@@ -12899,17 +12900,20 @@
         "preBuild": "export CARGO_CRATE_NAME=zmij;"
       }
     },
-    "cpufeatures-0.3.0": {
-      "name": "cpufeatures",
-      "version": "0.3.0",
-      "edition": "2024",
+    "core-foundation-sys-0.8.7": {
+      "name": "core-foundation-sys",
+      "version": "0.8.7",
+      "edition": "2018",
       "source": {
         "kind": "registry",
-        "url": "https://static.crates.io/crates/cpufeatures/cpufeatures-0.3.0.crate",
-        "sha256": "8b2a41393f66f16b0823bb79094d54ac5fbd34ab292ddafb9a0456ac9f87d201",
-        "name_with_ext": "cpufeatures-0.3.0.tar.gz"
+        "url": "https://static.crates.io/crates/core-foundation-sys/core-foundation-sys-0.8.7.crate",
+        "sha256": "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b",
+        "name_with_ext": "core-foundation-sys-0.8.7.tar.gz"
       },
-      "features": [],
+      "features": [
+        "default",
+        "link"
+      ],
       "proc_macro": false,
       "build_script": null,
       "links": null,
@@ -12919,22 +12923,26 @@
       "build_dependencies": [],
       "crate_renames": {},
       "build_rust_crate_args": {
-        "crateName": "cpufeatures",
-        "version": "0.3.0",
-        "edition": "2024",
+        "crateName": "core-foundation-sys",
+        "version": "0.8.7",
+        "edition": "2018",
+        "features": [
+          "default",
+          "link"
+        ],
         "release": true,
-        "preBuild": "export CARGO_CRATE_NAME=cpufeatures;"
+        "preBuild": "export CARGO_CRATE_NAME=core_foundation_sys;"
       }
     },
-    "inotify-0.11.1": {
-      "name": "inotify",
-      "version": "0.11.1",
-      "edition": "2018",
+    "kqueue-1.1.1": {
+      "name": "kqueue",
+      "version": "1.1.1",
+      "edition": "2021",
       "source": {
         "kind": "registry",
-        "url": "https://static.crates.io/crates/inotify/inotify-0.11.1.crate",
-        "sha256": "bd5b3eaf1a28b758ac0faa5a4254e8ab2705605496f1b1f3fbbc3988ad73d199",
-        "name_with_ext": "inotify-0.11.1.tar.gz"
+        "url": "https://static.crates.io/crates/kqueue/kqueue-1.1.1.crate",
+        "sha256": "eac30106d7dce88daf4a3fcb4879ea939476d5074a9b7ddd0fb97fa4bed5596a",
+        "name_with_ext": "kqueue-1.1.1.tar.gz"
       },
       "features": [],
       "proc_macro": false,
@@ -12944,18 +12952,8 @@
       "lib_target": null,
       "runtime_dependencies": [
         {
-          "name": "bitflags",
-          "package_key": "bitflags-2.11.1",
-          "kind": "normal",
-          "features": [],
-          "uses_default_features": true,
-          "optional": false,
-          "target": null,
-          "tree": "target"
-        },
-        {
-          "name": "inotify_sys",
-          "package_key": "inotify-sys-0.1.5",
+          "name": "kqueue_sys",
+          "package_key": "kqueue-sys-1.1.2",
           "kind": "normal",
           "features": [],
           "uses_default_features": true,
@@ -12976,38 +12974,38 @@
       ],
       "build_dependencies": [],
       "crate_renames": {
-        "inotify-sys": [
+        "kqueue-sys": [
           {
-            "version": "0.1.5",
-            "rename": "inotify_sys"
+            "version": "1.1.2",
+            "rename": "kqueue_sys"
           }
         ]
       },
       "build_rust_crate_args": {
-        "crateName": "inotify",
-        "version": "0.11.1",
-        "edition": "2018",
+        "crateName": "kqueue",
+        "version": "1.1.1",
+        "edition": "2021",
         "crateRenames": {
-          "inotify-sys": [
+          "kqueue-sys": [
             {
-              "version": "0.1.5",
-              "rename": "inotify_sys"
+              "version": "1.1.2",
+              "rename": "kqueue_sys"
             }
           ]
         },
         "release": true,
-        "preBuild": "export CARGO_CRATE_NAME=inotify;"
+        "preBuild": "export CARGO_CRATE_NAME=kqueue;"
       }
     },
-    "inotify-sys-0.1.5": {
-      "name": "inotify-sys",
-      "version": "0.1.5",
-      "edition": "2015",
+    "kqueue-sys-1.1.2": {
+      "name": "kqueue-sys",
+      "version": "1.1.2",
+      "edition": "2021",
       "source": {
         "kind": "registry",
-        "url": "https://static.crates.io/crates/inotify-sys/inotify-sys-0.1.5.crate",
-        "sha256": "e05c02b5e89bff3b946cedeca278abc628fe811e604f027c45a8aa3cf793d0eb",
-        "name_with_ext": "inotify-sys-0.1.5.tar.gz"
+        "url": "https://static.crates.io/crates/kqueue-sys/kqueue-sys-1.1.2.crate",
+        "sha256": "07293a4e297ac234359b510362495713f75ea345d5307140414f20c69ffeb087",
+        "name_with_ext": "kqueue-sys-1.1.2.tar.gz"
       },
       "features": [],
       "proc_macro": false,
@@ -13016,6 +13014,16 @@
       "binaries": [],
       "lib_target": null,
       "runtime_dependencies": [
+        {
+          "name": "bitflags",
+          "package_key": "bitflags-2.11.1",
+          "kind": "normal",
+          "features": [],
+          "uses_default_features": false,
+          "optional": false,
+          "target": null,
+          "tree": "target"
+        },
         {
           "name": "libc",
           "package_key": "libc-0.2.186",
@@ -13030,53 +13038,11 @@
       "build_dependencies": [],
       "crate_renames": {},
       "build_rust_crate_args": {
-        "crateName": "inotify-sys",
-        "version": "0.1.5",
-        "edition": "2015",
-        "release": true,
-        "preBuild": "export CARGO_CRATE_NAME=inotify_sys;"
-      }
-    },
-    "linux-raw-sys-0.12.1": {
-      "name": "linux-raw-sys",
-      "version": "0.12.1",
-      "edition": "2021",
-      "source": {
-        "kind": "registry",
-        "url": "https://static.crates.io/crates/linux-raw-sys/linux-raw-sys-0.12.1.crate",
-        "sha256": "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53",
-        "name_with_ext": "linux-raw-sys-0.12.1.tar.gz"
-      },
-      "features": [
-        "auxvec",
-        "elf",
-        "errno",
-        "general",
-        "ioctl",
-        "no_std"
-      ],
-      "proc_macro": false,
-      "build_script": null,
-      "links": null,
-      "binaries": [],
-      "lib_target": null,
-      "runtime_dependencies": [],
-      "build_dependencies": [],
-      "crate_renames": {},
-      "build_rust_crate_args": {
-        "crateName": "linux-raw-sys",
-        "version": "0.12.1",
+        "crateName": "kqueue-sys",
+        "version": "1.1.2",
         "edition": "2021",
-        "features": [
-          "auxvec",
-          "elf",
-          "errno",
-          "general",
-          "ioctl",
-          "no_std"
-        ],
         "release": true,
-        "preBuild": "export CARGO_CRATE_NAME=linux_raw_sys;"
+        "preBuild": "export CARGO_CRATE_NAME=kqueue_sys;"
       }
     }
   },

@@ -596,6 +596,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "shikumi",
+ "tatara-lisp",
  "tempfile",
  "thiserror 2.0.18",
  "tokio",
@@ -1603,6 +1604,28 @@ name = "target-triple"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "591ef38edfb78ca4771ee32cf494cb8771944bee237a9b91fc9c1424ac4b777b"
+
+[[package]]
+name = "tatara-lisp"
+version = "0.2.2"
+source = "git+https://github.com/pleme-io/tatara-lisp.git?rev=7921493d76632785906a0eabffa38f688cb2c3b0#7921493d76632785906a0eabffa38f688cb2c3b0"
+dependencies = [
+ "blake3",
+ "serde",
+ "serde_json",
+ "tatara-lisp-derive",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "tatara-lisp-derive"
+version = "0.2.2"
+source = "git+https://github.com/pleme-io/tatara-lisp.git?rev=7921493d76632785906a0eabffa38f688cb2c3b0#7921493d76632785906a0eabffa38f688cb2c3b0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "tempfile"

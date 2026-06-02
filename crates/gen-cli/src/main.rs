@@ -17,6 +17,7 @@ use gen_config::GenConfig;
 use shikumi::{ConfigTier, TieredConfig};
 
 mod flake_lint;
+mod fleet_migrate_plan;
 
 // Force-link every adapter crate so its `inventory::submit!` runs
 // at static-init time and gen-cli can discover the adapter via
@@ -292,6 +293,18 @@ enum Cmd {
         #[arg(long)]
         rebase_first: bool,
     },
+    /// Migrate Rust repos to the DELTA-ONLY spec doctrine from a typed
+    /// tatara-lisp plan: regenerate, commit Cargo.gen.lock, retire
+    /// (git rm + gitignore) Cargo.build-spec.json. Typed per-repo
+    /// outcomes; never `git add -A`; divergence-aware push.
+    #[command(name = "fleet-migrate")]
+    FleetMigrate {
+        /// Path to the `(fleet-migration-plan …)` `.tatara.lisp` file.
+        plan: PathBuf,
+        /// Override the plan: build + commit only, do not push.
+        #[arg(long)]
+        no_push: bool,
+    },
     /// Probe the configured substituters for every lockfile entry in
     /// the workspace at <path>. Report hit / miss / hit-rate.
     #[command(name = "cache-probe")]
@@ -554,6 +567,31 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                 root: report.root.clone(),
                 total: report.total(),
                 committed: report.committed_count(),
+                pushed: report.pushed_count(),
+                skipped: report.skipped_count(),
+                failed: report.failed_count(),
+                elapsed_ms: report.total_elapsed_ms,
+                report,
+            };
+            emit(&summary, cli.format)
+        }
+        Cmd::FleetMigrate { plan, no_push } => {
+            let src = std::fs::read_to_string(plan)
+                .map_err(|e| CliError::Other(format!("read {}: {e}", plan.display())))?;
+            let report = fleet_migrate_plan::run_plan(&src, *no_push).map_err(CliError::Other)?;
+            #[derive(serde::Serialize)]
+            struct Summary {
+                total: usize,
+                migrated: usize,
+                pushed: usize,
+                skipped: usize,
+                failed: usize,
+                elapsed_ms: u64,
+                report: gen_cargo::fleet_migrate::MigrateReport,
+            }
+            let summary = Summary {
+                total: report.total(),
+                migrated: report.migrated_count(),
                 pushed: report.pushed_count(),
                 skipped: report.skipped_count(),
                 failed: report.failed_count(),
@@ -1569,55 +1607,92 @@ fn invariants_run_clean_against_minimal_spec() {{
 /// becomes `cargo update && gen build . --commit`, matching the
 /// CI shape where gen-spec-bot keeps committed-bootstrap-exception
 /// specs fresh by construction.
+/// Commit the regenerated spec under the DELTA-ONLY doctrine.
+///
+/// The sole committed artifact is the slim `Cargo.gen.lock` delta. The
+/// full `Cargo.build-spec.json` is retired — untracked + gitignored —
+/// because substrate's lockfile-builder reconstructs it in pure Nix from
+/// `Cargo.lock` + the delta (delta > build-spec > IFD), so keeping the
+/// big spec in version control is redundant operator-surface noise.
+///
+/// CRITICAL: build-spec is only retired when a delta actually exists. A
+/// single-target `gen build` emits no delta; retiring build-spec there
+/// would strand the repo on IFD, so this no-ops instead.
 fn commit_spec_if_drifted(root: &std::path::Path) -> Result<(), CliError> {
     use std::process::Command;
-    let spec_rel = std::path::Path::new("Cargo.build-spec.json");
-    let status = Command::new("git")
-        .arg("-C")
-        .arg(root)
-        .args(["diff", "--quiet", "--", "Cargo.build-spec.json"])
-        .status()
-        .map_err(|e| CliError::Other(format!("git diff: {e}")))?;
-    if status.success() {
-        eprintln!("gen build --commit: spec unchanged; no commit");
+    let git = |args: &[&str]| -> Result<std::process::Output, CliError> {
+        Command::new("git")
+            .arg("-C")
+            .arg(root)
+            .args(args)
+            .output()
+            .map_err(|e| CliError::Other(format!("git {}: {e}", args.join(" "))))
+    };
+
+    // No delta → do not retire build-spec (would fall back to IFD).
+    if !root.join("Cargo.gen.lock").exists() {
+        eprintln!(
+            "gen build --commit: no Cargo.gen.lock emitted (single-target?) — \
+             skipping delta-only commit"
+        );
         return Ok(());
     }
-    let stage = Command::new("git")
-        .arg("-C")
-        .arg(root)
-        .args(["add", "--"])
-        .arg(spec_rel)
-        .output()
-        .map_err(|e| CliError::Other(format!("git add: {e}")))?;
-    if !stage.status.success() {
-        return Err(CliError::Other(format!(
-            "git add failed: {}",
-            String::from_utf8_lossy(&stage.stderr).trim()
-        )));
+
+    // Retire the full build-spec: untrack if tracked, ensure gitignored.
+    if git(&["ls-files", "--error-unmatch", "Cargo.build-spec.json"])?
+        .status
+        .success()
+    {
+        git(&["rm", "--quiet", "--cached", "--", "Cargo.build-spec.json"])?;
     }
-    let commit = Command::new("git")
-        .arg("-C")
-        .arg(root)
-        .args([
-            "-c",
-            "user.name=gen-spec-bot",
-            "-c",
-            "user.email=gen-spec-bot@pleme-io.invalid",
-            "commit",
-            "--quiet",
-            "-m",
-            "gen: regen Cargo.build-spec.json (atomic via gen build --commit)",
-        ])
-        .output()
-        .map_err(|e| CliError::Other(format!("git commit: {e}")))?;
+    ensure_gitignored(root, "Cargo.build-spec.json")?;
+
+    // Stage the delta + the .gitignore (+ the build-spec removal).
+    git(&["add", "--", "Cargo.gen.lock", ".gitignore"])?;
+
+    // Nothing staged → idempotent no-op (delta unchanged, build-spec already
+    // retired + ignored).
+    if git(&["diff", "--cached", "--quiet"])?.status.success() {
+        eprintln!("gen build --commit: delta unchanged; no commit");
+        return Ok(());
+    }
+
+    let commit = git(&[
+        "-c",
+        "user.name=gen-spec-bot",
+        "-c",
+        "user.email=gen-spec-bot@pleme-io.invalid",
+        "commit",
+        "--quiet",
+        "-m",
+        "gen: regen Cargo.gen.lock delta — delta-only (build-spec retired)",
+    ])?;
     if !commit.status.success() {
         return Err(CliError::Other(format!(
             "git commit failed: {}",
             String::from_utf8_lossy(&commit.stderr).trim()
         )));
     }
-    eprintln!("gen build --commit: spec committed (gen-spec-bot)");
+    eprintln!("gen build --commit: delta committed, build-spec retired (gen-spec-bot)");
     Ok(())
+}
+
+/// Append `entry` to `<root>/.gitignore` if not already present (one entry
+/// per line, exact match). Used by the delta-only commit path to retire
+/// `Cargo.build-spec.json` from version control.
+fn ensure_gitignored(root: &std::path::Path, entry: &str) -> Result<(), CliError> {
+    let gi = root.join(".gitignore");
+    let cur = std::fs::read_to_string(&gi).unwrap_or_default();
+    if cur.lines().any(|l| l.trim() == entry) {
+        return Ok(());
+    }
+    let mut new = cur;
+    if !new.is_empty() && !new.ends_with('\n') {
+        new.push('\n');
+    }
+    new.push_str(entry);
+    new.push('\n');
+    std::fs::write(&gi, new).map_err(|e| CliError::Other(format!("write .gitignore: {e}")))
 }
 
 fn pascalize(s: &str) -> String {

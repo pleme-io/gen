@@ -19,7 +19,7 @@ workspace = true
 [dependencies]
 gen-types = { workspace = true }
 gen-platform = { workspace = true }
-gen-macros = { path = "../gen-macros" }
+gen-macros = { version = "0.1.0", path = "../gen-macros" }
 gen-cargo = { workspace = true }
 gen-npm = { workspace = true }
 gen-bundler = { workspace = true }
@@ -27,12 +27,12 @@ gen-bundler = { workspace = true }
 # registers them and `gen quirks` / `gen adapters` discover them
 # at runtime. Adding a new ecosystem after `gen scaffold-adapter` =
 # one line here.
-gen-helm = { path = "../gen-helm" }
-gen-pip = { path = "../gen-pip" }
-gen-gomod = { path = "../gen-gomod" }
-gen-ansible = { path = "../gen-ansible" }
-gen-poetry = { path = "../gen-poetry" }
-gen-swift = { path = "../gen-swift" }
+gen-helm = { version = "0.1.0", path = "../gen-helm" }
+gen-pip = { version = "0.1.0", path = "../gen-pip" }
+gen-gomod = { version = "0.1.0", path = "../gen-gomod" }
+gen-ansible = { version = "0.1.0", path = "../gen-ansible" }
+gen-poetry = { version = "0.1.0", path = "../gen-poetry" }
+gen-swift = { version = "0.1.0", path = "../gen-swift" }
 gen-config = { workspace = true }
 gen-nix = { workspace = true }
 gen-cache-attic = { workspace = true }
@@ -46,20 +46,20 @@ thiserror = { workspace = true }
 # Kanshou — live process introspection. `gen kanshou list/query/schema`
 # is the operator-facing reflection over every introspectable process
 # on this host. See pleme-io/kanshou.
-kanshou = { git = "https://github.com/pleme-io/kanshou" }
+kanshou = { version = "0.1", git = "https://github.com/pleme-io/kanshou" }
 tokio = { version = "1", features = ["rt", "macros", "net", "io-util"] }
 
 [dev-dependencies]
 # Cross-adapter catalog sweep test pulls every adapter so its
 # inventory::submit! lands at link time.
-gen-ansible = { path = "../gen-ansible" }
+gen-ansible = { version = "0.1.0", path = "../gen-ansible" }
 gen-bundler = { workspace = true }
 gen-cargo = { workspace = true }
-gen-gomod = { path = "../gen-gomod" }
-gen-helm = { path = "../gen-helm" }
+gen-gomod = { version = "0.1.0", path = "../gen-gomod" }
+gen-helm = { version = "0.1.0", path = "../gen-helm" }
 gen-npm = { workspace = true }
-gen-pip = { path = "../gen-pip" }
-gen-poetry = { path = "../gen-poetry" }
-gen-swift = { path = "../gen-swift" }
+gen-pip = { version = "0.1.0", path = "../gen-pip" }
+gen-poetry = { version = "0.1.0", path = "../gen-poetry" }
+gen-swift = { version = "0.1.0", path = "../gen-swift" }
 gen-platform = { workspace = true }
 tempfile = "3"

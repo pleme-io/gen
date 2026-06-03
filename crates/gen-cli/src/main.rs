@@ -307,6 +307,10 @@ enum Cmd {
         /// Override the plan's concurrency (repos migrated in parallel).
         #[arg(long)]
         jobs: Option<usize>,
+        /// Refresh stale pleme-io git pins (`cargo update`) before building
+        /// — heals GC'd-rev `branch=main` hangs.
+        #[arg(long)]
+        refresh: bool,
     },
     /// Verify (read-only) that a plan's repos reached the delta-only end
     /// state on their remote branch. Typed per-repo state; no mutation.
@@ -591,11 +595,11 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             };
             emit(&summary, cli.format)
         }
-        Cmd::FleetMigrate { plan, no_push, jobs } => {
+        Cmd::FleetMigrate { plan, no_push, jobs, refresh } => {
             let src = std::fs::read_to_string(plan)
                 .map_err(|e| CliError::Other(format!("read {}: {e}", plan.display())))?;
-            let report =
-                fleet_migrate_plan::run_plan(&src, *no_push, *jobs).map_err(CliError::Other)?;
+            let report = fleet_migrate_plan::run_plan(&src, *no_push, *jobs, *refresh)
+                .map_err(CliError::Other)?;
             #[derive(serde::Serialize)]
             struct Summary {
                 total: usize,

@@ -52,6 +52,10 @@ pub struct FleetMigrationPlan {
     /// ~cpu cores. Overridable from the CLI with `--jobs`.
     #[serde(default)]
     pub jobs: Option<i64>,
+    /// Refresh stale pleme-io git pins (`cargo update`) before building —
+    /// heals GC'd-rev `branch="main"` hangs. Overridable with `--refresh`.
+    #[serde(default)]
+    pub refresh_git_deps: bool,
 }
 
 impl FleetMigrationPlan {
@@ -101,13 +105,20 @@ impl FleetMigrationPlan {
             .collect())
     }
 
-    pub fn opts(&self, gen_bin: PathBuf, force_no_push: bool, jobs_override: Option<usize>) -> MigrateOpts {
+    pub fn opts(
+        &self,
+        gen_bin: PathBuf,
+        force_no_push: bool,
+        jobs_override: Option<usize>,
+        refresh_override: bool,
+    ) -> MigrateOpts {
         MigrateOpts {
             push: self.push && !force_no_push,
             bot_identity: self.bot_identity,
             gen_bin,
             build_timeout_secs: self.build_timeout_secs.unwrap_or(300).max(1) as u64,
             jobs: jobs_override.unwrap_or_else(|| self.jobs.unwrap_or(1).max(1) as usize),
+            refresh_git_deps: self.refresh_git_deps || refresh_override,
         }
     }
 }
@@ -127,6 +138,7 @@ pub fn run_plan(
     src: &str,
     force_no_push: bool,
     jobs_override: Option<usize>,
+    refresh_override: bool,
 ) -> Result<MigrateReport, String> {
     let plan = FleetMigrationPlan::from_source(src)?;
     let repos = plan.resolve_repos()?;
@@ -140,8 +152,11 @@ pub fn run_plan(
     let exe = std::env::current_exe().map_err(|e| format!("current_exe: {e}"))?;
     let stable = stabilize_binary(&exe);
     let gen_bin = stable.clone().unwrap_or(exe);
-    let result = fleet_migrate::run(&repos, &plan.opts(gen_bin, force_no_push, jobs_override))
-        .map_err(|e| e.to_string());
+    let result = fleet_migrate::run(
+        &repos,
+        &plan.opts(gen_bin, force_no_push, jobs_override, refresh_override),
+    )
+    .map_err(|e| e.to_string());
     if let Some(p) = stable {
         let _ = std::fs::remove_file(p);
     }
@@ -246,10 +261,12 @@ mod tests {
         )
         .unwrap();
         let bin = PathBuf::from("/bin/true");
-        assert!(p.opts(bin.clone(), false, None).push);
-        assert!(!p.opts(bin.clone(), true, None).push); // force_no_push overrides
+        assert!(p.opts(bin.clone(), false, None, false).push);
+        assert!(!p.opts(bin.clone(), true, None, false).push); // force_no_push overrides
         assert_eq!(p.build_timeout_secs, None); // default applied at opts()
-        assert_eq!(p.opts(bin.clone(), false, None).jobs, 1); // default
-        assert_eq!(p.opts(bin, false, Some(12)).jobs, 12); // CLI override
+        assert_eq!(p.opts(bin.clone(), false, None, false).jobs, 1); // default
+        assert_eq!(p.opts(bin.clone(), false, Some(12), false).jobs, 12); // CLI override
+        assert!(!p.opts(bin.clone(), false, None, false).refresh_git_deps); // default off
+        assert!(p.opts(bin, false, None, true).refresh_git_deps); // CLI override on
     }
 }

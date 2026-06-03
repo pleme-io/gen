@@ -117,6 +117,11 @@ pub struct MigrateOpts {
     /// independent (own remote, own subprocess), so this scales nearly
     /// linearly; bound it to ~cpu cores.
     pub jobs: usize,
+    /// Before building, `cargo update` the repo's pleme-io git deps to
+    /// their live `main` HEADs — heals stale (GC'd-rev) `branch="main"`
+    /// pins that would otherwise hang gen build's prefetch. Stages the
+    /// refreshed Cargo.lock with the commit.
+    pub refresh_git_deps: bool,
 }
 
 /// Aggregate report over a repo set.
@@ -259,10 +264,28 @@ pub fn migrate_one(repo: &Path, opts: &MigrateOpts) -> MigrateOutcome {
         }
     }
 
+    // Optionally refresh stale pleme-io git pins (branch=main resolved to a
+    // GC'd commit) to their live HEADs BEFORE building — otherwise gen
+    // build's prefetch hangs on the dead rev. This intentionally changes
+    // Cargo.lock; we stage it with the commit below.
+    let mut refreshed = false;
+    if opts.refresh_git_deps {
+        match refresh_git_deps(repo, opts.build_timeout_secs) {
+            Ok(changed) => refreshed = changed,
+            Err(detail) => {
+                return MigrateOutcome::Failed {
+                    category: MigrateFailure::BuildFailed,
+                    detail: format!("refresh git deps: {detail}"),
+                    elapsed_ms: ms(),
+                }
+            }
+        }
+    }
+
     // Build in a KILLABLE subprocess with a timeout. A stale git pin that
     // hangs a fetch would otherwise hang the whole run; here the build's
     // process group is killed and the repo is skipped. gen build is
-    // read-only on Cargo.lock — we verify that below.
+    // read-only on Cargo.lock — we verify that below (post-refresh).
     let lock_before = std::fs::read(repo.join("Cargo.lock")).ok();
     match run_build_with_timeout(repo, &opts.gen_bin, opts.build_timeout_secs) {
         BuildResult::Ok => {}
@@ -322,8 +345,13 @@ pub fn migrate_one(repo: &Path, opts: &MigrateOpts) -> MigrateOutcome {
         };
     }
 
-    // Stage the delta + the .gitignore (path-targeted — never `-A`).
-    if let Err(e) = run_git(repo, &["add", "--", DELTA, ".gitignore"]) {
+    // Stage the delta + the .gitignore (path-targeted — never `-A`), plus
+    // Cargo.lock when we refreshed stale git pins above.
+    let mut stage: Vec<&str> = vec!["add", "--", DELTA, ".gitignore"];
+    if refreshed {
+        stage.push("Cargo.lock");
+    }
+    if let Err(e) = run_git(repo, &stage) {
         return MigrateOutcome::Failed {
             category: MigrateFailure::GitStageFailed,
             detail: e,
@@ -478,19 +506,26 @@ enum BuildResult {
 /// hung `git fetch` it spawned, not just the parent. Unix-only (gen
 /// targets darwin/linux).
 fn run_build_with_timeout(repo: &Path, gen_bin: &Path, timeout_secs: u64) -> BuildResult {
+    let rp = repo.to_string_lossy();
+    run_proc_with_timeout(gen_bin, &["build", rp.as_ref()], timeout_secs)
+}
+
+/// Spawn `program args` in its own process group with a timeout, stdio
+/// nulled. On timeout, kill the whole group (`kill -KILL -<pid>`) so any
+/// hung child (e.g. a `git fetch` of a GC'd rev) dies too. Unix-only.
+fn run_proc_with_timeout(program: &Path, args: &[&str], timeout_secs: u64) -> BuildResult {
     use std::os::unix::process::CommandExt;
     use std::time::Duration;
 
-    let mut child = match Command::new(gen_bin)
-        .arg("build")
-        .arg(repo)
+    let mut child = match Command::new(program)
+        .args(args)
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .process_group(0) // new group: pgid == child pid
         .spawn()
     {
         Ok(c) => c,
-        Err(e) => return BuildResult::Failed(format!("spawn {} build: {e}", gen_bin.display())),
+        Err(e) => return BuildResult::Failed(format!("spawn {}: {e}", program.display())),
     };
     let pid = child.id();
     let deadline = Instant::now() + Duration::from_secs(timeout_secs);
@@ -501,14 +536,14 @@ fn run_build_with_timeout(repo: &Path, gen_bin: &Path, timeout_secs: u64) -> Bui
                     BuildResult::Ok
                 } else {
                     BuildResult::Failed(format!(
-                        "gen build exited {}",
+                        "{} exited {}",
+                        program.display(),
                         status.code().unwrap_or(-1)
                     ))
                 };
             }
             Ok(None) => {
                 if Instant::now() >= deadline {
-                    // Kill the whole process group (gen + any hung git fetch).
                     let _ = Command::new("kill")
                         .arg("-KILL")
                         .arg(format!("-{pid}"))
@@ -519,9 +554,53 @@ fn run_build_with_timeout(repo: &Path, gen_bin: &Path, timeout_secs: u64) -> Bui
                 }
                 std::thread::sleep(Duration::from_millis(200));
             }
-            Err(e) => return BuildResult::Failed(format!("wait gen build: {e}")),
+            Err(e) => return BuildResult::Failed(format!("wait {}: {e}", program.display())),
         }
     }
+}
+
+/// Refresh stale pleme-io `branch="main"` git pins in the lock to their
+/// live HEADs via `cargo update -p <dep>`, fixing GC'd-rev fetch hangs.
+/// Returns Ok(true) if the lock changed. Killable + timed (in case a
+/// dep's own main is also unreachable).
+fn refresh_git_deps(repo: &Path, timeout_secs: u64) -> Result<bool, String> {
+    let lock_path = repo.join("Cargo.lock");
+    let lock = std::fs::read_to_string(&lock_path).map_err(|e| format!("read lock: {e}"))?;
+    // Names of packages whose source is a pleme-io git repo.
+    let mut names: Vec<String> = Vec::new();
+    let mut cur: Option<String> = None;
+    for line in lock.lines() {
+        if let Some(rest) = line.strip_prefix("name = \"") {
+            cur = rest.strip_suffix('"').map(str::to_string);
+        } else if line.starts_with("source = \"git+https://github.com/pleme-io/") {
+            if let Some(n) = cur.take() {
+                names.push(n);
+            }
+        }
+    }
+    names.sort();
+    names.dedup();
+    if names.is_empty() {
+        return Ok(false);
+    }
+    let before = std::fs::read(&lock_path).ok();
+    let manifest = repo.join("Cargo.toml");
+    let mut args: Vec<String> = vec![
+        "update".into(),
+        "--manifest-path".into(),
+        manifest.to_string_lossy().into_owned(),
+    ];
+    for n in &names {
+        args.push("-p".into());
+        args.push(n.clone());
+    }
+    let argrefs: Vec<&str> = args.iter().map(String::as_str).collect();
+    match run_proc_with_timeout(Path::new("cargo"), &argrefs, timeout_secs) {
+        BuildResult::Ok => {}
+        BuildResult::TimedOut => return Err("cargo update timed out".into()),
+        BuildResult::Failed(e) => return Err(format!("cargo update: {e}")),
+    }
+    Ok(std::fs::read(&lock_path).ok() != before)
 }
 
 /// Run a git command in `repo`. Non-zero exit → `Err(stderr)`.
@@ -566,6 +645,7 @@ mod tests {
             gen_bin: PathBuf::from("/nonexistent-gen"),
             build_timeout_secs: 5,
             jobs: 1,
+            refresh_git_deps: false,
         }
     }
 

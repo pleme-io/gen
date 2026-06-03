@@ -617,13 +617,17 @@ dependencies = [
 name = "gen-gomod"
 version = "0.1.4"
 dependencies = [
+ "base64",
  "gen-macros",
  "gen-platform",
  "gen-types",
  "indexmap",
  "inventory",
+ "nix-nar",
  "serde",
  "serde_json",
+ "sha2",
+ "tempfile",
  "thiserror 2.0.18",
 ]
 

@@ -35,6 +35,7 @@
 pub mod adapter;
 pub mod dispatcher;
 pub mod ecosystem;
+pub mod gen_delta;
 pub mod lock_lifecycle;
 pub mod constraint;
 pub mod dependency;
@@ -58,6 +59,7 @@ pub use adapter::{
     Sbom, SbomFormat,
 };
 pub use dispatcher::TypedDispatcher;
+pub use gen_delta::GenDeltaArtifact;
 pub use lock_lifecycle::{LockError, LockLifecyclePrimitive};
 pub use ecosystem::{Invariants, QuirkRegistry, Spec};
 pub use constraint::{Combinator, CompoundConstraint, ConstraintSpec, VersionConstraint};

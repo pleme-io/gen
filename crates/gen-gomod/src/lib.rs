@@ -7,8 +7,11 @@
 pub mod adapter;
 pub mod build_spec;
 pub mod error;
+pub mod gen_delta;
 pub mod invariants;
+pub mod parse;
 pub mod quirks;
+pub mod vendor_prefetcher;
 
 pub use adapter::GomodAdapter;
-pub use error::{Result, GomodError};
+pub use error::{GomodError, Result};

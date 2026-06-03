@@ -65,6 +65,7 @@ fn build_spec_implements_spec_trait() {
                 version: Some("1.29.0".into()),
                 ..Default::default()
             },
+            has_external_deps: false,
             quirks: vec![],
         },
     );
@@ -72,7 +73,9 @@ fn build_spec_implements_spec_trait() {
         version: SCHEMA_VERSION,
         packages,
         root_package: "kubectl-1.29.0".into(),
-        workspace_members: vec!["kubectl-1.29.0".into()],
+        // workspace_members are module paths (a package's `name`), keeping
+        // member-list and package-set in agreement per the gomod invariants.
+        workspace_members: vec!["kubectl".into()],
     };
     assert_eq!(spec.schema_version(), SCHEMA_VERSION);
     assert_eq!(spec.root_key(), "kubectl-1.29.0");

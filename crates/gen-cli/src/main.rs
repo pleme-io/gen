@@ -718,6 +718,27 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                         commit_spec_if_drifted(&root)?;
                     }
                 }
+                "gomod" => {
+                    // gomod is single-target (no per-fleet-target resolve
+                    // graph) — the cargo multi-target flags don't apply.
+                    // `--if-stale` fast-paths via the Go.gen.lock tie.
+                    if *if_stale && filter_platform.is_none() && !*single_target {
+                        let freshness = gen_gomod::build_spec::check_freshness(&root);
+                        if !freshness.needs_regen() {
+                            eprintln!(
+                                "gen build --if-stale: {} (Go.gen.lock)",
+                                freshness.summary()
+                            );
+                            return Ok(());
+                        }
+                    }
+                    let out = gen_gomod::build_spec::generate_and_write(&root)
+                        .map_err(CliError::Gomod)?;
+                    eprintln!("gen build: wrote {}", out.display());
+                    if *commit {
+                        commit_gomod_spec_if_drifted(&root)?;
+                    }
+                }
                 other => {
                     return Err(CliError::RenderNotImplementedForAdapter(other.to_string()));
                 }
@@ -735,6 +756,15 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                     // Non-zero exit code when regen is needed so
                     // shell pipelines branch cheaply: `gen
                     // check-spec && echo fresh || gen build`.
+                    if needs_regen {
+                        std::process::exit(1);
+                    }
+                    Ok(())
+                }
+                "gomod" => {
+                    let freshness = gen_gomod::build_spec::check_freshness(&root);
+                    let needs_regen = freshness.needs_regen();
+                    emit(&freshness, cli.format)?;
                     if needs_regen {
                         std::process::exit(1);
                     }
@@ -1204,6 +1234,8 @@ enum CliError {
     #[error(transparent)]
     Cargo(#[from] gen_cargo::CargoError),
     #[error(transparent)]
+    Gomod(#[from] gen_gomod::GomodError),
+    #[error(transparent)]
     Npm(#[from] gen_npm::NpmError),
     #[error(transparent)]
     Bundler(#[from] gen_bundler::BundlerError),
@@ -1657,7 +1689,50 @@ fn invariants_run_clean_against_minimal_spec() {{
 /// CRITICAL: build-spec is only retired when a delta actually exists. A
 /// single-target `gen build` emits no delta; retiring build-spec there
 /// would strand the repo on IFD, so this no-ops instead.
+/// The EXACT historical cargo delta commit message. Extracted to a
+/// const so `cargo_commit_message_is_byte_identical` can assert it never
+/// drifts when `commit_spec_if_drifted` was refactored onto the shared
+/// `commit_delta_if_drifted` engine.
+const CARGO_DELTA_COMMIT_MSG: &str =
+    "gen: regen Cargo.gen.lock delta — delta-only (build-spec retired)";
+
 fn commit_spec_if_drifted(root: &std::path::Path) -> Result<(), CliError> {
+    // Cargo path — EXACT historical names + commit message preserved
+    // (asserted byte-identical by `cargo_commit_message_is_byte_identical`).
+    // The generic engine is `commit_delta_if_drifted`, shared with gomod.
+    commit_delta_if_drifted(
+        root,
+        "Cargo.gen.lock",
+        "Cargo.build-spec.json",
+        CARGO_DELTA_COMMIT_MSG,
+    )
+}
+
+/// gomod analogue of `commit_spec_if_drifted` — commits the
+/// `Go.gen.lock` delta, retiring the full `Go.build-spec.json`. Calls
+/// the SAME shared engine as cargo, parameterized over the artifact
+/// names + commit message.
+fn commit_gomod_spec_if_drifted(root: &std::path::Path) -> Result<(), CliError> {
+    commit_delta_if_drifted(
+        root,
+        "Go.gen.lock",
+        "Go.build-spec.json",
+        "gen: regen Go.gen.lock delta — delta-only (build-spec retired)",
+    )
+}
+
+/// Shared delta-only commit engine. Parameterized over the delta
+/// filename, the full-build-spec filename to retire, and the commit
+/// message. Both the cargo (`commit_spec_if_drifted`) and gomod
+/// (`commit_gomod_spec_if_drifted`) paths call this — one shape, no
+/// duplication. Author is `gen-spec-bot` (the identity gen's CI uses);
+/// idempotent (no-op when nothing changed).
+fn commit_delta_if_drifted(
+    root: &std::path::Path,
+    delta_name: &str,
+    build_spec_name: &str,
+    commit_msg: &str,
+) -> Result<(), CliError> {
     use std::process::Command;
     let git = |args: &[&str]| -> Result<std::process::Output, CliError> {
         Command::new("git")
@@ -1669,25 +1744,25 @@ fn commit_spec_if_drifted(root: &std::path::Path) -> Result<(), CliError> {
     };
 
     // No delta → do not retire build-spec (would fall back to IFD).
-    if !root.join("Cargo.gen.lock").exists() {
+    if !root.join(delta_name).exists() {
         eprintln!(
-            "gen build --commit: no Cargo.gen.lock emitted (single-target?) — \
+            "gen build --commit: no {delta_name} emitted (single-target?) — \
              skipping delta-only commit"
         );
         return Ok(());
     }
 
     // Retire the full build-spec: untrack if tracked, ensure gitignored.
-    if git(&["ls-files", "--error-unmatch", "Cargo.build-spec.json"])?
+    if git(&["ls-files", "--error-unmatch", build_spec_name])?
         .status
         .success()
     {
-        git(&["rm", "--quiet", "--cached", "--", "Cargo.build-spec.json"])?;
+        git(&["rm", "--quiet", "--cached", "--", build_spec_name])?;
     }
-    ensure_gitignored(root, "Cargo.build-spec.json")?;
+    ensure_gitignored(root, build_spec_name)?;
 
     // Stage the delta + the .gitignore (+ the build-spec removal).
-    git(&["add", "--", "Cargo.gen.lock", ".gitignore"])?;
+    git(&["add", "--", delta_name, ".gitignore"])?;
 
     // Nothing staged → idempotent no-op (delta unchanged, build-spec already
     // retired + ignored).
@@ -1704,7 +1779,7 @@ fn commit_spec_if_drifted(root: &std::path::Path) -> Result<(), CliError> {
         "commit",
         "--quiet",
         "-m",
-        "gen: regen Cargo.gen.lock delta — delta-only (build-spec retired)",
+        commit_msg,
     ])?;
     if !commit.status.success() {
         return Err(CliError::Other(format!(
@@ -1846,4 +1921,21 @@ fn pick_target(
         )
         .into()
     })
+}
+
+#[cfg(test)]
+mod commit_msg_tests {
+    use super::CARGO_DELTA_COMMIT_MSG;
+
+    /// The cargo delta commit message MUST stay byte-identical after the
+    /// refactor onto the shared `commit_delta_if_drifted` engine — gen's
+    /// CI history + any downstream commit-log tooling key on this exact
+    /// string. A change here is a behavioral break, caught at test time.
+    #[test]
+    fn cargo_commit_message_is_byte_identical() {
+        assert_eq!(
+            CARGO_DELTA_COMMIT_MSG,
+            "gen: regen Cargo.gen.lock delta — delta-only (build-spec retired)"
+        );
+    }
 }

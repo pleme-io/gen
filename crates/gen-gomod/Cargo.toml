@@ -25,6 +25,16 @@ serde_json = { workspace = true }
 indexmap = { workspace = true }
 thiserror = { workspace = true }
 inventory = { workspace = true }
+sha2 = "0.10"
+# Pure-Rust NAR-sha256 (nix-nar streamed into Sha256) + SRI base64 —
+# the same vendor-hash machinery gen-cargo uses for git-source FODs.
+# The Go vendor tree is materialized via one `go` subprocess (the
+# single load-bearing binary, like cargo's one `git`) then NAR-hashed
+# in-process. See vendor_prefetcher.rs.
+nix-nar = "0.3"
+base64 = "0.22"
+tempfile = "3"
 
 [dev-dependencies]
 indexmap = { workspace = true }
+tempfile = "3"

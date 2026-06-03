@@ -52,30 +52,13 @@ pub enum GenDeltaError {
     },
 }
 
-/// A slim, committed resolver-delta: the minimal facts an ecosystem's
-/// lockfile cannot express, kept in lockstep with that lock via a content
-/// hash. The rust impl is the POC; npm/python/go get the same shape (see
-/// the contract's "Generalization" section) — hence a trait, not a bare fn.
-pub trait GenDeltaArtifact: Sized {
-    /// The full in-memory spec this delta is distilled from.
-    type FullSpec;
-    /// Distillation error type (per-ecosystem).
-    type Error: std::error::Error;
-    /// Artifact schema version (gates consumer decode).
-    const SCHEMA_VERSION: u32;
-    /// The committed filename (e.g. `Cargo.gen.lock`).
-    const FILENAME: &'static str;
-
-    /// Distill the slim delta from the full spec. MUST drop every field the
-    /// lockfile already expresses (D1) and MUST error rather than emit a
-    /// degenerate delta (D4): a single-target spec lacks the per-target
-    /// resolver facts the delta exists to carry.
-    fn distill(full: &Self::FullSpec) -> Result<Self, Self::Error>;
-
-    /// The freshness tie — equals `builtins.hashFile "sha256"` of the lock
-    /// at consume time (D2). Lowercase hex SHA-256.
-    fn lock_sha256(&self) -> &str;
-}
+// The `GenDeltaArtifact` trait was promoted to `gen_types` (additively)
+// so every adapter shares one delta shape. Re-exported here under the
+// historical `gen_cargo::gen_delta::GenDeltaArtifact` path — the cargo
+// consumer + every cargo-path test is byte-identical (same trait, same
+// path). The rust impl is the POC; npm/python/go get the same shape via
+// the same trait.
+pub use gen_types::GenDeltaArtifact;
 
 /// The resolver-only, target-invariant scalars for one crate. Mirrors the
 /// subset of `CrateSpec` that cannot be derived from `Cargo.lock`. Every

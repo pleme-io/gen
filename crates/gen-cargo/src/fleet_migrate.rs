@@ -524,21 +524,23 @@ fn remove_if_untracked(repo: &Path, rel: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// Make Cargo.lock committable: drop any `Cargo.lock` / `/Cargo.lock`
-/// ignore line from `<repo>/.gitignore` (a no-op if absent). The
-/// delta-only invariant requires a committed lock; a gitignored lock
-/// would orphan the delta. Idempotent.
+/// Make the delta-only committed artifacts committable: drop any ignore
+/// line for `Cargo.lock` or `Cargo.gen.lock` (with or without a leading
+/// `/`) from `<repo>/.gitignore` (a no-op if absent). Both MUST be
+/// committed — Cargo.lock is the reconstruction base, Cargo.gen.lock is
+/// the delta itself; a gitignored either-one breaks delta-only.
+/// Idempotent.
 fn ensure_lock_committable(repo: &Path) -> Result<(), String> {
     let gi = repo.join(".gitignore");
     let cur = match std::fs::read_to_string(&gi) {
         Ok(s) => s,
-        Err(_) => return Ok(()), // no .gitignore → lock isn't ignored
+        Err(_) => return Ok(()), // no .gitignore → nothing ignored
     };
     let kept: Vec<&str> = cur
         .lines()
         .filter(|l| {
             let t = l.trim();
-            t != "Cargo.lock" && t != "/Cargo.lock"
+            t != "Cargo.lock" && t != "/Cargo.lock" && t != DELTA && t != "/Cargo.gen.lock"
         })
         .collect();
     if kept.len() == cur.lines().count() {

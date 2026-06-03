@@ -383,12 +383,12 @@ pub fn migrate_one(repo: &Path, opts: &MigrateOpts) -> MigrateOutcome {
     // delta, the .gitignore (build-spec retired + lock un-ignored), and
     // Cargo.lock (the reconstruction base — committing it is the core
     // invariant). Plus the crate-hashes.json removal when retired.
+    // NB: build-spec + crate-hashes.json removals are already staged by
+    // their `git rm --cached` above — do NOT `git add` them (they're now
+    // gitignored, so `git add` would error and fail the whole stage).
     let mut stage: Vec<&str> = vec!["add", "--", DELTA, ".gitignore"];
     if repo.join("Cargo.lock").exists() {
         stage.push("Cargo.lock");
-    }
-    if crate_hashes_retired {
-        stage.push(CRATE_HASHES);
     }
     if let Err(e) = run_git(repo, &stage) {
         return MigrateOutcome::Failed {

@@ -386,7 +386,11 @@ pub fn migrate_one(repo: &Path, opts: &MigrateOpts) -> MigrateOutcome {
     // NB: build-spec + crate-hashes.json removals are already staged by
     // their `git rm --cached` above — do NOT `git add` them (they're now
     // gitignored, so `git add` would error and fail the whole stage).
-    let mut stage: Vec<&str> = vec!["add", "--", DELTA, ".gitignore"];
+    // `-f`: force past any .gitignore pattern (glob or exact) — the delta
+    // artifacts MUST be committed for delta-only, regardless of how a repo
+    // ignores them. ensure_lock_committable already strips the common
+    // exact lines so they stay tracked; -f covers glob patterns too.
+    let mut stage: Vec<&str> = vec!["add", "-f", "--", DELTA, ".gitignore"];
     if repo.join("Cargo.lock").exists() {
         stage.push("Cargo.lock");
     }

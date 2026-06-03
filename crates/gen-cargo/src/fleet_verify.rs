@@ -33,6 +33,11 @@ pub enum VerifyState {
     /// read the lock on a fresh checkout, so the delta is orphaned and
     /// the repo silently falls back to IFD. Not truly delta-only.
     OrphanedDeltaNoLock,
+    /// Delta + lock committed, but MISSING the gen-spec self-regen CI
+    /// (.github/workflows/gen-spec.yml). The delta is correct now but will
+    /// go stale on the next lock bump (auto-release / dep update) with
+    /// nothing to regenerate it. Not self-sustaining.
+    DeltaOnlyNoCi,
     /// Build-spec still tracked (not yet retired).
     StillBuildSpec,
     /// Build-spec retired + gitignored, but no delta (legacy IFD-only).
@@ -135,12 +140,16 @@ pub fn verify_one(repo: &Path, fetch: bool) -> VerifyState {
         .map(|gi| gi.lines().any(|l| l.trim() == BUILD_SPEC))
         .unwrap_or(false);
 
+    let ci_present = tree(".github/workflows/gen-spec.yml");
     if delta_tracked && !bs_tracked {
-        // True delta-only requires a committed Cargo.lock to reconstruct from.
-        if lock_tracked {
-            VerifyState::DeltaOnly
-        } else {
+        // True, self-sustaining delta-only = committed Cargo.lock to
+        // reconstruct from + the gen-spec CI to keep the delta fresh.
+        if !lock_tracked {
             VerifyState::OrphanedDeltaNoLock
+        } else if !ci_present {
+            VerifyState::DeltaOnlyNoCi
+        } else {
+            VerifyState::DeltaOnly
         }
     } else if bs_tracked {
         VerifyState::StillBuildSpec
@@ -193,15 +202,33 @@ mod tests {
         git(d, &["update-ref", &format!("refs/remotes/origin/{branch}"), "HEAD"]).unwrap();
     }
 
+    fn write_gen_spec_ci(d: &Path) {
+        std::fs::create_dir_all(d.join(".github/workflows")).unwrap();
+        std::fs::write(d.join(".github/workflows/gen-spec.yml"), "name: gen-spec\n").unwrap();
+    }
+
     #[test]
     fn classifies_delta_only() {
         let d = repo("delta");
         std::fs::write(d.join(DELTA), "x").unwrap();
         std::fs::write(d.join("Cargo.lock"), "x").unwrap();
         std::fs::write(d.join(".gitignore"), "Cargo.build-spec.json\n").unwrap();
+        write_gen_spec_ci(&d); // self-regen CI present → truly delta-only
         commit_all(&d);
         alias_remote(&d);
         assert_eq!(verify_one(&d, false), VerifyState::DeltaOnly);
+    }
+
+    #[test]
+    fn classifies_delta_only_no_ci() {
+        let d = repo("delta-noci");
+        std::fs::write(d.join(DELTA), "x").unwrap();
+        std::fs::write(d.join("Cargo.lock"), "x").unwrap();
+        std::fs::write(d.join(".gitignore"), "Cargo.build-spec.json\n").unwrap();
+        // no gen-spec.yml → delta correct but not self-sustaining
+        commit_all(&d);
+        alias_remote(&d);
+        assert_eq!(verify_one(&d, false), VerifyState::DeltaOnlyNoCi);
     }
 
     #[test]

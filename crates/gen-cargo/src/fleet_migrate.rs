@@ -46,6 +46,30 @@ const ALLOWED: [&str; 3] = [BUILD_SPEC, DELTA, ".gitignore"];
 /// delta-only conversion.
 const CRATE_HASHES: &str = "crate-hashes.json";
 
+/// The self-regen CI: keeps the committed Cargo.gen.lock FRESH. Without
+/// it, an auto-release / dependency bump rewrites Cargo.lock and the
+/// committed delta goes stale (D2 fails). This workflow calls substrate's
+/// reusable-gen-spec on every Cargo.toml/Cargo.lock change to regenerate +
+/// commit the delta — so delta-only is self-sustaining. Emitted by the
+/// conversion so every delta-only repo carries it.
+const GEN_SPEC_WF_PATH: &str = ".github/workflows/gen-spec.yml";
+const GEN_SPEC_WF_YAML: &str = "name: gen-spec\n\
+on:\n\
+\x20\x20push:\n\
+\x20\x20\x20\x20branches:\n\
+\x20\x20\x20\x20\x20\x20- main\n\
+\x20\x20\x20\x20paths:\n\
+\x20\x20\x20\x20\x20\x20- \"**/Cargo.toml\"\n\
+\x20\x20\x20\x20\x20\x20- \"**/Cargo.lock\"\n\
+\x20\x20pull_request:\n\
+\x20\x20\x20\x20paths:\n\
+\x20\x20\x20\x20\x20\x20- \"**/Cargo.toml\"\n\
+\x20\x20\x20\x20\x20\x20- \"**/Cargo.lock\"\n\
+jobs:\n\
+\x20\x20gen-spec:\n\
+\x20\x20\x20\x20uses: pleme-io/substrate/.github/workflows/reusable-gen-spec.yml@main\n\
+\x20\x20\x20\x20secrets: inherit\n";
+
 /// A dirty path that is a STALE BUILD ARTIFACT — safe to discard so the
 /// conversion can proceed (vs real source/lock WIP, which blocks). Covers
 /// committed `target/` trees and the deprecated `crate-hashes.json`.
@@ -390,7 +414,17 @@ pub fn migrate_one(repo: &Path, opts: &MigrateOpts) -> MigrateOutcome {
     // artifacts MUST be committed for delta-only, regardless of how a repo
     // ignores them. ensure_lock_committable already strips the common
     // exact lines so they stay tracked; -f covers glob patterns too.
-    let mut stage: Vec<&str> = vec!["add", "-f", "--", DELTA, ".gitignore"];
+    // Ensure the self-regen CI is present so the delta stays fresh across
+    // future lock bumps (auto-release, dep updates) — the core of making
+    // delta-only self-sustaining.
+    if let Err(e) = ensure_gen_spec_workflow(repo) {
+        return MigrateOutcome::Failed {
+            category: MigrateFailure::GitStageFailed,
+            detail: e,
+            elapsed_ms: ms(),
+        };
+    }
+    let mut stage: Vec<&str> = vec!["add", "-f", "--", DELTA, ".gitignore", GEN_SPEC_WF_PATH];
     if repo.join("Cargo.lock").exists() {
         stage.push("Cargo.lock");
     }
@@ -526,6 +560,21 @@ fn remove_if_untracked(repo: &Path, rel: &str) -> Result<(), String> {
         let _ = std::fs::remove_file(repo.join(rel));
     }
     Ok(())
+}
+
+/// Ensure `<repo>/.github/workflows/gen-spec.yml` holds the canonical
+/// self-regen CI (idempotent: a no-op if already identical). Returns the
+/// path so the caller stages it. Without this CI a delta goes stale on
+/// the next lock bump; with it, the delta self-regenerates.
+fn ensure_gen_spec_workflow(repo: &Path) -> Result<(), String> {
+    let path = repo.join(GEN_SPEC_WF_PATH);
+    if std::fs::read_to_string(&path).ok().as_deref() == Some(GEN_SPEC_WF_YAML) {
+        return Ok(());
+    }
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| format!("mkdir workflows: {e}"))?;
+    }
+    std::fs::write(&path, GEN_SPEC_WF_YAML).map_err(|e| format!("write gen-spec.yml: {e}"))
 }
 
 /// Make the delta-only committed artifacts committable: drop any ignore
@@ -826,6 +875,20 @@ mod tests {
             blocking_dirty(&dir).unwrap().is_some(),
             "real source WIP must block"
         );
+    }
+
+    #[test]
+    fn ensure_gen_spec_workflow_writes_canonical_idempotent() {
+        let dir = temp_git_repo("wf");
+        ensure_gen_spec_workflow(&dir).unwrap();
+        let p = dir.join(GEN_SPEC_WF_PATH);
+        assert!(p.exists(), "workflow written");
+        let body = std::fs::read_to_string(&p).unwrap();
+        assert!(body.contains("reusable-gen-spec.yml@main"), "calls the reusable workflow");
+        assert!(body.contains("**/Cargo.lock"), "triggers on lock change");
+        // idempotent — second call leaves it byte-identical.
+        ensure_gen_spec_workflow(&dir).unwrap();
+        assert_eq!(std::fs::read_to_string(&p).unwrap(), body);
     }
 
     #[test]

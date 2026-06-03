@@ -130,9 +130,34 @@ pub fn run_plan(
     let plan = FleetMigrationPlan::from_source(src)?;
     let repos = plan.resolve_repos()?;
     // The build runs each repo in a killable subprocess of THIS binary.
-    let gen_bin = std::env::current_exe().map_err(|e| format!("current_exe: {e}"))?;
-    fleet_migrate::run(&repos, &plan.opts(gen_bin, force_no_push, jobs_override))
-        .map_err(|e| e.to_string())
+    // STABILIZE the binary first: a fleet run may take many minutes, and a
+    // concurrent `cargo build` of the gen workspace can unlink
+    // target/debug/gen mid-run — every subsequent subprocess spawn then
+    // fails with "No such file or directory". Copy the executable to a
+    // temp path outside the cargo target (immune to that churn) and spawn
+    // from there. Falls back to current_exe() if the copy fails.
+    let exe = std::env::current_exe().map_err(|e| format!("current_exe: {e}"))?;
+    let stable = stabilize_binary(&exe);
+    let gen_bin = stable.clone().unwrap_or(exe);
+    let result = fleet_migrate::run(&repos, &plan.opts(gen_bin, force_no_push, jobs_override))
+        .map_err(|e| e.to_string());
+    if let Some(p) = stable {
+        let _ = std::fs::remove_file(p);
+    }
+    result
+}
+
+/// Copy `exe` to a temp path (executable), returning it on success. The
+/// copy survives a `cargo` rebuild that unlinks the original target/ binary.
+fn stabilize_binary(exe: &std::path::Path) -> Option<PathBuf> {
+    let dst = std::env::temp_dir().join(format!("gen-fleet-{}", std::process::id()));
+    std::fs::copy(exe, &dst).ok()?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&dst, std::fs::Permissions::from_mode(0o755)).ok()?;
+    }
+    Some(dst)
 }
 
 #[cfg(test)]
@@ -166,6 +191,25 @@ mod tests {
         assert_eq!(p.exclude, vec!["ishou"]);
         assert!(p.push);
         assert!(!p.bot_identity);
+    }
+
+    #[test]
+    fn stabilize_binary_copies_executable() {
+        // Make a fake "binary", stabilize it, assert the copy exists, is
+        // distinct from the source, and is executable.
+        let src = std::env::temp_dir().join(format!("genfm-src-{}", std::process::id()));
+        std::fs::write(&src, b"#!/bin/sh\ntrue\n").unwrap();
+        let stable = stabilize_binary(&src).expect("stabilize");
+        assert!(stable.exists());
+        assert_ne!(stable, src);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mode = std::fs::metadata(&stable).unwrap().permissions().mode();
+            assert!(mode & 0o111 != 0, "stable binary must be executable");
+        }
+        let _ = std::fs::remove_file(&src);
+        let _ = std::fs::remove_file(&stable);
     }
 
     #[test]

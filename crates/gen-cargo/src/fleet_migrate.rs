@@ -67,6 +67,9 @@ pub enum MigrateOutcome {
     SkippedLockMutated,
     /// `gen build` emitted no delta (single-target / degenerate spec).
     SkippedNoDelta,
+    /// `gen build` exceeded the timeout (e.g. a stale git pin that hangs
+    /// a fetch). The build subprocess + its process group were killed.
+    SkippedBuildTimeout,
     /// A typed structural failure.
     Failed {
         category: MigrateFailure,
@@ -95,12 +98,18 @@ pub enum MigrateFailure {
 }
 
 /// Migration options.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct MigrateOpts {
     /// Push (with fetch + ff-only) after committing.
     pub push: bool,
     /// Commit as `gen-spec-bot` (vs the ambient git author).
     pub bot_identity: bool,
+    /// Path to the `gen` binary used to build each repo in a killable
+    /// subprocess (typically the running executable, `current_exe()`).
+    pub gen_bin: PathBuf,
+    /// Per-repo build timeout in seconds. A build that exceeds it (e.g. a
+    /// stale git pin that hangs a fetch) is killed → `SkippedBuildTimeout`.
+    pub build_timeout_secs: u64,
 }
 
 /// Aggregate report over a repo set.
@@ -143,6 +152,7 @@ impl MigrateReport {
                         | MigrateOutcome::SkippedDirty { .. }
                         | MigrateOutcome::SkippedLockMutated
                         | MigrateOutcome::SkippedNoDelta
+                        | MigrateOutcome::SkippedBuildTimeout
                         | MigrateOutcome::AlreadyDeltaOnly
                 )
             })
@@ -151,7 +161,7 @@ impl MigrateReport {
 }
 
 /// Migrate every repo in `repos`, in the given order.
-pub fn run(repos: &[PathBuf], opts: MigrateOpts) -> Result<MigrateReport, CargoError> {
+pub fn run(repos: &[PathBuf], opts: &MigrateOpts) -> Result<MigrateReport, CargoError> {
     let started = Instant::now();
     let mut outcomes: IndexMap<String, MigrateOutcome> = IndexMap::new();
     for repo in repos {
@@ -168,7 +178,7 @@ pub fn run(repos: &[PathBuf], opts: MigrateOpts) -> Result<MigrateReport, CargoE
 }
 
 /// Migrate a single repo to delta-only.
-pub fn migrate_one(repo: &Path, opts: MigrateOpts) -> MigrateOutcome {
+pub fn migrate_one(repo: &Path, opts: &MigrateOpts) -> MigrateOutcome {
     let started = Instant::now();
     let ms = || started.elapsed().as_millis() as u64;
 
@@ -204,15 +214,28 @@ pub fn migrate_one(repo: &Path, opts: MigrateOpts) -> MigrateOutcome {
         }
     }
 
-    // Build in-process (no subprocess / binary-path fragility). gen build
-    // is read-only on Cargo.lock — we verify that below.
+    // Build in a KILLABLE subprocess with a timeout. A stale git pin that
+    // hangs a fetch would otherwise hang the whole run; here the build's
+    // process group is killed and the repo is skipped. gen build is
+    // read-only on Cargo.lock — we verify that below.
     let lock_before = std::fs::read(repo.join("Cargo.lock")).ok();
-    if let Err(e) = crate::build_spec::generate_multi_target_and_write(repo) {
-        return MigrateOutcome::Failed {
-            category: MigrateFailure::BuildFailed,
-            detail: e.to_string(),
-            elapsed_ms: ms(),
-        };
+    match run_build_with_timeout(repo, &opts.gen_bin, opts.build_timeout_secs) {
+        BuildResult::Ok => {}
+        BuildResult::TimedOut => {
+            // A timed-out build may have written a partial spec; restore.
+            if build_spec_tracked(repo) {
+                let _ = run_git(repo, &["checkout", "--", BUILD_SPEC]);
+            }
+            let _ = remove_if_untracked(repo, DELTA);
+            return MigrateOutcome::SkippedBuildTimeout;
+        }
+        BuildResult::Failed(detail) => {
+            return MigrateOutcome::Failed {
+                category: MigrateFailure::BuildFailed,
+                detail,
+                elapsed_ms: ms(),
+            };
+        }
     }
     let lock_after = std::fs::read(repo.join("Cargo.lock")).ok();
     if lock_before != lock_after {
@@ -397,6 +420,65 @@ fn ensure_gitignored(repo: &Path, entry: &str) -> Result<(), String> {
     std::fs::write(&gi, new).map_err(|e| format!("write .gitignore: {e}"))
 }
 
+/// Outcome of a timed build subprocess.
+enum BuildResult {
+    Ok,
+    TimedOut,
+    Failed(String),
+}
+
+/// Run `<gen_bin> build <repo>` (multi-target, no commit) as a subprocess
+/// with a timeout. The child is its own process-group leader, so on
+/// timeout we kill the whole group (`kill -KILL -<pid>`) — taking down any
+/// hung `git fetch` it spawned, not just the parent. Unix-only (gen
+/// targets darwin/linux).
+fn run_build_with_timeout(repo: &Path, gen_bin: &Path, timeout_secs: u64) -> BuildResult {
+    use std::os::unix::process::CommandExt;
+    use std::time::Duration;
+
+    let mut child = match Command::new(gen_bin)
+        .arg("build")
+        .arg(repo)
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .process_group(0) // new group: pgid == child pid
+        .spawn()
+    {
+        Ok(c) => c,
+        Err(e) => return BuildResult::Failed(format!("spawn {} build: {e}", gen_bin.display())),
+    };
+    let pid = child.id();
+    let deadline = Instant::now() + Duration::from_secs(timeout_secs);
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                return if status.success() {
+                    BuildResult::Ok
+                } else {
+                    BuildResult::Failed(format!(
+                        "gen build exited {}",
+                        status.code().unwrap_or(-1)
+                    ))
+                };
+            }
+            Ok(None) => {
+                if Instant::now() >= deadline {
+                    // Kill the whole process group (gen + any hung git fetch).
+                    let _ = Command::new("kill")
+                        .arg("-KILL")
+                        .arg(format!("-{pid}"))
+                        .status();
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    return BuildResult::TimedOut;
+                }
+                std::thread::sleep(Duration::from_millis(200));
+            }
+            Err(e) => return BuildResult::Failed(format!("wait gen build: {e}")),
+        }
+    }
+}
+
 /// Run a git command in `repo`. Non-zero exit → `Err(stderr)`.
 fn run_git(repo: &Path, args: &[&str]) -> Result<String, String> {
     let output = Command::new("git")
@@ -430,6 +512,15 @@ mod tests {
 
     fn write(dir: &Path, rel: &str, body: &str) {
         std::fs::write(dir.join(rel), body).unwrap();
+    }
+
+    fn test_opts() -> MigrateOpts {
+        MigrateOpts {
+            push: false,
+            bot_identity: false,
+            gen_bin: PathBuf::from("/nonexistent-gen"),
+            build_timeout_secs: 5,
+        }
     }
 
     #[test]
@@ -511,7 +602,7 @@ mod tests {
     fn migrate_one_non_rust_repo_skipped() {
         let dir = temp_git_repo("notrust");
         assert!(matches!(
-            migrate_one(&dir, MigrateOpts { push: false, bot_identity: false }),
+            migrate_one(&dir, &test_opts()),
             MigrateOutcome::SkippedNotRust
         ));
     }
@@ -524,8 +615,37 @@ mod tests {
         write(&dir, "Cargo.toml", "[package]");
         write(&dir, "Cargo.lock", "");
         assert!(matches!(
-            migrate_one(&dir, MigrateOpts { push: false, bot_identity: false }),
+            migrate_one(&dir, &test_opts()),
             MigrateOutcome::SkippedNotAGitRepo
         ));
+    }
+
+    #[test]
+    fn build_timeout_kills_hung_process_group() {
+        use std::os::unix::fs::PermissionsExt;
+        use std::time::Duration;
+        let dir = temp_git_repo("timeout");
+        // A fake `gen` that ignores its args and hangs well past the timeout.
+        let fakegen = dir.join("fakegen.sh");
+        std::fs::write(&fakegen, "#!/bin/sh\nsleep 30\n").unwrap();
+        std::fs::set_permissions(&fakegen, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let start = Instant::now();
+        let r = run_build_with_timeout(&dir, &fakegen, 1);
+        assert!(matches!(r, BuildResult::TimedOut), "expected TimedOut, got {r:?}");
+        assert!(
+            start.elapsed() < Duration::from_secs(8),
+            "timeout must kill ~1s, not wait the full 30s sleep"
+        );
+    }
+}
+
+#[cfg(test)]
+impl std::fmt::Debug for BuildResult {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BuildResult::Ok => write!(f, "Ok"),
+            BuildResult::TimedOut => write!(f, "TimedOut"),
+            BuildResult::Failed(d) => write!(f, "Failed({d})"),
+        }
     }
 }

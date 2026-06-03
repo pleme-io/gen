@@ -243,7 +243,9 @@ fn run_via_scheduler(
 
     rt.block_on(async {
         let scheduler = InProcessScheduler::new("fleet-sweep")
-            .with_emitter(Arc::new(NullEmitter));
+            // shigoto NullEmitter is now a type alias for NullSink<_>; construct
+            // it via ::new() (matches shigoto-scheduler's own default emitter).
+            .with_emitter(Arc::new(NullEmitter::new()));
 
         let mut budget = BudgetTree::new();
         budget

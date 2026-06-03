@@ -42,6 +42,11 @@ pub struct FleetMigrationPlan {
     /// Commit as `gen-spec-bot` rather than the ambient git author.
     #[serde(default)]
     pub bot_identity: bool,
+    /// Per-repo build timeout in seconds (default 300). A build that
+    /// exceeds it — e.g. a stale git pin that hangs a fetch — is killed
+    /// and the repo is reported `skipped-build-timeout`.
+    #[serde(default)]
+    pub build_timeout_secs: Option<i64>,
 }
 
 impl FleetMigrationPlan {
@@ -91,10 +96,12 @@ impl FleetMigrationPlan {
             .collect())
     }
 
-    pub fn opts(&self, force_no_push: bool) -> MigrateOpts {
+    pub fn opts(&self, gen_bin: PathBuf, force_no_push: bool) -> MigrateOpts {
         MigrateOpts {
             push: self.push && !force_no_push,
             bot_identity: self.bot_identity,
+            gen_bin,
+            build_timeout_secs: self.build_timeout_secs.unwrap_or(300).max(1) as u64,
         }
     }
 }
@@ -113,7 +120,9 @@ fn expand_tilde(p: &str) -> PathBuf {
 pub fn run_plan(src: &str, force_no_push: bool) -> Result<MigrateReport, String> {
     let plan = FleetMigrationPlan::from_source(src)?;
     let repos = plan.resolve_repos()?;
-    fleet_migrate::run(&repos, plan.opts(force_no_push)).map_err(|e| e.to_string())
+    // The build runs each repo in a killable subprocess of THIS binary.
+    let gen_bin = std::env::current_exe().map_err(|e| format!("current_exe: {e}"))?;
+    fleet_migrate::run(&repos, &plan.opts(gen_bin, force_no_push)).map_err(|e| e.to_string())
 }
 
 #[cfg(test)]
@@ -169,7 +178,9 @@ mod tests {
             r#"(fleet-migration-plan :workspace-root "/tmp" :push #t)"#,
         )
         .unwrap();
-        assert!(p.opts(false).push);
-        assert!(!p.opts(true).push); // force_no_push overrides
+        let bin = PathBuf::from("/bin/true");
+        assert!(p.opts(bin.clone(), false).push);
+        assert!(!p.opts(bin, true).push); // force_no_push overrides
+        assert_eq!(p.build_timeout_secs, None); // default applied at opts()
     }
 }

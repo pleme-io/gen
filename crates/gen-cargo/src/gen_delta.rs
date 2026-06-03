@@ -247,10 +247,13 @@ mod tests {
     use super::*;
     use serde_json::Value;
 
-    // Real v10 fixture: gen's own committed full spec.
+    // Real v10 fixture: a committed sample multi-target build-spec
+    // (testdata/). Self-contained — does NOT depend on gen tracking its
+    // own Cargo.build-spec.json, which is retired under the delta-only
+    // doctrine (gitignored, reconstructed from Cargo.gen.lock).
     fn fixture() -> BuildSpec {
-        let raw = include_str!("../../../Cargo.build-spec.json");
-        serde_json::from_str(raw).expect("fixture Cargo.build-spec.json parses")
+        let raw = include_str!("testdata/v10-build-spec.json");
+        serde_json::from_str(raw).expect("fixture v10-build-spec.json parses")
     }
 
     fn delta() -> GenDelta {

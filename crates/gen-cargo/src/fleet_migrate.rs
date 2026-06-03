@@ -70,6 +70,9 @@ pub enum MigrateOutcome {
     /// `gen build` exceeded the timeout (e.g. a stale git pin that hangs
     /// a fetch). The build subprocess + its process group were killed.
     SkippedBuildTimeout,
+    /// Local HEAD has commits not on the remote (ahead/diverged). Not
+    /// reset — local work is preserved rather than destroyed.
+    SkippedLocalAhead,
     /// A typed structural failure.
     Failed {
         category: MigrateFailure,
@@ -110,6 +113,10 @@ pub struct MigrateOpts {
     /// Per-repo build timeout in seconds. A build that exceeds it (e.g. a
     /// stale git pin that hangs a fetch) is killed → `SkippedBuildTimeout`.
     pub build_timeout_secs: u64,
+    /// Number of repos migrated concurrently (>=1). Each repo is
+    /// independent (own remote, own subprocess), so this scales nearly
+    /// linearly; bound it to ~cpu cores.
+    pub jobs: usize,
 }
 
 /// Aggregate report over a repo set.
@@ -153,6 +160,7 @@ impl MigrateReport {
                         | MigrateOutcome::SkippedLockMutated
                         | MigrateOutcome::SkippedNoDelta
                         | MigrateOutcome::SkippedBuildTimeout
+                        | MigrateOutcome::SkippedLocalAhead
                         | MigrateOutcome::AlreadyDeltaOnly
                 )
             })
@@ -160,17 +168,42 @@ impl MigrateReport {
     }
 }
 
-/// Migrate every repo in `repos`, in the given order.
+/// Migrate every repo in `repos`, with up to `opts.jobs` running
+/// concurrently. Repos are independent (own remote, own build subprocess),
+/// so concurrency scales nearly linearly; the shared cargo git/registry
+/// cache is safe under cargo's own file locks. Outcomes are returned in
+/// the input order regardless of completion order.
 pub fn run(repos: &[PathBuf], opts: &MigrateOpts) -> Result<MigrateReport, CargoError> {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::Mutex;
+
     let started = Instant::now();
-    let mut outcomes: IndexMap<String, MigrateOutcome> = IndexMap::new();
-    for repo in repos {
-        let name = repo
-            .file_name()
-            .map(|s| s.to_string_lossy().into_owned())
-            .unwrap_or_else(|| repo.display().to_string());
-        outcomes.insert(name, migrate_one(repo, opts));
-    }
+    let jobs = opts.jobs.max(1);
+    let next = AtomicUsize::new(0);
+    let collected: Mutex<Vec<(usize, String, MigrateOutcome)>> = Mutex::new(Vec::new());
+
+    std::thread::scope(|scope| {
+        for _ in 0..jobs {
+            scope.spawn(|| loop {
+                let i = next.fetch_add(1, Ordering::SeqCst);
+                if i >= repos.len() {
+                    break;
+                }
+                let repo = &repos[i];
+                let name = repo
+                    .file_name()
+                    .map(|s| s.to_string_lossy().into_owned())
+                    .unwrap_or_else(|| repo.display().to_string());
+                let outcome = migrate_one(repo, opts);
+                collected.lock().unwrap().push((i, name, outcome));
+            });
+        }
+    });
+
+    let mut rows = collected.into_inner().unwrap();
+    rows.sort_by_key(|(i, _, _)| *i);
+    let outcomes: IndexMap<String, MigrateOutcome> =
+        rows.into_iter().map(|(_, n, o)| (n, o)).collect();
     Ok(MigrateReport {
         outcomes,
         total_elapsed_ms: started.elapsed().as_millis() as u64,
@@ -202,15 +235,27 @@ pub fn migrate_one(repo: &Path, opts: &MigrateOpts) -> MigrateOutcome {
         Ok(None) => {}
     }
 
-    // Sync to latest remote BEFORE building/committing so our commit lands
-    // on top of any daemon flake.lock chores (avoids self-inflicted
-    // divergence). Only when pushing; a dry run must not mutate the tree.
+    // Sync to remote BEFORE building so the delta reflects the pushed
+    // state (local clones may be stale, predating a fleet batch). Only
+    // when pushing; a dry run must not mutate the tree. Safe by
+    // construction: we only hard-reset when the tree is clean (checked
+    // above) AND local HEAD is an ANCESTOR of the remote (i.e. merely
+    // behind) — never when local has commits the remote lacks, which we
+    // report as SkippedLocalAhead rather than destroy.
     if opts.push {
         if let Ok(branch) = current_branch(repo) {
             let _ = run_git(repo, &["fetch", "--quiet", "origin", &branch]);
-            // ff-only: no-op when current, advances past chores, fails
-            // (left untouched) on genuine divergence — handled at push.
-            let _ = run_git(repo, &["merge", "--ff-only", &format!("origin/{branch}")]);
+            let remote_ref = format!("origin/{branch}");
+            let head = run_git(repo, &["rev-parse", "HEAD"]).unwrap_or_default();
+            let remote = run_git(repo, &["rev-parse", &remote_ref]).unwrap_or_default();
+            if !remote.is_empty() && head.trim() != remote.trim() {
+                // is local an ancestor of remote (behind, clean to ff)?
+                if run_git(repo, &["merge-base", "--is-ancestor", "HEAD", &remote_ref]).is_ok() {
+                    let _ = run_git(repo, &["reset", "--hard", &remote_ref]);
+                } else {
+                    return MigrateOutcome::SkippedLocalAhead;
+                }
+            }
         }
     }
 
@@ -520,6 +565,7 @@ mod tests {
             bot_identity: false,
             gen_bin: PathBuf::from("/nonexistent-gen"),
             build_timeout_secs: 5,
+            jobs: 1,
         }
     }
 

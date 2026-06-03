@@ -304,6 +304,9 @@ enum Cmd {
         /// Override the plan: build + commit only, do not push.
         #[arg(long)]
         no_push: bool,
+        /// Override the plan's concurrency (repos migrated in parallel).
+        #[arg(long)]
+        jobs: Option<usize>,
     },
     /// Probe the configured substituters for every lockfile entry in
     /// the workspace at <path>. Report hit / miss / hit-rate.
@@ -575,10 +578,11 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             };
             emit(&summary, cli.format)
         }
-        Cmd::FleetMigrate { plan, no_push } => {
+        Cmd::FleetMigrate { plan, no_push, jobs } => {
             let src = std::fs::read_to_string(plan)
                 .map_err(|e| CliError::Other(format!("read {}: {e}", plan.display())))?;
-            let report = fleet_migrate_plan::run_plan(&src, *no_push).map_err(CliError::Other)?;
+            let report =
+                fleet_migrate_plan::run_plan(&src, *no_push, *jobs).map_err(CliError::Other)?;
             #[derive(serde::Serialize)]
             struct Summary {
                 total: usize,

@@ -47,6 +47,10 @@ pub struct FleetMigrationPlan {
     /// and the repo is reported `skipped-build-timeout`.
     #[serde(default)]
     pub build_timeout_secs: Option<i64>,
+    /// Concurrent repos (default 1). Each repo is independent; scale to
+    /// ~cpu cores. Overridable from the CLI with `--jobs`.
+    #[serde(default)]
+    pub jobs: Option<i64>,
 }
 
 impl FleetMigrationPlan {
@@ -96,12 +100,13 @@ impl FleetMigrationPlan {
             .collect())
     }
 
-    pub fn opts(&self, gen_bin: PathBuf, force_no_push: bool) -> MigrateOpts {
+    pub fn opts(&self, gen_bin: PathBuf, force_no_push: bool, jobs_override: Option<usize>) -> MigrateOpts {
         MigrateOpts {
             push: self.push && !force_no_push,
             bot_identity: self.bot_identity,
             gen_bin,
             build_timeout_secs: self.build_timeout_secs.unwrap_or(300).max(1) as u64,
+            jobs: jobs_override.unwrap_or_else(|| self.jobs.unwrap_or(1).max(1) as usize),
         }
     }
 }
@@ -117,12 +122,17 @@ fn expand_tilde(p: &str) -> PathBuf {
 
 /// Parse + execute a plan from Lisp source; returns the typed report and
 /// the resolved repo count.
-pub fn run_plan(src: &str, force_no_push: bool) -> Result<MigrateReport, String> {
+pub fn run_plan(
+    src: &str,
+    force_no_push: bool,
+    jobs_override: Option<usize>,
+) -> Result<MigrateReport, String> {
     let plan = FleetMigrationPlan::from_source(src)?;
     let repos = plan.resolve_repos()?;
     // The build runs each repo in a killable subprocess of THIS binary.
     let gen_bin = std::env::current_exe().map_err(|e| format!("current_exe: {e}"))?;
-    fleet_migrate::run(&repos, &plan.opts(gen_bin, force_no_push)).map_err(|e| e.to_string())
+    fleet_migrate::run(&repos, &plan.opts(gen_bin, force_no_push, jobs_override))
+        .map_err(|e| e.to_string())
 }
 
 #[cfg(test)]
@@ -179,8 +189,10 @@ mod tests {
         )
         .unwrap();
         let bin = PathBuf::from("/bin/true");
-        assert!(p.opts(bin.clone(), false).push);
-        assert!(!p.opts(bin, true).push); // force_no_push overrides
+        assert!(p.opts(bin.clone(), false, None).push);
+        assert!(!p.opts(bin.clone(), true, None).push); // force_no_push overrides
         assert_eq!(p.build_timeout_secs, None); // default applied at opts()
+        assert_eq!(p.opts(bin.clone(), false, None).jobs, 1); // default
+        assert_eq!(p.opts(bin, false, Some(12)).jobs, 12); // CLI override
     }
 }

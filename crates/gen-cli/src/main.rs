@@ -308,6 +308,19 @@ enum Cmd {
         #[arg(long)]
         jobs: Option<usize>,
     },
+    /// Verify (read-only) that a plan's repos reached the delta-only end
+    /// state on their remote branch. Typed per-repo state; no mutation.
+    #[command(name = "fleet-verify")]
+    FleetVerify {
+        /// Path to the `(fleet-migration-plan …)` `.tatara.lisp` file.
+        plan: PathBuf,
+        /// `git fetch origin <branch>` before reading (authoritative).
+        #[arg(long)]
+        fetch: bool,
+        /// Concurrency override.
+        #[arg(long)]
+        jobs: Option<usize>,
+    },
     /// Probe the configured substituters for every lockfile entry in
     /// the workspace at <path>. Report hit / miss / hit-rate.
     #[command(name = "cache-probe")]
@@ -599,6 +612,28 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                 pushed: report.pushed_count(),
                 skipped: report.skipped_count(),
                 failed: report.failed_count(),
+                elapsed_ms: report.total_elapsed_ms,
+                report,
+            };
+            emit(&summary, cli.format)
+        }
+        Cmd::FleetVerify { plan, fetch, jobs } => {
+            let src = std::fs::read_to_string(plan)
+                .map_err(|e| CliError::Other(format!("read {}: {e}", plan.display())))?;
+            let report =
+                fleet_migrate_plan::verify_plan(&src, *fetch, *jobs).map_err(CliError::Other)?;
+            #[derive(serde::Serialize)]
+            struct Summary {
+                total: usize,
+                delta_only: usize,
+                all_delta_only: bool,
+                elapsed_ms: u64,
+                report: gen_cargo::fleet_verify::VerifyReport,
+            }
+            let summary = Summary {
+                total: report.rows.len(),
+                delta_only: report.delta_only(),
+                all_delta_only: report.all_delta_only(),
                 elapsed_ms: report.total_elapsed_ms,
                 report,
             };

@@ -17,6 +17,7 @@
 use std::path::PathBuf;
 
 use gen_cargo::fleet_migrate::{self, MigrateOpts, MigrateReport};
+use gen_cargo::fleet_verify::{self, VerifyOpts, VerifyReport};
 use serde::{Deserialize, Serialize};
 use tatara_lisp::{compile_typed, DeriveTataraDomain};
 
@@ -145,6 +146,18 @@ pub fn run_plan(
         let _ = std::fs::remove_file(p);
     }
     result
+}
+
+/// Verify a plan's repos reached the delta-only end state.
+pub fn verify_plan(
+    src: &str,
+    fetch: bool,
+    jobs_override: Option<usize>,
+) -> Result<VerifyReport, String> {
+    let plan = FleetMigrationPlan::from_source(src)?;
+    let repos = plan.resolve_repos()?;
+    let jobs = jobs_override.unwrap_or_else(|| plan.jobs.unwrap_or(1).max(1) as usize);
+    fleet_verify::verify(&repos, VerifyOpts { fetch, jobs }).map_err(|e| e.to_string())
 }
 
 /// Copy `exe` to a temp path (executable), returning it on success. The

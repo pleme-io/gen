@@ -944,7 +944,7 @@ dependencies = [
 [[package]]
 name = "kanshou"
 version = "0.1.0"
-source = "git+https://github.com/pleme-io/kanshou#cb1fb0f30dd3a22e9773ad0e9fceae9d26daae16"
+source = "git+https://github.com/pleme-io/kanshou#cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f"
 dependencies = [
  "kanshou-derive",
  "serde",
@@ -957,7 +957,7 @@ dependencies = [
 [[package]]
 name = "kanshou-derive"
 version = "0.1.0"
-source = "git+https://github.com/pleme-io/kanshou#cb1fb0f30dd3a22e9773ad0e9fceae9d26daae16"
+source = "git+https://github.com/pleme-io/kanshou#cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1454,7 +1454,7 @@ dependencies = [
 [[package]]
 name = "shigoto-budget"
 version = "0.1.5"
-source = "git+https://github.com/pleme-io/shigoto#ec908c1e8456dfe55ad2fe0ed4ad563814f8a44e"
+source = "git+https://github.com/pleme-io/shigoto#1c3b340216e87c51cc1c876eb984f3bf8ce38c8b"
 dependencies = [
  "serde",
  "shigoto-types",
@@ -1464,7 +1464,7 @@ dependencies = [
 [[package]]
 name = "shigoto-dag"
 version = "0.1.5"
-source = "git+https://github.com/pleme-io/shigoto#ec908c1e8456dfe55ad2fe0ed4ad563814f8a44e"
+source = "git+https://github.com/pleme-io/shigoto#1c3b340216e87c51cc1c876eb984f3bf8ce38c8b"
 dependencies = [
  "petgraph",
  "serde",
@@ -1475,7 +1475,7 @@ dependencies = [
 [[package]]
 name = "shigoto-emit"
 version = "0.1.5"
-source = "git+https://github.com/pleme-io/shigoto#ec908c1e8456dfe55ad2fe0ed4ad563814f8a44e"
+source = "git+https://github.com/pleme-io/shigoto#1c3b340216e87c51cc1c876eb984f3bf8ce38c8b"
 dependencies = [
  "async-trait",
  "serde",
@@ -1487,7 +1487,7 @@ dependencies = [
 [[package]]
 name = "shigoto-gate"
 version = "0.1.5"
-source = "git+https://github.com/pleme-io/shigoto#ec908c1e8456dfe55ad2fe0ed4ad563814f8a44e"
+source = "git+https://github.com/pleme-io/shigoto#1c3b340216e87c51cc1c876eb984f3bf8ce38c8b"
 dependencies = [
  "shigoto-dag",
  "shigoto-types",
@@ -1496,7 +1496,7 @@ dependencies = [
 [[package]]
 name = "shigoto-retry"
 version = "0.1.5"
-source = "git+https://github.com/pleme-io/shigoto#ec908c1e8456dfe55ad2fe0ed4ad563814f8a44e"
+source = "git+https://github.com/pleme-io/shigoto#1c3b340216e87c51cc1c876eb984f3bf8ce38c8b"
 dependencies = [
  "serde",
  "shigoto-types",
@@ -1505,7 +1505,7 @@ dependencies = [
 [[package]]
 name = "shigoto-scheduler"
 version = "0.1.5"
-source = "git+https://github.com/pleme-io/shigoto#ec908c1e8456dfe55ad2fe0ed4ad563814f8a44e"
+source = "git+https://github.com/pleme-io/shigoto#1c3b340216e87c51cc1c876eb984f3bf8ce38c8b"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1524,7 +1524,7 @@ dependencies = [
 [[package]]
 name = "shigoto-types"
 version = "0.1.5"
-source = "git+https://github.com/pleme-io/shigoto#ec908c1e8456dfe55ad2fe0ed4ad563814f8a44e"
+source = "git+https://github.com/pleme-io/shigoto#1c3b340216e87c51cc1c876eb984f3bf8ce38c8b"
 dependencies = [
  "async-trait",
  "chrono",

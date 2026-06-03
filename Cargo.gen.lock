@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "cargo_lock_sha256": "1f6cc45fe38ecec6417badaf1d83675cc879c9577a473c2efd980723f79f34dc",
+  "cargo_lock_sha256": "ac231ddbfa81710d700f6311872934311f945f8bcee29998f7341e37a6c09a62",
   "target_resolves": {
     "base": {
       "anstream-1.0.0": {
@@ -8294,11 +8294,11 @@
     "constant_time_eq-0.4.2": {
       "edition": "2024"
     },
-    "cpufeatures-0.2.17": {
+    "core-foundation-sys-0.8.7": {
       "edition": "2018"
     },
-    "cpufeatures-0.3.0": {
-      "edition": "2024"
+    "cpufeatures-0.2.17": {
+      "edition": "2018"
     },
     "crossbeam-deque-0.8.6": {
       "edition": "2021"
@@ -8535,12 +8535,6 @@
     "inlinable_string-0.1.15": {
       "edition": "2018"
     },
-    "inotify-0.11.1": {
-      "edition": "2018"
-    },
-    "inotify-sys-0.1.5": {
-      "edition": "2015"
-    },
     "inventory-0.3.24": {
       "edition": "2021"
     },
@@ -8560,12 +8554,15 @@
       "edition": "2024",
       "proc_macro": true
     },
+    "kqueue-1.1.1": {
+      "edition": "2021"
+    },
+    "kqueue-sys-1.1.2": {
+      "edition": "2021"
+    },
     "libc-0.2.186": {
       "edition": "2021",
       "build_script": "build.rs"
-    },
-    "linux-raw-sys-0.12.1": {
-      "edition": "2021"
     },
     "log-0.4.30": {
       "edition": "2021"
@@ -8898,26 +8895,29 @@
       "edition": "2021",
       "build_script": "build.rs"
     },
-    "core-foundation-sys-0.8.7": {
+    "cpufeatures-0.3.0": {
+      "edition": "2024"
+    },
+    "inotify-0.11.1": {
       "edition": "2018"
     },
-    "kqueue-1.1.1": {
-      "edition": "2021"
+    "inotify-sys-0.1.5": {
+      "edition": "2015"
     },
-    "kqueue-sys-1.1.2": {
+    "linux-raw-sys-0.12.1": {
       "edition": "2021"
     }
   },
   "git_nar_sha256": {
-    "kanshou-0.1.0": "sha256-mXcqgumIEtvdzc5indo11F/M7Qib/Ep3qsDal8q0T24=",
-    "kanshou-derive-0.1.0": "sha256-mXcqgumIEtvdzc5indo11F/M7Qib/Ep3qsDal8q0T24=",
-    "shigoto-budget-0.1.5": "sha256-akWGlSEnByVXyXtgpKak2eXN9aXQ1/xdXW99Ow10UaY=",
-    "shigoto-dag-0.1.5": "sha256-akWGlSEnByVXyXtgpKak2eXN9aXQ1/xdXW99Ow10UaY=",
-    "shigoto-emit-0.1.5": "sha256-akWGlSEnByVXyXtgpKak2eXN9aXQ1/xdXW99Ow10UaY=",
-    "shigoto-gate-0.1.5": "sha256-akWGlSEnByVXyXtgpKak2eXN9aXQ1/xdXW99Ow10UaY=",
-    "shigoto-retry-0.1.5": "sha256-akWGlSEnByVXyXtgpKak2eXN9aXQ1/xdXW99Ow10UaY=",
-    "shigoto-scheduler-0.1.5": "sha256-akWGlSEnByVXyXtgpKak2eXN9aXQ1/xdXW99Ow10UaY=",
-    "shigoto-types-0.1.5": "sha256-akWGlSEnByVXyXtgpKak2eXN9aXQ1/xdXW99Ow10UaY=",
+    "kanshou-0.1.0": "sha256-wmwL7P5fEEvsEGa7YW4v+Xh3aEamhcnMz3KVz2hE0f4=",
+    "kanshou-derive-0.1.0": "sha256-wmwL7P5fEEvsEGa7YW4v+Xh3aEamhcnMz3KVz2hE0f4=",
+    "shigoto-budget-0.1.5": "sha256-/UT+NeF28dmiBsZjnElkSdBEBuSJ/E2BhkNQWvzfi9Y=",
+    "shigoto-dag-0.1.5": "sha256-/UT+NeF28dmiBsZjnElkSdBEBuSJ/E2BhkNQWvzfi9Y=",
+    "shigoto-emit-0.1.5": "sha256-/UT+NeF28dmiBsZjnElkSdBEBuSJ/E2BhkNQWvzfi9Y=",
+    "shigoto-gate-0.1.5": "sha256-/UT+NeF28dmiBsZjnElkSdBEBuSJ/E2BhkNQWvzfi9Y=",
+    "shigoto-retry-0.1.5": "sha256-/UT+NeF28dmiBsZjnElkSdBEBuSJ/E2BhkNQWvzfi9Y=",
+    "shigoto-scheduler-0.1.5": "sha256-/UT+NeF28dmiBsZjnElkSdBEBuSJ/E2BhkNQWvzfi9Y=",
+    "shigoto-types-0.1.5": "sha256-/UT+NeF28dmiBsZjnElkSdBEBuSJ/E2BhkNQWvzfi9Y=",
     "shikumi-0.1.0": "sha256-EUqsHsttbM9Pp9efTfvl6WFwOzb31khczPA+mYyhJVM=",
     "tatara-lisp-0.2.2": "sha256-1At3hMYAavEcebNDWmuBp0Gbc40Sz6qfjp1Z4mj1iUw=",
     "tatara-lisp-derive-0.2.2": "sha256-1At3hMYAavEcebNDWmuBp0Gbc40Sz6qfjp1Z4mj1iUw="

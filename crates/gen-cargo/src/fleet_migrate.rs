@@ -42,6 +42,16 @@ const DELTA: &str = "Cargo.gen.lock";
 /// Paths the migration is allowed to touch. A tracked change to any
 /// other path makes the repo "blocking-dirty" (someone else's WIP).
 const ALLOWED: [&str; 3] = [BUILD_SPEC, DELTA, ".gitignore"];
+/// Deprecated crate2nix-era sidecar; retired (like build-spec) by the
+/// delta-only conversion.
+const CRATE_HASHES: &str = "crate-hashes.json";
+
+/// A dirty path that is a STALE BUILD ARTIFACT — safe to discard so the
+/// conversion can proceed (vs real source/lock WIP, which blocks). Covers
+/// committed `target/` trees and the deprecated `crate-hashes.json`.
+fn is_discardable_artifact(path: &str) -> bool {
+    path == CRATE_HASHES || path == "target" || path.starts_with("target/")
+}
 
 /// One repo's migration outcome. Serializes to a kebab-case `status`
 /// tag so the CLI can emit a typed JSON report.
@@ -240,6 +250,11 @@ pub fn migrate_one(repo: &Path, opts: &MigrateOpts) -> MigrateOutcome {
         Ok(None) => {}
     }
 
+    // Only stale-artifact dirt (target/, crate-hashes.json) remains — discard
+    // it so the tree is clean for sync + build. blocking_dirty already
+    // excluded real source/lock WIP, so this is safe.
+    discard_stale_artifacts(repo);
+
     // Sync to remote BEFORE building so the delta reflects the pushed
     // state (local clones may be stale, predating a fleet batch). Only
     // when pushing; a dry run must not mutate the tree. Safe by
@@ -354,15 +369,26 @@ pub fn migrate_one(repo: &Path, opts: &MigrateOpts) -> MigrateOutcome {
             elapsed_ms: ms(),
         };
     }
+    // Retire the deprecated crate2nix-era crate-hashes.json sidecar too,
+    // if a repo still tracks it (untrack + gitignore). Its deletion is
+    // staged below.
+    let crate_hashes_retired =
+        run_git(repo, &["ls-files", "--error-unmatch", CRATE_HASHES]).is_ok();
+    if crate_hashes_retired {
+        let _ = run_git(repo, &["rm", "--quiet", "--cached", "--", CRATE_HASHES]);
+        let _ = ensure_gitignored(repo, CRATE_HASHES);
+    }
 
-    // Stage the three delta-only artifacts (path-targeted — never `-A`):
-    // the delta, the .gitignore (build-spec retired + lock un-ignored), and
-    // Cargo.lock itself (the reconstruction base). Cargo.lock is staged
-    // whenever it exists — committing it is the core invariant, not just a
-    // refresh side effect.
+    // Stage the delta-only artifacts (path-targeted — never `-A`): the
+    // delta, the .gitignore (build-spec retired + lock un-ignored), and
+    // Cargo.lock (the reconstruction base — committing it is the core
+    // invariant). Plus the crate-hashes.json removal when retired.
     let mut stage: Vec<&str> = vec!["add", "--", DELTA, ".gitignore"];
     if repo.join("Cargo.lock").exists() {
         stage.push("Cargo.lock");
+    }
+    if crate_hashes_retired {
+        stage.push(CRATE_HASHES);
     }
     if let Err(e) = run_git(repo, &stage) {
         return MigrateOutcome::Failed {
@@ -467,11 +493,19 @@ fn blocking_dirty(repo: &Path) -> Result<Option<String>, String> {
         // Handle rename "old -> new": the committed path is the new one.
         let path = rest.trim();
         let path = path.rsplit(" -> ").next().unwrap_or(path).trim();
-        if !ALLOWED.contains(&path) {
+        if !ALLOWED.contains(&path) && !is_discardable_artifact(path) {
             return Ok(Some(format!("{status} {path}")));
         }
     }
     Ok(None)
+}
+
+/// Discard stale build-artifact dirt (`target/`, `crate-hashes.json`) so a
+/// repo whose only dirt is those can be migrated. Safe: callers invoke
+/// this only after `blocking_dirty` confirms no real source/lock WIP, so
+/// the discard touches nothing the operator cares about.
+fn discard_stale_artifacts(repo: &Path) {
+    let _ = run_git(repo, &["checkout", "--", "target", CRATE_HASHES]);
 }
 
 fn build_spec_tracked(repo: &Path) -> bool {
@@ -764,6 +798,27 @@ mod tests {
             blocking_dirty(&dir).unwrap(),
             None,
             "allowed-file change + untracked file must not block"
+        );
+    }
+
+    #[test]
+    fn blocking_dirty_allows_stale_artifacts_but_blocks_source() {
+        let dir = temp_git_repo("artifacts");
+        std::fs::create_dir_all(dir.join("target")).unwrap();
+        write(&dir, "target/x.o", "a");
+        write(&dir, "crate-hashes.json", "{}");
+        write(&dir, "src.rs", "a");
+        run_git(&dir, &["add", "-A"]).unwrap();
+        run_git(&dir, &["commit", "--quiet", "-m", "init"]).unwrap();
+        // Dirty ONLY stale artifacts → not blocking.
+        write(&dir, "target/x.o", "b");
+        std::fs::remove_file(dir.join("crate-hashes.json")).unwrap();
+        assert_eq!(blocking_dirty(&dir).unwrap(), None, "stale artifacts must not block");
+        // Now also touch a source file → blocking.
+        write(&dir, "src.rs", "b");
+        assert!(
+            blocking_dirty(&dir).unwrap().is_some(),
+            "real source WIP must block"
         );
     }
 

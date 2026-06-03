@@ -268,17 +268,13 @@ pub fn migrate_one(repo: &Path, opts: &MigrateOpts) -> MigrateOutcome {
     // GC'd commit) to their live HEADs BEFORE building — otherwise gen
     // build's prefetch hangs on the dead rev. This intentionally changes
     // Cargo.lock; we stage it with the commit below.
-    let mut refreshed = false;
     if opts.refresh_git_deps {
-        match refresh_git_deps(repo, opts.build_timeout_secs) {
-            Ok(changed) => refreshed = changed,
-            Err(detail) => {
-                return MigrateOutcome::Failed {
-                    category: MigrateFailure::BuildFailed,
-                    detail: format!("refresh git deps: {detail}"),
-                    elapsed_ms: ms(),
-                }
-            }
+        if let Err(detail) = refresh_git_deps(repo, opts.build_timeout_secs) {
+            return MigrateOutcome::Failed {
+                category: MigrateFailure::BuildFailed,
+                detail: format!("refresh git deps: {detail}"),
+                elapsed_ms: ms(),
+            };
         }
     }
 
@@ -325,6 +321,20 @@ pub fn migrate_one(repo: &Path, opts: &MigrateOpts) -> MigrateOutcome {
         return MigrateOutcome::SkippedNoDelta;
     }
 
+    // ★ CORE DELTA-ONLY INVARIANT: a delta-only repo MUST commit Cargo.lock
+    // — substrate's reconstruct reads it (delta carries only the resolver
+    // edge-delta, not the full lock). Detect + self-resolve the gitignored-
+    // lock case (a committed delta without a committed lock is orphaned →
+    // reconstruct fails → falls back to IFD). Un-ignore the lock so it can
+    // be tracked; it is staged unconditionally below.
+    if let Err(e) = ensure_lock_committable(repo) {
+        return MigrateOutcome::Failed {
+            category: MigrateFailure::GitStageFailed,
+            detail: e,
+            elapsed_ms: ms(),
+        };
+    }
+
     // Retire build-spec: untrack if tracked, ensure gitignored.
     let mut retired = false;
     if build_spec_tracked(repo) {
@@ -345,10 +355,13 @@ pub fn migrate_one(repo: &Path, opts: &MigrateOpts) -> MigrateOutcome {
         };
     }
 
-    // Stage the delta + the .gitignore (path-targeted — never `-A`), plus
-    // Cargo.lock when we refreshed stale git pins above.
+    // Stage the three delta-only artifacts (path-targeted — never `-A`):
+    // the delta, the .gitignore (build-spec retired + lock un-ignored), and
+    // Cargo.lock itself (the reconstruction base). Cargo.lock is staged
+    // whenever it exists — committing it is the core invariant, not just a
+    // refresh side effect.
     let mut stage: Vec<&str> = vec!["add", "--", DELTA, ".gitignore"];
-    if refreshed {
+    if repo.join("Cargo.lock").exists() {
         stage.push("Cargo.lock");
     }
     if let Err(e) = run_git(repo, &stage) {
@@ -477,6 +490,33 @@ fn remove_if_untracked(repo: &Path, rel: &str) -> Result<(), String> {
     Ok(())
 }
 
+/// Make Cargo.lock committable: drop any `Cargo.lock` / `/Cargo.lock`
+/// ignore line from `<repo>/.gitignore` (a no-op if absent). The
+/// delta-only invariant requires a committed lock; a gitignored lock
+/// would orphan the delta. Idempotent.
+fn ensure_lock_committable(repo: &Path) -> Result<(), String> {
+    let gi = repo.join(".gitignore");
+    let cur = match std::fs::read_to_string(&gi) {
+        Ok(s) => s,
+        Err(_) => return Ok(()), // no .gitignore → lock isn't ignored
+    };
+    let kept: Vec<&str> = cur
+        .lines()
+        .filter(|l| {
+            let t = l.trim();
+            t != "Cargo.lock" && t != "/Cargo.lock"
+        })
+        .collect();
+    if kept.len() == cur.lines().count() {
+        return Ok(()); // nothing ignored the lock
+    }
+    let mut new = kept.join("\n");
+    if !new.is_empty() {
+        new.push('\n');
+    }
+    std::fs::write(&gi, new).map_err(|e| format!("rewrite .gitignore: {e}"))
+}
+
 /// Append `entry` to `<repo>/.gitignore` if not already present.
 fn ensure_gitignored(repo: &Path, entry: &str) -> Result<(), String> {
     let gi = repo.join(".gitignore");
@@ -584,21 +624,20 @@ fn refresh_git_deps(repo: &Path, timeout_secs: u64) -> Result<bool, String> {
         return Ok(false);
     }
     let before = std::fs::read(&lock_path).ok();
-    let manifest = repo.join("Cargo.toml");
-    let mut args: Vec<String> = vec![
-        "update".into(),
-        "--manifest-path".into(),
-        manifest.to_string_lossy().into_owned(),
-    ];
+    let manifest = repo.join("Cargo.toml").to_string_lossy().into_owned();
+    // Update each git dep individually + TOLERATE per-dep failure: a
+    // transitive pleme dep isn't a directly addressable `-p` spec (cargo
+    // exits 101), but the directly-pinned dead one will refresh. A timeout
+    // is the only hard error (a dep whose own main is unreachable).
     for n in &names {
-        args.push("-p".into());
-        args.push(n.clone());
-    }
-    let argrefs: Vec<&str> = args.iter().map(String::as_str).collect();
-    match run_proc_with_timeout(Path::new("cargo"), &argrefs, timeout_secs) {
-        BuildResult::Ok => {}
-        BuildResult::TimedOut => return Err("cargo update timed out".into()),
-        BuildResult::Failed(e) => return Err(format!("cargo update: {e}")),
+        match run_proc_with_timeout(
+            Path::new("cargo"),
+            &["update", "--manifest-path", &manifest, "-p", n],
+            timeout_secs,
+        ) {
+            BuildResult::TimedOut => return Err(format!("cargo update -p {n} timed out")),
+            BuildResult::Ok | BuildResult::Failed(_) => {} // tolerate non-addressable specs
+        }
     }
     Ok(std::fs::read(&lock_path).ok() != before)
 }
@@ -663,6 +702,20 @@ mod tests {
             after_second.lines().filter(|l| *l == BUILD_SPEC).count(),
             1
         );
+    }
+
+    #[test]
+    fn ensure_lock_committable_drops_lock_ignore() {
+        let dir = temp_git_repo("lockgi");
+        write(&dir, ".gitignore", "/target\nCargo.build-spec.json\nCargo.lock\n");
+        ensure_lock_committable(&dir).unwrap();
+        let gi = std::fs::read_to_string(dir.join(".gitignore")).unwrap();
+        assert!(!gi.lines().any(|l| l.trim() == "Cargo.lock"), "lock ignore dropped");
+        assert!(gi.lines().any(|l| l.trim() == "Cargo.build-spec.json"), "build-spec ignore kept");
+        assert!(gi.lines().any(|l| l.trim() == "/target"), "other ignores kept");
+        // idempotent + no-op when lock isn't ignored
+        ensure_lock_committable(&dir).unwrap();
+        assert_eq!(std::fs::read_to_string(dir.join(".gitignore")).unwrap(), gi);
     }
 
     #[test]

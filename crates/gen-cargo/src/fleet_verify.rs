@@ -27,8 +27,12 @@ const DELTA: &str = "Cargo.gen.lock";
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "state", rename_all = "kebab-case")]
 pub enum VerifyState {
-    /// The goal: delta committed, build-spec retired.
+    /// The goal: delta + Cargo.lock committed, build-spec retired.
     DeltaOnly,
+    /// Delta committed but NO committed Cargo.lock — reconstruct can't
+    /// read the lock on a fresh checkout, so the delta is orphaned and
+    /// the repo silently falls back to IFD. Not truly delta-only.
+    OrphanedDeltaNoLock,
     /// Build-spec still tracked (not yet retired).
     StillBuildSpec,
     /// Build-spec retired + gitignored, but no delta (legacy IFD-only).
@@ -126,12 +130,18 @@ pub fn verify_one(repo: &Path, fetch: bool) -> VerifyState {
     };
     let bs_tracked = tree(BUILD_SPEC);
     let delta_tracked = tree(DELTA);
+    let lock_tracked = tree("Cargo.lock");
     let bs_ignored = git(repo, &["show", &format!("{remote}:.gitignore")])
         .map(|gi| gi.lines().any(|l| l.trim() == BUILD_SPEC))
         .unwrap_or(false);
 
     if delta_tracked && !bs_tracked {
-        VerifyState::DeltaOnly
+        // True delta-only requires a committed Cargo.lock to reconstruct from.
+        if lock_tracked {
+            VerifyState::DeltaOnly
+        } else {
+            VerifyState::OrphanedDeltaNoLock
+        }
     } else if bs_tracked {
         VerifyState::StillBuildSpec
     } else if bs_ignored {
@@ -187,10 +197,22 @@ mod tests {
     fn classifies_delta_only() {
         let d = repo("delta");
         std::fs::write(d.join(DELTA), "x").unwrap();
+        std::fs::write(d.join("Cargo.lock"), "x").unwrap();
         std::fs::write(d.join(".gitignore"), "Cargo.build-spec.json\n").unwrap();
         commit_all(&d);
         alias_remote(&d);
         assert_eq!(verify_one(&d, false), VerifyState::DeltaOnly);
+    }
+
+    #[test]
+    fn classifies_orphaned_delta_no_lock() {
+        // delta committed but Cargo.lock gitignored/uncommitted → orphaned.
+        let d = repo("orphan");
+        std::fs::write(d.join(DELTA), "x").unwrap();
+        std::fs::write(d.join(".gitignore"), "Cargo.build-spec.json\nCargo.lock\n").unwrap();
+        commit_all(&d);
+        alias_remote(&d);
+        assert_eq!(verify_one(&d, false), VerifyState::OrphanedDeltaNoLock);
     }
 
     #[test]

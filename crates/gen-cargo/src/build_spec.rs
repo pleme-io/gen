@@ -1248,7 +1248,19 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         let mut dependencies: Vec<CrateDepSpec> = Vec::new();
         for (local_name, dep_pkg_id, dep_kinds) in &edges_for_pkg {
             let Some(dep_pkg) = by_id.get(dep_pkg_id) else { continue; };
-            let package_key = format!("{}-{}", dep_pkg.name, dep_pkg.version);
+            // Edge target key: `name-version-rev` for a git dep so it points at
+            // the SPECIFIC rev this edge uses (two revs of one version are
+            // distinct crates — TOOLCHAIN-FRESHNESS §X.4b.b); `name-version`
+            // for registry/path.
+            let package_key = match dep_pkg.source.as_ref().map(|s| s.to_string()) {
+                Some(s) => match git_rev_of_source(&s) {
+                    Some(rev) if !rev.is_empty() => {
+                        format!("{}-{}-{}", dep_pkg.name, dep_pkg.version, rev)
+                    }
+                    _ => format!("{}-{}", dep_pkg.name, dep_pkg.version),
+                },
+                None => format!("{}-{}", dep_pkg.name, dep_pkg.version),
+            };
 
             // Emit ONE entry per non-Dev kind. A single declared dep can
             // appear as BOTH Normal and Build (e.g. mime_guess uses
@@ -1411,6 +1423,17 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         //   2. Otherwise, prefer the entry with the richer features
         //      set (per-target feature unification picks the union).
         let new_is_workspace = pkg.source.is_none();
+        // Git crates key by `name-version-rev` so two revs of one version are
+        // DISTINCT entries instead of being deduped into one (the dedup below
+        // is for genuine `name-version` collisions: a workspace member vs a
+        // registry/path copy). Registry/path crates keep `name-version`.
+        // TOOLCHAIN-FRESHNESS §X.4b.b.
+        let key = match &new_entry.source {
+            CrateSource::Git { rev, .. } if !rev.is_empty() => {
+                format!("{}-{}-{}", pkg.name, pkg.version, rev)
+            }
+            _ => key,
+        };
         match crates.get(&key) {
             Some(prev) => {
                 let prev_is_workspace = matches!(prev.source, CrateSource::Path { .. });
@@ -1893,6 +1916,19 @@ fn prune_and_log(root: &Path) {
     }
 }
 
+/// Extract the resolved git rev from a Cargo `git+<url>?<query>#<rev>` source
+/// string. Returns None for non-git sources or a `#`-less string. The rev is
+/// the disambiguator in the `name-version-rev` crate key
+/// (TOOLCHAIN-FRESHNESS §X.4b.b): two git revs of one crate version must key
+/// distinctly so BOTH source trees survive in the BuildSpec instead of
+/// colliding into one (the old behaviour silently dropped a rev).
+fn git_rev_of_source(src: &str) -> Option<String> {
+    if !src.starts_with("git+") {
+        return None;
+    }
+    src.rsplit_once('#').map(|(_, rev)| rev.to_string())
+}
+
 /// Pre-shape crateRenames into the exact attrset shape nixpkgs's
 /// buildRustCrate expects. Keys are canonical published names; values
 /// are lists of `{ version, rename }` records, one per consumer-side
@@ -1912,7 +1948,18 @@ fn synthesize_crate_renames(
             // split on '-' because crate names contain hyphens. Look
             // up by package_key suffix-matching against by_id.
             let pkg = by_id.values().find(|p| {
-                let k = format!("{}-{}", p.name, p.version);
+                let base = format!("{}-{}", p.name, p.version);
+                // Git deps key by `name-version-rev` (X.4b.b) — match that, else
+                // the rename for a git dep is silently dropped.
+                let k = match p.source.as_ref().map(|s| s.to_string()) {
+                    Some(s) => match git_rev_of_source(&s) {
+                        Some(rev) if !rev.is_empty() => {
+                            format!("{}-{}-{}", p.name, p.version, rev)
+                        }
+                        _ => base,
+                    },
+                    None => base,
+                };
                 k == d.package_key
             });
             match pkg {

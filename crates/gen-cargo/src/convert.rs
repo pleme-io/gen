@@ -467,7 +467,21 @@ pub fn convert_lockfile(raw: &CargoLock, lock_path: &Path) -> Result<Lockfile> {
                 }
             })
             .collect();
-        let key = format!("{}/{}", p.name, p.version);
+        // Source-aware key: a git dep is keyed `name/version/git/<rev>` so a
+        // crate pulled from multiple sources (two git revs, or crates.io AND a
+        // git rev) does NOT collide into one entry — which silently dropped a
+        // rev's source and, worse, lost the registry copy's `integrity` when a
+        // git copy of the same name/version was inserted after it (surfacing
+        // downstream as a spurious `registry-without-sha256` once the git copy
+        // is disambiguated in BuildSpec.crates). Registry/path keep the
+        // canonical `name/version` (the common case — stable content hash,
+        // unchanged by-key lookups). TOOLCHAIN-FRESHNESS §X.4b.b.
+        let key = match &source {
+            PackageSource::Git { rev, .. } => {
+                format!("{}/{}/git/{}", p.name, p.version, rev)
+            }
+            _ => format!("{}/{}", p.name, p.version),
+        };
         resolved.insert(
             key,
             ResolvedPackage {

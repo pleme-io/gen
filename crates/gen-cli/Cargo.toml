@@ -57,14 +57,14 @@ tatara-lisp = { version = "0.2", git = "https://github.com/pleme-io/tatara-lisp.
 [dev-dependencies]
 # Cross-adapter catalog sweep test pulls every adapter so its
 # inventory::submit! lands at link time.
-gen-ansible = { version = "0.1.0", path = "../gen-ansible" }
+gen-ansible = { path = "../gen-ansible" }
 gen-bundler = { path = "../gen-bundler" }
 gen-cargo = { path = "../gen-cargo" }
-gen-gomod = { version = "0.1.0", path = "../gen-gomod" }
-gen-helm = { version = "0.1.0", path = "../gen-helm" }
+gen-gomod = { path = "../gen-gomod" }
+gen-helm = { path = "../gen-helm" }
 gen-npm = { path = "../gen-npm" }
-gen-pip = { version = "0.1.0", path = "../gen-pip" }
-gen-poetry = { version = "0.1.0", path = "../gen-poetry" }
-gen-swift = { version = "0.1.0", path = "../gen-swift" }
+gen-pip = { path = "../gen-pip" }
+gen-poetry = { path = "../gen-poetry" }
+gen-swift = { path = "../gen-swift" }
 gen-platform = { path = "../gen-platform" }
 tempfile = "3"

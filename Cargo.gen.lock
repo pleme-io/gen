@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "cargo_lock_sha256": "b602dd2e5155b2da30f29ab5419aabb840608f31b2291dd5c648d8d78bdd0ecf",
+  "cargo_lock_sha256": "53b73b08c1f317916d35f0a1fc759f9fbcdb4ee457f315b6d37cff3e7f6d568f",
   "target_resolves": {
     "base": {
       "anstream-1.0.0": {
@@ -18,16 +18,6 @@
           {
             "name": "anstyle_parse",
             "package_key": "anstyle-parse-1.0.0",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": false,
-            "target": null,
-            "tree": "target"
-          },
-          {
-            "name": "anstyle_query",
-            "package_key": "anstyle-query-1.1.5",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -82,18 +72,7 @@
         ]
       },
       "anstyle-parse-1.0.0": {
-        "runtime_dependencies": [
-          {
-            "name": "utf8parse",
-            "package_key": "utf8parse-0.2.2",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          }
-        ],
+        "runtime_dependencies": [],
         "build_dependencies": [],
         "features": [
           "default",
@@ -203,7 +182,7 @@
             "package_key": "bit-vec-0.8.0",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -255,18 +234,7 @@
         ]
       },
       "camino-1.2.2": {
-        "runtime_dependencies": [
-          {
-            "name": "serde_core",
-            "package_key": "serde_core-1.0.228",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          }
-        ],
+        "runtime_dependencies": [],
         "build_dependencies": [],
         "features": [
           "serde1"
@@ -401,9 +369,11 @@
             "name": "iana_time_zone",
             "package_key": "iana-time-zone-0.1.65",
             "kind": "normal",
-            "features": [],
+            "features": [
+              "fallback"
+            ],
             "uses_default_features": true,
-            "optional": false,
+            "optional": true,
             "target": "cfg(unix)",
             "tree": "target"
           },
@@ -412,7 +382,7 @@
             "package_key": "num-traits-0.2.19",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -456,16 +426,6 @@
             "optional": false,
             "target": null,
             "tree": "target"
-          },
-          {
-            "name": "clap_derive",
-            "package_key": "clap_derive-4.6.1",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": true,
-            "target": null,
-            "tree": "host"
           }
         ],
         "build_dependencies": [],
@@ -483,16 +443,6 @@
       "clap_builder-4.6.0": {
         "runtime_dependencies": [
           {
-            "name": "anstream",
-            "package_key": "anstream-1.0.0",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          },
-          {
             "name": "anstyle",
             "package_key": "anstyle-1.0.14",
             "kind": "normal",
@@ -509,16 +459,6 @@
             "features": [],
             "uses_default_features": true,
             "optional": false,
-            "target": null,
-            "tree": "target"
-          },
-          {
-            "name": "strsim",
-            "package_key": "strsim-0.11.1",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": true,
             "target": null,
             "tree": "target"
           }
@@ -607,7 +547,7 @@
             "package_key": "crossbeam-epoch-0.9.18",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -617,7 +557,7 @@
             "package_key": "crossbeam-utils-0.8.21",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -636,7 +576,7 @@
             "package_key": "crossbeam-utils-0.8.21",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -662,7 +602,9 @@
             "name": "generic_array",
             "package_key": "generic-array-0.14.7",
             "kind": "normal",
-            "features": [],
+            "features": [
+              "more_lengths"
+            ],
             "uses_default_features": true,
             "optional": false,
             "target": null,
@@ -692,7 +634,7 @@
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
-            "optional": false,
+            "optional": true,
             "target": null,
             "tree": "target"
           },
@@ -870,11 +812,11 @@
           "std"
         ]
       },
-      "gen-adapter-forge-0.1.10": {
+      "gen-adapter-forge-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -920,11 +862,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-ansible-0.1.10": {
+      "gen-ansible-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.10",
+            "package_key": "gen-macros-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -934,7 +876,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.10",
+            "package_key": "gen-platform-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -944,7 +886,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1010,11 +952,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-bazel-0.1.10": {
+      "gen-bazel-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1048,11 +990,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-buck-0.1.10": {
+      "gen-buck-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_bazel",
-            "package_key": "gen-bazel-0.1.10",
+            "package_key": "gen-bazel-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1062,7 +1004,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1096,11 +1038,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-bundler-0.1.10": {
+      "gen-bundler-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.10",
+            "package_key": "gen-macros-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1110,7 +1052,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.10",
+            "package_key": "gen-platform-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1120,7 +1062,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1186,11 +1128,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-cache-attic-0.1.10": {
+      "gen-cache-attic-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_config",
-            "package_key": "gen-config-0.1.10",
+            "package_key": "gen-config-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1200,7 +1142,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1246,11 +1188,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-caixa-bridge-0.1.10": {
+      "gen-caixa-bridge-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_config",
-            "package_key": "gen-config-0.1.10",
+            "package_key": "gen-config-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1260,7 +1202,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1306,7 +1248,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-cargo-0.1.10": {
+      "gen-cargo-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "async_trait",
@@ -1340,7 +1282,7 @@
           },
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.10",
+            "package_key": "gen-macros-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1350,7 +1292,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.10",
+            "package_key": "gen-platform-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1360,7 +1302,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1444,7 +1386,7 @@
           },
           {
             "name": "shigoto_budget",
-            "package_key": "shigoto-budget-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-budget-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1454,7 +1396,7 @@
           },
           {
             "name": "shigoto_dag",
-            "package_key": "shigoto-dag-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-dag-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1464,7 +1406,7 @@
           },
           {
             "name": "shigoto_emit",
-            "package_key": "shigoto-emit-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-emit-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1474,7 +1416,7 @@
           },
           {
             "name": "shigoto_scheduler",
-            "package_key": "shigoto-scheduler-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-scheduler-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1484,7 +1426,7 @@
           },
           {
             "name": "shigoto_types",
-            "package_key": "shigoto-types-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-types-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1540,7 +1482,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-cli-0.1.10": {
+      "gen-cli-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "clap",
@@ -1556,7 +1498,7 @@
           },
           {
             "name": "gen_ansible",
-            "package_key": "gen-ansible-0.1.10",
+            "package_key": "gen-ansible-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1566,7 +1508,7 @@
           },
           {
             "name": "gen_bundler",
-            "package_key": "gen-bundler-0.1.10",
+            "package_key": "gen-bundler-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1576,7 +1518,7 @@
           },
           {
             "name": "gen_cache_attic",
-            "package_key": "gen-cache-attic-0.1.10",
+            "package_key": "gen-cache-attic-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1586,7 +1528,7 @@
           },
           {
             "name": "gen_cargo",
-            "package_key": "gen-cargo-0.1.10",
+            "package_key": "gen-cargo-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1596,7 +1538,7 @@
           },
           {
             "name": "gen_config",
-            "package_key": "gen-config-0.1.10",
+            "package_key": "gen-config-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1606,7 +1548,7 @@
           },
           {
             "name": "gen_gomod",
-            "package_key": "gen-gomod-0.1.10",
+            "package_key": "gen-gomod-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1616,7 +1558,7 @@
           },
           {
             "name": "gen_helm",
-            "package_key": "gen-helm-0.1.10",
+            "package_key": "gen-helm-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1626,7 +1568,7 @@
           },
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.10",
+            "package_key": "gen-macros-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1636,7 +1578,7 @@
           },
           {
             "name": "gen_nix",
-            "package_key": "gen-nix-0.1.10",
+            "package_key": "gen-nix-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1646,7 +1588,7 @@
           },
           {
             "name": "gen_npm",
-            "package_key": "gen-npm-0.1.10",
+            "package_key": "gen-npm-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1656,7 +1598,7 @@
           },
           {
             "name": "gen_pip",
-            "package_key": "gen-pip-0.1.10",
+            "package_key": "gen-pip-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1666,7 +1608,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.10",
+            "package_key": "gen-platform-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1676,7 +1618,7 @@
           },
           {
             "name": "gen_poetry",
-            "package_key": "gen-poetry-0.1.10",
+            "package_key": "gen-poetry-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1686,7 +1628,7 @@
           },
           {
             "name": "gen_swift",
-            "package_key": "gen-swift-0.1.10",
+            "package_key": "gen-swift-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1696,7 +1638,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1807,11 +1749,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-config-0.1.10": {
+      "gen-config-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1867,11 +1809,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-gomod-0.1.10": {
+      "gen-gomod-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.10",
+            "package_key": "gen-macros-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1881,7 +1823,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.10",
+            "package_key": "gen-platform-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1891,7 +1833,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1957,11 +1899,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-helm-0.1.10": {
+      "gen-helm-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.10",
+            "package_key": "gen-macros-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1971,7 +1913,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.10",
+            "package_key": "gen-platform-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1981,7 +1923,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2047,7 +1989,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-macros-0.1.10": {
+      "gen-macros-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "proc_macro2",
@@ -2086,11 +2028,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-nix-0.1.10": {
+      "gen-nix-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2124,11 +2066,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-nix-bulk-0.1.10": {
+      "gen-nix-bulk-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_nix",
-            "package_key": "gen-nix-0.1.10",
+            "package_key": "gen-nix-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2138,7 +2080,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2172,11 +2114,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-npm-0.1.10": {
+      "gen-npm-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.10",
+            "package_key": "gen-macros-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2186,7 +2128,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.10",
+            "package_key": "gen-platform-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2196,7 +2138,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2272,11 +2214,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-pip-0.1.10": {
+      "gen-pip-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.10",
+            "package_key": "gen-macros-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2286,7 +2228,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.10",
+            "package_key": "gen-platform-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2296,7 +2238,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2362,11 +2304,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-platform-0.1.10": {
+      "gen-platform-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.10",
+            "package_key": "gen-macros-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2376,7 +2318,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2430,11 +2372,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-poetry-0.1.10": {
+      "gen-poetry-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.10",
+            "package_key": "gen-macros-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2444,7 +2386,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.10",
+            "package_key": "gen-platform-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2454,7 +2396,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2520,11 +2462,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-polyglot-0.1.10": {
+      "gen-polyglot-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_bundler",
-            "package_key": "gen-bundler-0.1.10",
+            "package_key": "gen-bundler-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2534,7 +2476,7 @@
           },
           {
             "name": "gen_cargo",
-            "package_key": "gen-cargo-0.1.10",
+            "package_key": "gen-cargo-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2544,7 +2486,7 @@
           },
           {
             "name": "gen_config",
-            "package_key": "gen-config-0.1.10",
+            "package_key": "gen-config-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2554,7 +2496,7 @@
           },
           {
             "name": "gen_npm",
-            "package_key": "gen-npm-0.1.10",
+            "package_key": "gen-npm-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2564,7 +2506,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2610,11 +2552,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-swift-0.1.10": {
+      "gen-swift-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.10",
+            "package_key": "gen-macros-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2624,7 +2566,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.10",
+            "package_key": "gen-platform-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2634,7 +2576,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2700,7 +2642,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-types-0.1.10": {
+      "gen-types-0.1.11": {
         "runtime_dependencies": [
           {
             "name": "blake3",
@@ -3050,16 +2992,6 @@
             "optional": false,
             "target": null,
             "tree": "target"
-          },
-          {
-            "name": "serde_core",
-            "package_key": "serde_core-1.0.228",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": false,
-            "optional": true,
-            "target": null,
-            "tree": "target"
           }
         ],
         "build_dependencies": [],
@@ -3098,16 +3030,6 @@
       },
       "kanshou-0.1.0-cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f": {
         "runtime_dependencies": [
-          {
-            "name": "kanshou_derive",
-            "package_key": "kanshou-derive-0.1.0-cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": false,
-            "target": null,
-            "tree": "host"
-          },
           {
             "name": "serde",
             "package_key": "serde-1.0.228",
@@ -3590,17 +3512,7 @@
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
-            "optional": false,
-            "target": null,
-            "tree": "target"
-          },
-          {
-            "name": "bit_vec",
-            "package_key": "bit-vec-0.8.0",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": false,
+            "optional": true,
             "target": null,
             "tree": "target"
           },
@@ -3619,7 +3531,7 @@
             "package_key": "num-traits-0.2.19",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -3662,7 +3574,7 @@
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
-            "optional": false,
+            "optional": true,
             "target": null,
             "tree": "target"
           },
@@ -3671,8 +3583,8 @@
             "package_key": "rusty-fork-0.3.1",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
-            "optional": false,
+            "uses_default_features": false,
+            "optional": true,
             "target": null,
             "tree": "target"
           },
@@ -3721,7 +3633,7 @@
             "package_key": "proc-macro2-1.0.106",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -3735,16 +3647,6 @@
       },
       "rand-0.9.4": {
         "runtime_dependencies": [
-          {
-            "name": "rand_chacha",
-            "package_key": "rand_chacha-0.9.0",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": false,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          },
           {
             "name": "rand_core",
             "package_key": "rand_core-0.9.5",
@@ -3769,8 +3671,10 @@
             "name": "ppv_lite86",
             "package_key": "ppv-lite86-0.2.21",
             "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
+            "features": [
+              "simd"
+            ],
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -3792,18 +3696,7 @@
         ]
       },
       "rand_core-0.9.5": {
-        "runtime_dependencies": [
-          {
-            "name": "getrandom",
-            "package_key": "getrandom-0.3.4",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          }
-        ],
+        "runtime_dependencies": [],
         "build_dependencies": [],
         "features": [
           "os_rng",
@@ -3937,7 +3830,7 @@
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
-            "optional": false,
+            "optional": true,
             "target": null,
             "tree": "target"
           }
@@ -4128,8 +4021,10 @@
             "name": "proc_macro2",
             "package_key": "proc-macro2-1.0.106",
             "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
+            "features": [
+              "proc-macro"
+            ],
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -4175,7 +4070,7 @@
             "package_key": "proc-macro2-1.0.106",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -4278,18 +4173,7 @@
         ]
       },
       "serde_spanned-1.1.1": {
-        "runtime_dependencies": [
-          {
-            "name": "serde_core",
-            "package_key": "serde_core-1.0.228",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": false,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          }
-        ],
+        "runtime_dependencies": [],
         "build_dependencies": [],
         "features": [
           "alloc",
@@ -4392,7 +4276,7 @@
           "std"
         ]
       },
-      "shigoto-budget-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": {
+      "shigoto-budget-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": {
         "runtime_dependencies": [
           {
             "name": "serde",
@@ -4408,7 +4292,7 @@
           },
           {
             "name": "shigoto_types",
-            "package_key": "shigoto-types-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-types-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4430,7 +4314,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "shigoto-dag-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": {
+      "shigoto-dag-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": {
         "runtime_dependencies": [
           {
             "name": "petgraph",
@@ -4456,7 +4340,7 @@
           },
           {
             "name": "shigoto_types",
-            "package_key": "shigoto-types-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-types-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4478,7 +4362,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "shigoto-emit-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": {
+      "shigoto-emit-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": {
         "runtime_dependencies": [
           {
             "name": "async_trait",
@@ -4514,7 +4398,7 @@
           },
           {
             "name": "shigoto_types",
-            "package_key": "shigoto-types-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-types-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4536,11 +4420,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "shigoto-gate-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": {
+      "shigoto-gate-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": {
         "runtime_dependencies": [
           {
             "name": "shigoto_dag",
-            "package_key": "shigoto-dag-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-dag-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4550,7 +4434,7 @@
           },
           {
             "name": "shigoto_types",
-            "package_key": "shigoto-types-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-types-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4562,7 +4446,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "shigoto-retry-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": {
+      "shigoto-retry-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": {
         "runtime_dependencies": [
           {
             "name": "serde",
@@ -4578,7 +4462,7 @@
           },
           {
             "name": "shigoto_types",
-            "package_key": "shigoto-types-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-types-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4590,7 +4474,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "shigoto-scheduler-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": {
+      "shigoto-scheduler-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": {
         "runtime_dependencies": [
           {
             "name": "anyhow",
@@ -4626,7 +4510,7 @@
           },
           {
             "name": "shigoto_budget",
-            "package_key": "shigoto-budget-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-budget-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4636,7 +4520,7 @@
           },
           {
             "name": "shigoto_dag",
-            "package_key": "shigoto-dag-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-dag-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4646,7 +4530,7 @@
           },
           {
             "name": "shigoto_emit",
-            "package_key": "shigoto-emit-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-emit-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4656,7 +4540,7 @@
           },
           {
             "name": "shigoto_gate",
-            "package_key": "shigoto-gate-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-gate-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4666,7 +4550,7 @@
           },
           {
             "name": "shigoto_retry",
-            "package_key": "shigoto-retry-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-retry-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4676,7 +4560,7 @@
           },
           {
             "name": "shigoto_types",
-            "package_key": "shigoto-types-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46",
+            "package_key": "shigoto-types-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4723,7 +4607,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "shigoto-types-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": {
+      "shigoto-types-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": {
         "runtime_dependencies": [
           {
             "name": "async_trait",
@@ -4759,7 +4643,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.10",
+            "package_key": "gen-platform-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4769,7 +4653,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4873,7 +4757,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.10",
+            "package_key": "gen-platform-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4883,7 +4767,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.10",
+            "package_key": "gen-types-0.1.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -5012,18 +4896,8 @@
             "package_key": "proc-macro2-1.0.106",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
-            "optional": false,
-            "target": null,
-            "tree": "target"
-          },
-          {
-            "name": "quote",
-            "package_key": "quote-1.0.45",
-            "kind": "normal",
-            "features": [],
             "uses_default_features": false,
-            "optional": true,
+            "optional": false,
             "target": null,
             "tree": "target"
           },
@@ -5410,7 +5284,7 @@
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
-            "optional": false,
+            "optional": true,
             "target": null,
             "tree": "host"
           }
@@ -5506,18 +5380,6 @@
             "optional": false,
             "target": null,
             "tree": "target"
-          },
-          {
-            "name": "toml_edit",
-            "package_key": "toml_edit-0.22.27",
-            "kind": "normal",
-            "features": [
-              "serde"
-            ],
-            "uses_default_features": false,
-            "optional": true,
-            "target": null,
-            "tree": "target"
           }
         ],
         "build_dependencies": [],
@@ -5529,28 +5391,6 @@
       },
       "toml-1.1.2+spec-1.1.0": {
         "runtime_dependencies": [
-          {
-            "name": "indexmap",
-            "package_key": "indexmap-2.14.0",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": false,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          },
-          {
-            "name": "serde_core",
-            "package_key": "serde_core-1.0.228",
-            "kind": "normal",
-            "features": [
-              "alloc"
-            ],
-            "uses_default_features": false,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          },
           {
             "name": "serde_spanned",
             "package_key": "serde_spanned-1.1.1",
@@ -5572,40 +5412,6 @@
             ],
             "uses_default_features": false,
             "optional": false,
-            "target": null,
-            "tree": "target"
-          },
-          {
-            "name": "toml_parser",
-            "package_key": "toml_parser-1.1.2+spec-1.1.0",
-            "kind": "normal",
-            "features": [
-              "alloc"
-            ],
-            "uses_default_features": false,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          },
-          {
-            "name": "toml_writer",
-            "package_key": "toml_writer-1.1.1+spec-1.1.0",
-            "kind": "normal",
-            "features": [
-              "alloc"
-            ],
-            "uses_default_features": false,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          },
-          {
-            "name": "winnow",
-            "package_key": "winnow-1.0.3",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": false,
-            "optional": true,
             "target": null,
             "tree": "target"
           }
@@ -5638,18 +5444,7 @@
         ]
       },
       "toml_datetime-1.1.1+spec-1.1.0": {
-        "runtime_dependencies": [
-          {
-            "name": "serde_core",
-            "package_key": "serde_core-1.0.228",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": false,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          }
-        ],
+        "runtime_dependencies": [],
         "build_dependencies": [],
         "features": [
           "alloc",
@@ -5682,44 +5477,12 @@
             "tree": "target"
           },
           {
-            "name": "serde_spanned",
-            "package_key": "serde_spanned-0.6.9",
-            "kind": "normal",
-            "features": [
-              "serde"
-            ],
-            "uses_default_features": true,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          },
-          {
             "name": "toml_datetime",
             "package_key": "toml_datetime-0.6.11",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
             "optional": false,
-            "target": null,
-            "tree": "target"
-          },
-          {
-            "name": "toml_write",
-            "package_key": "toml_write-0.1.2",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          },
-          {
-            "name": "winnow",
-            "package_key": "winnow-0.7.15",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": true,
             "target": null,
             "tree": "target"
           }
@@ -5785,7 +5548,7 @@
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
-            "optional": false,
+            "optional": true,
             "target": null,
             "tree": "host"
           },
@@ -5794,7 +5557,7 @@
             "package_key": "tracing-core-0.1.36",
             "kind": "normal",
             "features": [],
-            "uses_default_features": true,
+            "uses_default_features": false,
             "optional": false,
             "target": null,
             "tree": "target"
@@ -6031,18 +5794,7 @@
         "features": []
       },
       "winnow-0.7.15": {
-        "runtime_dependencies": [
-          {
-            "name": "memchr",
-            "package_key": "memchr-2.8.1",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": false,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          }
-        ],
+        "runtime_dependencies": [],
         "build_dependencies": [],
         "features": [
           "alloc",
@@ -6391,56 +6143,6 @@
                 "optional": false,
                 "target": null,
                 "tree": "target"
-              },
-              {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(windows)",
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
-                "tree": "target"
               }
             ],
             "build_dependencies": [],
@@ -6740,56 +6442,6 @@
                 "optional": false,
                 "target": null,
                 "tree": "target"
-              },
-              {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(windows)",
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
-                "tree": "target"
               }
             ],
             "build_dependencies": [],
@@ -7064,61 +6716,15 @@
                 "tree": "target"
               },
               {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(windows)",
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
-                "tree": "target"
-              },
-              {
                 "name": "linux_raw_sys",
                 "package_key": "linux-raw-sys-0.12.1",
                 "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
+                "features": [
+                  "general",
+                  "ioctl",
+                  "no_std"
+                ],
+                "uses_default_features": false,
                 "optional": false,
                 "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
                 "tree": "target"
@@ -7127,8 +6733,12 @@
                 "name": "linux_raw_sys",
                 "package_key": "linux-raw-sys-0.12.1",
                 "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
+                "features": [
+                  "general",
+                  "ioctl",
+                  "no_std"
+                ],
+                "uses_default_features": false,
                 "optional": false,
                 "target": "cfg(all(any(target_os = \"linux\", target_os = \"android\"), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
                 "tree": "target"
@@ -7406,61 +7016,15 @@
                 "tree": "target"
               },
               {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(windows)",
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
-                "tree": "target"
-              },
-              {
                 "name": "linux_raw_sys",
                 "package_key": "linux-raw-sys-0.12.1",
                 "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
+                "features": [
+                  "general",
+                  "ioctl",
+                  "no_std"
+                ],
+                "uses_default_features": false,
                 "optional": false,
                 "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
                 "tree": "target"
@@ -7469,8 +7033,12 @@
                 "name": "linux_raw_sys",
                 "package_key": "linux-raw-sys-0.12.1",
                 "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
+                "features": [
+                  "general",
+                  "ioctl",
+                  "no_std"
+                ],
+                "uses_default_features": false,
                 "optional": false,
                 "target": "cfg(all(any(target_os = \"linux\", target_os = \"android\"), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
                 "tree": "target"
@@ -7774,61 +7342,15 @@
                 "tree": "target"
               },
               {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(windows)",
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
-                "tree": "target"
-              },
-              {
                 "name": "linux_raw_sys",
                 "package_key": "linux-raw-sys-0.12.1",
                 "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
+                "features": [
+                  "general",
+                  "ioctl",
+                  "no_std"
+                ],
+                "uses_default_features": false,
                 "optional": false,
                 "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
                 "tree": "target"
@@ -7837,8 +7359,12 @@
                 "name": "linux_raw_sys",
                 "package_key": "linux-raw-sys-0.12.1",
                 "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
+                "features": [
+                  "general",
+                  "ioctl",
+                  "no_std"
+                ],
+                "uses_default_features": false,
                 "optional": false,
                 "target": "cfg(all(any(target_os = \"linux\", target_os = \"android\"), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
                 "tree": "target"
@@ -8142,61 +7668,15 @@
                 "tree": "target"
               },
               {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc_errno",
-                "package_key": "errno-0.3.14",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(windows)",
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": true,
-                "target": "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
-                "tree": "target"
-              },
-              {
                 "name": "linux_raw_sys",
                 "package_key": "linux-raw-sys-0.12.1",
                 "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
+                "features": [
+                  "general",
+                  "ioctl",
+                  "no_std"
+                ],
+                "uses_default_features": false,
                 "optional": false,
                 "target": "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))",
                 "tree": "target"
@@ -8205,8 +7685,12 @@
                 "name": "linux_raw_sys",
                 "package_key": "linux-raw-sys-0.12.1",
                 "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
+                "features": [
+                  "general",
+                  "ioctl",
+                  "no_std"
+                ],
+                "uses_default_features": false,
                 "optional": false,
                 "target": "cfg(all(any(target_os = \"linux\", target_os = \"android\"), any(rustix_use_libc, miri, not(all(target_os = \"linux\", any(target_endian = \"little\", any(target_arch = \"s390x\", target_arch = \"powerpc\")), any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc\"), all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"s390x\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))",
                 "tree": "target"
@@ -8377,63 +7861,63 @@
         "path": "lib.rs"
       }
     },
-    "gen-adapter-forge-0.1.10": {
+    "gen-adapter-forge-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_adapter_forge",
         "path": "src/lib.rs"
       }
     },
-    "gen-ansible-0.1.10": {
+    "gen-ansible-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_ansible",
         "path": "src/lib.rs"
       }
     },
-    "gen-bazel-0.1.10": {
+    "gen-bazel-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_bazel",
         "path": "src/lib.rs"
       }
     },
-    "gen-buck-0.1.10": {
+    "gen-buck-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_buck",
         "path": "src/lib.rs"
       }
     },
-    "gen-bundler-0.1.10": {
+    "gen-bundler-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_bundler",
         "path": "src/lib.rs"
       }
     },
-    "gen-cache-attic-0.1.10": {
+    "gen-cache-attic-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_cache_attic",
         "path": "src/lib.rs"
       }
     },
-    "gen-caixa-bridge-0.1.10": {
+    "gen-caixa-bridge-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_caixa_bridge",
         "path": "src/lib.rs"
       }
     },
-    "gen-cargo-0.1.10": {
+    "gen-cargo-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_cargo",
         "path": "src/lib.rs"
       }
     },
-    "gen-cli-0.1.10": {
+    "gen-cli-0.1.11": {
       "edition": "2024",
       "binaries": [
         {
@@ -8442,28 +7926,28 @@
         }
       ]
     },
-    "gen-config-0.1.10": {
+    "gen-config-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_config",
         "path": "src/lib.rs"
       }
     },
-    "gen-gomod-0.1.10": {
+    "gen-gomod-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_gomod",
         "path": "src/lib.rs"
       }
     },
-    "gen-helm-0.1.10": {
+    "gen-helm-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_helm",
         "path": "src/lib.rs"
       }
     },
-    "gen-macros-0.1.10": {
+    "gen-macros-0.1.11": {
       "edition": "2024",
       "proc_macro": true,
       "lib_target": {
@@ -8471,63 +7955,63 @@
         "path": "src/lib.rs"
       }
     },
-    "gen-nix-0.1.10": {
+    "gen-nix-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_nix",
         "path": "src/lib.rs"
       }
     },
-    "gen-nix-bulk-0.1.10": {
+    "gen-nix-bulk-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_nix_bulk",
         "path": "src/lib.rs"
       }
     },
-    "gen-npm-0.1.10": {
+    "gen-npm-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_npm",
         "path": "src/lib.rs"
       }
     },
-    "gen-pip-0.1.10": {
+    "gen-pip-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_pip",
         "path": "src/lib.rs"
       }
     },
-    "gen-platform-0.1.10": {
+    "gen-platform-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_platform",
         "path": "src/lib.rs"
       }
     },
-    "gen-poetry-0.1.10": {
+    "gen-poetry-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_poetry",
         "path": "src/lib.rs"
       }
     },
-    "gen-polyglot-0.1.10": {
+    "gen-polyglot-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_polyglot",
         "path": "src/lib.rs"
       }
     },
-    "gen-swift-0.1.10": {
+    "gen-swift-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_swift",
         "path": "src/lib.rs"
       }
     },
-    "gen-types-0.1.10": {
+    "gen-types-0.1.11": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_types",
@@ -8745,25 +8229,25 @@
     "sha2-0.10.9": {
       "edition": "2018"
     },
-    "shigoto-budget-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": {
+    "shigoto-budget-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": {
       "edition": "2024"
     },
-    "shigoto-dag-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": {
+    "shigoto-dag-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": {
       "edition": "2024"
     },
-    "shigoto-emit-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": {
+    "shigoto-emit-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": {
       "edition": "2024"
     },
-    "shigoto-gate-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": {
+    "shigoto-gate-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": {
       "edition": "2024"
     },
-    "shigoto-retry-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": {
+    "shigoto-retry-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": {
       "edition": "2024"
     },
-    "shigoto-scheduler-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": {
+    "shigoto-scheduler-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": {
       "edition": "2024"
     },
-    "shigoto-types-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": {
+    "shigoto-types-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": {
       "edition": "2024"
     },
     "shikumi-0.1.0-3913d35559a65bc64a870f5633cc3130371b412e": {
@@ -8943,13 +8427,13 @@
   "git_nar_sha256": {
     "kanshou-0.1.0-cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f": "sha256-wmwL7P5fEEvsEGa7YW4v+Xh3aEamhcnMz3KVz2hE0f4=",
     "kanshou-derive-0.1.0-cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f": "sha256-wmwL7P5fEEvsEGa7YW4v+Xh3aEamhcnMz3KVz2hE0f4=",
-    "shigoto-budget-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": "sha256-7N3F+DtWlW/CaF/1BOyv5ZmI69hGzTnSimEaEmyF+O0=",
-    "shigoto-dag-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": "sha256-7N3F+DtWlW/CaF/1BOyv5ZmI69hGzTnSimEaEmyF+O0=",
-    "shigoto-emit-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": "sha256-7N3F+DtWlW/CaF/1BOyv5ZmI69hGzTnSimEaEmyF+O0=",
-    "shigoto-gate-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": "sha256-7N3F+DtWlW/CaF/1BOyv5ZmI69hGzTnSimEaEmyF+O0=",
-    "shigoto-retry-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": "sha256-7N3F+DtWlW/CaF/1BOyv5ZmI69hGzTnSimEaEmyF+O0=",
-    "shigoto-scheduler-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": "sha256-7N3F+DtWlW/CaF/1BOyv5ZmI69hGzTnSimEaEmyF+O0=",
-    "shigoto-types-0.1.7-970c35ec5ba6546706a5e67a00fc2c8c543f1d46": "sha256-7N3F+DtWlW/CaF/1BOyv5ZmI69hGzTnSimEaEmyF+O0=",
+    "shigoto-budget-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": "sha256-w96EW4c2Sqo5fjuiTvsKcmw+iBPB7+Fzl+SttiDwwd8=",
+    "shigoto-dag-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": "sha256-w96EW4c2Sqo5fjuiTvsKcmw+iBPB7+Fzl+SttiDwwd8=",
+    "shigoto-emit-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": "sha256-w96EW4c2Sqo5fjuiTvsKcmw+iBPB7+Fzl+SttiDwwd8=",
+    "shigoto-gate-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": "sha256-w96EW4c2Sqo5fjuiTvsKcmw+iBPB7+Fzl+SttiDwwd8=",
+    "shigoto-retry-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": "sha256-w96EW4c2Sqo5fjuiTvsKcmw+iBPB7+Fzl+SttiDwwd8=",
+    "shigoto-scheduler-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": "sha256-w96EW4c2Sqo5fjuiTvsKcmw+iBPB7+Fzl+SttiDwwd8=",
+    "shigoto-types-0.1.7-5205840acc222c35e706d69a70bd7ff22b12ea74": "sha256-w96EW4c2Sqo5fjuiTvsKcmw+iBPB7+Fzl+SttiDwwd8=",
     "shikumi-0.1.0-3913d35559a65bc64a870f5633cc3130371b412e": "sha256-EUqsHsttbM9Pp9efTfvl6WFwOzb31khczPA+mYyhJVM=",
     "tatara-lisp-0.2.2-7921493d76632785906a0eabffa38f688cb2c3b0": "sha256-1At3hMYAavEcebNDWmuBp0Gbc40Sz6qfjp1Z4mj1iUw=",
     "tatara-lisp-derive-0.2.2-7921493d76632785906a0eabffa38f688cb2c3b0": "sha256-1At3hMYAavEcebNDWmuBp0Gbc40Sz6qfjp1Z4mj1iUw="

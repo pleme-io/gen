@@ -1344,13 +1344,32 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                         .get(&pkg.id.repr)
                         .map(|f| f.as_slice())
                         .unwrap_or(&[]);
-                    // Optional-dep name = the dependency's manifest name. cargo
-                    // names the optional dep (in `dep:<name>` and the implicit
-                    // feature) by its declared manifest name, NOT a consumer
-                    // rename, so prefer the declared name; fall back to the
-                    // edge's local name only when the declared entry is missing.
+                    // RENAME-AWARE optional-dep activation name. cargo names
+                    // an optional dep — in BOTH the implicit `<name>` feature
+                    // AND the `dep:<name>` form — by the CONSUMER-SIDE alias:
+                    // the `rename` when the dep declares `package = "..."`,
+                    // else the manifest name. The earlier assumption ("always
+                    // the manifest name") is wrong and silently dropped renamed
+                    // optional edges — attohttpc declares
+                    // `rustls_opt_dep = { package = "rustls", optional = true }`
+                    // and gates it behind `tls-rustls = ["dep:rustls_opt_dep"]`
+                    // + the implicit `rustls-opt-dep` feature, NEITHER of which
+                    // names the package `rustls`. Keying on the package name
+                    // made `optional_dep_activated` return false → the edge was
+                    // dropped → consumer rustc failed with E0463
+                    // `can't find crate for rustls_opt_dep`.
+                    //
+                    // The resolved node-dep `local_name` IS cargo's
+                    // rename-aware extern name (cargo metadata's
+                    // `resolve.nodes[].deps[].name` already encodes the rename),
+                    // so it is the authoritative activation key; the declared
+                    // `rename` is an equivalent fallback when the edge has a
+                    // matching manifest entry, and the manifest `name` is the
+                    // last resort. This aligns gen's activation check with the
+                    // same rename-aware edge cargo (and crate2nix's Cargo.nix)
+                    // resolve against.
                     let dep_name = declared
-                        .map(|d| d.name.clone())
+                        .and_then(|d| d.rename.clone())
                         .unwrap_or_else(|| local_name.clone());
                     if !optional_dep_activated(consuming_feats, &pkg.features, &dep_name) {
                         // Unactivated optional dep — skip this edge entirely.
@@ -2336,6 +2355,72 @@ mod weak_dependency_tests {
     #[test]
     fn no_features_means_no_optional_activation() {
         assert!(!optional_dep_activated(&[], &BTreeMap::new(), "anything"));
+    }
+
+    /// THE RENAMED-OPTIONAL-DEP REGRESSION CASE (attohttpc → rustls).
+    ///
+    /// attohttpc declares its rustls dep RENAMED:
+    /// ```toml
+    /// [dependencies]
+    /// rustls_opt_dep = { package = "rustls", optional = true }
+    /// [features]
+    /// tls-rustls = ["tls-rustls-webpki-roots"]
+    /// __rustls = ["rustls-opt-dep"]
+    /// rustls-opt-dep = ["dep:rustls-opt-dep"]
+    /// ```
+    /// cargo names the implicit feature AND the `dep:` form by the
+    /// CONSUMER-SIDE ALIAS `rustls-opt-dep`, never the package name
+    /// `rustls`. So the activation key MUST be the rename. Keying on the
+    /// package name `rustls` returns false → the edge is dropped → the
+    /// consumer's rustc fails with E0463 `can't find crate for
+    /// rustls_opt_dep`.
+    ///
+    /// This asserts the contract `optional_dep_activated` must satisfy:
+    /// the dep activates under its rename-aware name, and is NOT found
+    /// under the package name.
+    #[test]
+    fn renamed_optional_dep_activates_under_rename_not_package_name() {
+        // attohttpc's feature table (the relevant subset), with the
+        // rename-keyed implicit feature + the indirection through
+        // __rustls and tls-rustls.
+        let table = ftable(&[
+            ("default", &["compress", "tls-native"]),
+            ("__rustls", &["rustls-opt-dep"]),
+            ("rustls-opt-dep", &["dep:rustls-opt-dep"]),
+            ("tls-rustls", &["tls-rustls-webpki-roots"]),
+            ("tls-rustls-webpki-roots", &["__rustls", "webpki-roots"]),
+            ("webpki-roots", &["dep:webpki-roots"]),
+        ]);
+        // cargo's resolved active feature set for attohttpc as pulled by
+        // gaveta (via aws-creds → rust-s3, json + rustls path).
+        let resolved = vec![
+            "__rustls".to_string(),
+            "json".to_string(),
+            "rustls-opt-dep".to_string(),
+            "tls-rustls".to_string(),
+            "tls-rustls-webpki-roots".to_string(),
+            "webpki-roots".to_string(),
+        ];
+
+        // The dep activates under its RENAME (the rename-aware name gen
+        // now keys on — `local_name` from the resolve node / `declared.rename`).
+        // `-`↔`_` normalization makes `rustls_opt_dep` and `rustls-opt-dep`
+        // equivalent.
+        assert!(
+            optional_dep_activated(&resolved, &table, "rustls-opt-dep"),
+            "rustls is activated via the rename `rustls-opt-dep` (implicit feature + dep:) — keep the edge"
+        );
+        assert!(
+            optional_dep_activated(&resolved, &table, "rustls_opt_dep"),
+            "the `_`-joined extern form of the rename must also match (normalization)"
+        );
+
+        // Keying on the PACKAGE name `rustls` is the bug — it must NOT
+        // match, proving the activation key has to be rename-aware.
+        assert!(
+            !optional_dep_activated(&resolved, &table, "rustls"),
+            "the package name `rustls` is never the activation key for a renamed optional dep — the old code's mistake"
+        );
     }
 }
 

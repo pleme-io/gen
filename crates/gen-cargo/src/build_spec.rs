@@ -1329,29 +1329,30 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 // a never-activated driver like sqlx-sqlite fails the musl
                 // image build).
                 //
-                // The activation signal: cargo creates an *implicit feature*
-                // named after each optional dependency (`sqlx-sqlite`,
-                // `sqlx-postgres`, …). That implicit feature lands in the
-                // consuming node's resolved feature list IFF the dep was
-                // activated — directly (`features = ["sqlx-postgres"]`),
-                // transitively (`some-feat = ["dep:sqlx-postgres"]` /
-                // `some-feat = ["sqlx-postgres/x"]`), or via a non-weak
-                // `dep/feature` edge. A weak edge (`dep?/feature`) only adds
-                // the sub-feature WHEN the dep is already active, and never
-                // activates it on its own — so it never inserts the implicit
-                // feature, and the dep is correctly filtered out here.
+                // The activation decision is the FULL matrix in
+                // `optional_dep_activated`: an optional dep is activated iff an
+                // ACTIVE feature of the consuming crate (a) names it via
+                // `dep:<name>`, (b) references it via a NON-weak `<name>/x`, or
+                // (c) the bare implicit feature `<name>` is active. Keying only
+                // on the implicit feature is wrong — cargo SUPPRESSES that
+                // implicit feature whenever any feature uses `dep:<name>`
+                // syntax (the deranged `serde = ["dep:serde_core"]` case),
+                // which would wrongly drop a genuinely-activated edge. A weak
+                // `<name>?/x` ref does NOT activate (the sqlx-sqlite case).
                 if optional {
                     let consuming_feats = resolved_features
                         .get(&pkg.id.repr)
                         .map(|f| f.as_slice())
                         .unwrap_or(&[]);
-                    // Implicit feature name = the consumer's local dep name
-                    // (rename when set, else the declared name). cargo stores
-                    // resolved feature names in the manifest spelling.
-                    let implicit_feat = declared
-                        .map(|d| d.rename.clone().unwrap_or_else(|| d.name.clone()))
+                    // Optional-dep name = the dependency's manifest name. cargo
+                    // names the optional dep (in `dep:<name>` and the implicit
+                    // feature) by its declared manifest name, NOT a consumer
+                    // rename, so prefer the declared name; fall back to the
+                    // edge's local name only when the declared entry is missing.
+                    let dep_name = declared
+                        .map(|d| d.name.clone())
                         .unwrap_or_else(|| local_name.clone());
-                    if !optional_dep_activated(consuming_feats, &implicit_feat) {
+                    if !optional_dep_activated(consuming_feats, &pkg.features, &dep_name) {
                         // Unactivated optional dep — skip this edge entirely.
                         continue;
                     }
@@ -1985,33 +1986,89 @@ fn git_rev_of_source(src: &str) -> Option<String> {
 }
 
 /// Decide whether an OPTIONAL dependency edge is actually activated for a
-/// crate, given that crate's cargo-resolved feature list.
+/// crate C, given C's cargo-resolved (already-closed) feature set AND C's raw
+/// manifest feature table (with `dep:` / `name/feat` / `name?/feat` strings
+/// intact).
 ///
-/// cargo's `resolve.nodes[].deps` is *over-inclusive* for optional deps —
-/// it enumerates every optional dependency a package declares regardless of
+/// cargo's `resolve.nodes[].deps` is *over-inclusive* for optional deps — it
+/// enumerates every optional dependency a package declares regardless of
 /// whether the current feature set turns it on. The activated graph (what
-/// `cargo tree` shows, what the built binary links) only contains optional
-/// deps whose **implicit feature** was activated. cargo synthesizes one
-/// implicit feature per optional dep, named after the dep (`sqlx-sqlite`,
-/// `sqlx-postgres`, …); that feature appears in the consuming crate's
-/// resolved feature list IFF the dep was activated — directly, transitively,
-/// via `dep:` syntax, or through a *non-weak* `dep/feature` reference.
+/// `cargo tree` shows, what the built binary links) contains only the
+/// optional deps the active feature set actually turns on. We must reconstruct
+/// that activation decision from the FULL matrix below — keying only on the
+/// implicit feature is WRONG because cargo SUPPRESSES the implicit feature
+/// whenever ANY feature anywhere uses the `dep:<name>` syntax for that dep
+/// (then the dep is named directly, and no synthetic feature exists).
 ///
-/// A weak reference (`dep?/feature`) deliberately does NOT activate the dep
-/// on its own — it only adds the sub-feature when the dep is already active.
-/// So a crate that touches an optional dep ONLY through `dep?/feature` edges
-/// never gets that dep's implicit feature, and this predicate correctly
-/// returns `false` → the edge is filtered out (the sqlx-sqlite bug:
+/// An optional dep `name` of C is ACTIVATED (emit the edge) iff, scanning C's
+/// **active** feature definitions (the resolved closure ∩ the manifest table),
+/// any of:
+///   1. `dep:<name>` appears (explicit activation; NO implicit feature in this
+///      mode — the deranged `serde = ["dep:serde_core"]` case);
+///   2. a NON-weak `<name>/<subfeat>` appears (slash form also activates the
+///      dep);
+///   3. the bare implicit feature `<name>` is itself active (the legacy bare
+///      case — only exists when NO `dep:` form is used for that dep anywhere).
+/// It is NOT activated when `name` is referenced ONLY through the WEAK
+/// `<name>?/<subfeat>` form (weak refs add the sub-feature only when the dep
+/// is already active — they never activate it; the sqlx-sqlite bug:
 /// `migrate = [.., "sqlx-sqlite?/migrate"]` must NOT pull in sqlx-sqlite).
 ///
-/// Comparison normalizes `-`/`_` because cargo's `extern crate` edge names
-/// are underscored while declared dep names + feature names keep the
-/// manifest hyphenation.
-fn optional_dep_activated(consuming_features: &[String], implicit_feature_name: &str) -> bool {
-    let target = implicit_feature_name.replace('-', "_");
-    consuming_features
-        .iter()
-        .any(|f| f.replace('-', "_") == target)
+/// All comparisons normalize `-`/`_` because cargo's `extern crate` edge names
+/// are underscored while declared dep names + feature names keep the manifest
+/// hyphenation. `active_features` is cargo's resolved feature list for C
+/// (already the transitive closure); `feature_table` is C's raw
+/// `Package.features` map.
+fn optional_dep_activated(
+    active_features: &[String],
+    feature_table: &std::collections::BTreeMap<String, Vec<String>>,
+    dep_name: &str,
+) -> bool {
+    let norm = |s: &str| s.replace('-', "_");
+    let target = norm(dep_name);
+
+    // (3) Bare implicit feature active — the legacy case where cargo
+    // synthesized a `<name>` feature (only when no `dep:` form is used).
+    if active_features.iter().any(|f| norm(f) == target) {
+        return true;
+    }
+
+    // (1) + (2): scan the ACTIVE feature definitions for an explicit `dep:`
+    // activation or a non-weak `<name>/…` reference. Distinguish the weak
+    // `<name>?/…` form (which does NOT activate).
+    let active: std::collections::BTreeSet<String> =
+        active_features.iter().map(|f| norm(f)).collect();
+    for (feat, refs) in feature_table {
+        if !active.contains(&norm(feat)) {
+            continue;
+        }
+        for r in refs {
+            // `dep:<name>` — explicit activation.
+            if let Some(activated) = r.strip_prefix("dep:") {
+                if norm(activated) == target {
+                    return true;
+                }
+                continue;
+            }
+            // `<lhs>/<subfeat>` — slash form. The dep is the LHS; a trailing
+            // `?` on the LHS marks it weak (does NOT activate).
+            if let Some((lhs, _subfeat)) = r.split_once('/') {
+                if let Some(weak_lhs) = lhs.strip_suffix('?') {
+                    // Weak ref — never activates the dep. Skip.
+                    let _ = weak_lhs;
+                    continue;
+                }
+                if norm(lhs) == target {
+                    return true;
+                }
+            }
+            // A bare `<feat>` reference here is a feature→feature edge cargo
+            // already followed into the resolved closure (handled by (3));
+            // it never names a `dep:`-only optional dep, so nothing to do.
+        }
+    }
+
+    false
 }
 
 /// Pre-shape crateRenames into the exact attrset shape nixpkgs's
@@ -2128,6 +2185,20 @@ fn pathdiff_relative(from: &str, base: &str) -> Option<String> {
 #[cfg(test)]
 mod weak_dependency_tests {
     use super::optional_dep_activated;
+    use std::collections::BTreeMap;
+
+    /// Build a feature table from `(feat, [refs])` pairs.
+    fn ftable(pairs: &[(&str, &[&str])]) -> BTreeMap<String, Vec<String>> {
+        pairs
+            .iter()
+            .map(|(f, refs)| {
+                (
+                    (*f).to_string(),
+                    refs.iter().map(|r| (*r).to_string()).collect(),
+                )
+            })
+            .collect()
+    }
 
     /// The sqlx case, distilled. The `sqlx` facade declares optional driver
     /// deps `sqlx-postgres`, `sqlx-sqlite`, `sqlx-mysql`. A consumer that
@@ -2141,8 +2212,16 @@ mod weak_dependency_tests {
     /// kept.
     #[test]
     fn weak_only_optional_dep_is_not_activated() {
-        // Resolved features cargo reports for `sqlx` under
-        // `default-features=false, features=["postgres","migrate",...]`.
+        // sqlx uses NO `dep:` form for its drivers, so cargo SYNTHESIZES the
+        // `sqlx-postgres`/`sqlx-sqlite`/`sqlx-mysql` implicit features. Only
+        // the activated one lands in the resolved set.
+        let table = ftable(&[
+            ("postgres", &["sqlx-postgres"]),
+            (
+                "migrate",
+                &["sqlx-postgres?/migrate", "sqlx-sqlite?/migrate", "sqlx-mysql?/migrate"],
+            ),
+        ]);
         let resolved = vec![
             "migrate".to_string(),
             "postgres".to_string(),
@@ -2152,9 +2231,9 @@ mod weak_dependency_tests {
             "chrono".to_string(),
         ];
 
-        // The activated optional driver is pulled in.
+        // The activated optional driver is pulled in (bare implicit feature).
         assert!(
-            optional_dep_activated(&resolved, "sqlx-postgres"),
+            optional_dep_activated(&resolved, &table, "sqlx-postgres"),
             "sqlx-postgres is enabled via `postgres = [\"sqlx-postgres\"]` — keep the edge"
         );
 
@@ -2162,12 +2241,47 @@ mod weak_dependency_tests {
         // through `sqlx-sqlite?/migrate` / `sqlx-mysql?/migrate`, which never
         // activate the dep. Their implicit feature is absent.
         assert!(
-            !optional_dep_activated(&resolved, "sqlx-sqlite"),
+            !optional_dep_activated(&resolved, &table, "sqlx-sqlite"),
             "sqlx-sqlite is reached only via the weak `sqlx-sqlite?/migrate` edge — drop it"
         );
         assert!(
-            !optional_dep_activated(&resolved, "sqlx-mysql"),
+            !optional_dep_activated(&resolved, &table, "sqlx-mysql"),
             "sqlx-mysql is reached only via the weak `sqlx-mysql?/migrate` edge — drop it"
+        );
+    }
+
+    /// THE REGRESSION CASE. `deranged 0.5.8` declares `serde_core` as an
+    /// optional dep and activates it ONLY via `serde = ["dep:serde_core"]`.
+    /// Because a `dep:` form is used, cargo SUPPRESSES the `serde_core`
+    /// implicit feature — so the resolved set is `["default", "serde"]` with
+    /// NO `serde_core`. The old implicit-feature-only predicate wrongly
+    /// dropped the edge; the full-matrix rule must KEEP it.
+    #[test]
+    fn dep_colon_activation_with_no_implicit_feature() {
+        let table = ftable(&[
+            ("default", &["std"]),
+            ("std", &[]),
+            ("serde", &["dep:serde_core"]),
+        ]);
+        // No `serde_core` in the resolved set — cargo suppressed the implicit
+        // feature because `dep:serde_core` is used.
+        let resolved = vec!["default".to_string(), "serde".to_string(), "std".to_string()];
+        assert!(
+            optional_dep_activated(&resolved, &table, "serde_core"),
+            "serde = [\"dep:serde_core\"] is active → serde_core IS activated; emit the edge"
+        );
+    }
+
+    /// A `dep:<name>` reference that lives in an INACTIVE feature must NOT
+    /// activate the dep — the scan is over ACTIVE feature definitions only.
+    #[test]
+    fn dep_colon_in_inactive_feature_does_not_activate() {
+        let table = ftable(&[("serde", &["dep:serde_core"])]);
+        // `serde` feature NOT active.
+        let resolved = vec!["default".to_string()];
+        assert!(
+            !optional_dep_activated(&resolved, &table, "serde_core"),
+            "the `serde` feature carrying `dep:serde_core` is not active — drop the edge"
         );
     }
 
@@ -2177,27 +2291,51 @@ mod weak_dependency_tests {
     /// activated dep isn't dropped on a spurious string mismatch.
     #[test]
     fn activation_match_is_hyphen_underscore_insensitive() {
+        let table = BTreeMap::new();
         let resolved = vec!["sqlx_postgres".to_string()];
-        assert!(optional_dep_activated(&resolved, "sqlx-postgres"));
+        assert!(optional_dep_activated(&resolved, &table, "sqlx-postgres"));
         let resolved = vec!["sqlx-postgres".to_string()];
-        assert!(optional_dep_activated(&resolved, "sqlx_postgres"));
+        assert!(optional_dep_activated(&resolved, &table, "sqlx_postgres"));
     }
 
-    /// A non-weak `dep/feature` (no `?`) DOES activate the dep, so cargo puts
-    /// the implicit feature in the resolved set — the predicate keeps it.
+    /// A non-weak `dep/feature` (no `?`) DOES activate the dep. Tested two
+    /// ways: (a) the legacy bare implicit feature in the resolved set, and
+    /// (b) directly from the slash-form reference in an active feature even
+    /// when cargo suppressed the implicit feature.
     #[test]
     fn non_weak_reference_activates_the_dep() {
-        // `some-feat = ["mydep/x"]` (non-weak) → mydep implicit feature ON.
+        // (a) `some-feat = ["mydep/x"]` (non-weak) → mydep implicit feature ON.
+        let table = ftable(&[("some-feat", &["mydep/x"])]);
         let resolved = vec!["some-feat".to_string(), "mydep".to_string()];
         assert!(
-            optional_dep_activated(&resolved, "mydep"),
-            "a non-weak dep/feature edge activates the dep — keep it"
+            optional_dep_activated(&resolved, &table, "mydep"),
+            "a non-weak dep/feature edge activates the dep — keep it (bare implicit)"
+        );
+
+        // (b) Same, but cargo suppressed the implicit feature (a `dep:` form
+        // exists for mydep elsewhere). The non-weak slash form still activates.
+        let table = ftable(&[("some-feat", &["mydep/x"]), ("other", &["dep:mydep"])]);
+        let resolved = vec!["some-feat".to_string()];
+        assert!(
+            optional_dep_activated(&resolved, &table, "mydep"),
+            "non-weak `mydep/x` activates mydep even with the implicit feature suppressed"
+        );
+    }
+
+    /// A WEAK `<name>?/x` reference in an active feature must NOT activate.
+    #[test]
+    fn weak_slash_reference_in_active_feature_does_not_activate() {
+        let table = ftable(&[("migrate", &["sqlx-sqlite?/migrate"])]);
+        let resolved = vec!["migrate".to_string()];
+        assert!(
+            !optional_dep_activated(&resolved, &table, "sqlx-sqlite"),
+            "weak `sqlx-sqlite?/migrate` does not activate the dep — drop the edge"
         );
     }
 
     #[test]
     fn no_features_means_no_optional_activation() {
-        assert!(!optional_dep_activated(&[], "anything"));
+        assert!(!optional_dep_activated(&[], &BTreeMap::new(), "anything"));
     }
 }
 

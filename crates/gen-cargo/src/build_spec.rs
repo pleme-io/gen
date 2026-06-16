@@ -1289,9 +1289,23 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 // features + optional + uses_default_features. Match by
                 // local name + kind to avoid mis-attributing a normal
                 // edge's features to a dev edge of the same name.
+                //
+                // The graph edge's `local_name` is cargo's `extern crate`
+                // name — `-` normalized to `_` (e.g. `sqlx_sqlite`), or the
+                // explicit `rename` when present. The declared dep's name is
+                // the manifest spelling (`sqlx-sqlite`). Normalize BOTH sides
+                // (`-` → `_`) before comparing so the match doesn't silently
+                // fall through to the `None` branch (which would forge
+                // `optional = false` onto a genuinely-optional edge — the
+                // sqlx-sqlite `optional: false` bug).
                 let declared = pkg.dependencies.iter().find(|d| {
-                    let consumer_name = d.rename.clone().unwrap_or_else(|| d.name.clone());
-                    &consumer_name == local_name && d.kind == graph_kind.kind
+                    let consumer_name = d
+                        .rename
+                        .clone()
+                        .unwrap_or_else(|| d.name.clone())
+                        .replace('-', "_");
+                    consumer_name == local_name.replace('-', "_")
+                        && d.kind == graph_kind.kind
                 });
                 let (features, uses_default_features, optional) = match declared {
                     Some(d) => (
@@ -1301,6 +1315,47 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                     ),
                     None => (Vec::new(), true, false),
                 };
+
+                // WEAK-DEPENDENCY / UNACTIVATED-OPTIONAL FILTER.
+                //
+                // cargo's `resolve.nodes[].deps` is *over-inclusive* for
+                // optional dependencies: it lists every optional dep a
+                // package declares, regardless of whether the current
+                // feature set actually activates it. `cargo tree` shows
+                // only the activated graph, and the cargo-built binary
+                // contains only activated optional deps — so an optional
+                // edge that no feature turned on must NOT be emitted into
+                // the build spec (substrate would otherwise build it, and
+                // a never-activated driver like sqlx-sqlite fails the musl
+                // image build).
+                //
+                // The activation signal: cargo creates an *implicit feature*
+                // named after each optional dependency (`sqlx-sqlite`,
+                // `sqlx-postgres`, …). That implicit feature lands in the
+                // consuming node's resolved feature list IFF the dep was
+                // activated — directly (`features = ["sqlx-postgres"]`),
+                // transitively (`some-feat = ["dep:sqlx-postgres"]` /
+                // `some-feat = ["sqlx-postgres/x"]`), or via a non-weak
+                // `dep/feature` edge. A weak edge (`dep?/feature`) only adds
+                // the sub-feature WHEN the dep is already active, and never
+                // activates it on its own — so it never inserts the implicit
+                // feature, and the dep is correctly filtered out here.
+                if optional {
+                    let consuming_feats = resolved_features
+                        .get(&pkg.id.repr)
+                        .map(|f| f.as_slice())
+                        .unwrap_or(&[]);
+                    // Implicit feature name = the consumer's local dep name
+                    // (rename when set, else the declared name). cargo stores
+                    // resolved feature names in the manifest spelling.
+                    let implicit_feat = declared
+                        .map(|d| d.rename.clone().unwrap_or_else(|| d.name.clone()))
+                        .unwrap_or_else(|| local_name.clone());
+                    if !optional_dep_activated(consuming_feats, &implicit_feat) {
+                        // Unactivated optional dep — skip this edge entirely.
+                        continue;
+                    }
+                }
 
                 // I5: typed BuildTree placement — substrate consumes
                 // this directly instead of reconstructing host/target
@@ -1929,6 +1984,36 @@ fn git_rev_of_source(src: &str) -> Option<String> {
     src.rsplit_once('#').map(|(_, rev)| rev.to_string())
 }
 
+/// Decide whether an OPTIONAL dependency edge is actually activated for a
+/// crate, given that crate's cargo-resolved feature list.
+///
+/// cargo's `resolve.nodes[].deps` is *over-inclusive* for optional deps —
+/// it enumerates every optional dependency a package declares regardless of
+/// whether the current feature set turns it on. The activated graph (what
+/// `cargo tree` shows, what the built binary links) only contains optional
+/// deps whose **implicit feature** was activated. cargo synthesizes one
+/// implicit feature per optional dep, named after the dep (`sqlx-sqlite`,
+/// `sqlx-postgres`, …); that feature appears in the consuming crate's
+/// resolved feature list IFF the dep was activated — directly, transitively,
+/// via `dep:` syntax, or through a *non-weak* `dep/feature` reference.
+///
+/// A weak reference (`dep?/feature`) deliberately does NOT activate the dep
+/// on its own — it only adds the sub-feature when the dep is already active.
+/// So a crate that touches an optional dep ONLY through `dep?/feature` edges
+/// never gets that dep's implicit feature, and this predicate correctly
+/// returns `false` → the edge is filtered out (the sqlx-sqlite bug:
+/// `migrate = [.., "sqlx-sqlite?/migrate"]` must NOT pull in sqlx-sqlite).
+///
+/// Comparison normalizes `-`/`_` because cargo's `extern crate` edge names
+/// are underscored while declared dep names + feature names keep the
+/// manifest hyphenation.
+fn optional_dep_activated(consuming_features: &[String], implicit_feature_name: &str) -> bool {
+    let target = implicit_feature_name.replace('-', "_");
+    consuming_features
+        .iter()
+        .any(|f| f.replace('-', "_") == target)
+}
+
 /// Pre-shape crateRenames into the exact attrset shape nixpkgs's
 /// buildRustCrate expects. Keys are canonical published names; values
 /// are lists of `{ version, rename }` records, one per consumer-side
@@ -2039,6 +2124,82 @@ fn pathdiff_relative(from: &str, base: &str) -> Option<String> {
 // consumer class — same algebra as cofre.backend-kind,
 // shigoto.retry-outcome, kura.node-kind. The macro keeps registration
 // in lockstep with the variant universe; silent drift impossible.
+
+#[cfg(test)]
+mod weak_dependency_tests {
+    use super::optional_dep_activated;
+
+    /// The sqlx case, distilled. The `sqlx` facade declares optional driver
+    /// deps `sqlx-postgres`, `sqlx-sqlite`, `sqlx-mysql`. A consumer that
+    /// enables `["postgres", "migrate"]` (where `postgres = ["sqlx-postgres"]`
+    /// and `migrate = [.., "sqlx-sqlite?/migrate", "sqlx-mysql?/migrate"]`)
+    /// activates ONLY sqlx-postgres. cargo's resolved feature list reflects
+    /// that — `sqlx-postgres` is present, the weak-only drivers are not.
+    ///
+    /// `cargo tree -i sqlx-sqlite` → "nothing to print"; the build spec must
+    /// agree: the sqlx → sqlx-sqlite edge is dropped, sqlx → sqlx-postgres
+    /// kept.
+    #[test]
+    fn weak_only_optional_dep_is_not_activated() {
+        // Resolved features cargo reports for `sqlx` under
+        // `default-features=false, features=["postgres","migrate",...]`.
+        let resolved = vec![
+            "migrate".to_string(),
+            "postgres".to_string(),
+            "sqlx-postgres".to_string(), // implicit feat → postgres driver ON
+            "runtime-tokio".to_string(),
+            "uuid".to_string(),
+            "chrono".to_string(),
+        ];
+
+        // The activated optional driver is pulled in.
+        assert!(
+            optional_dep_activated(&resolved, "sqlx-postgres"),
+            "sqlx-postgres is enabled via `postgres = [\"sqlx-postgres\"]` — keep the edge"
+        );
+
+        // The weak-only optional drivers are NOT — they are referenced ONLY
+        // through `sqlx-sqlite?/migrate` / `sqlx-mysql?/migrate`, which never
+        // activate the dep. Their implicit feature is absent.
+        assert!(
+            !optional_dep_activated(&resolved, "sqlx-sqlite"),
+            "sqlx-sqlite is reached only via the weak `sqlx-sqlite?/migrate` edge — drop it"
+        );
+        assert!(
+            !optional_dep_activated(&resolved, "sqlx-mysql"),
+            "sqlx-mysql is reached only via the weak `sqlx-mysql?/migrate` edge — drop it"
+        );
+    }
+
+    /// Edge-name vs feature-name normalization: cargo's `extern crate` edge
+    /// name is `_`-joined while the implicit feature keeps the manifest
+    /// hyphenation. The predicate must see through that so a genuinely
+    /// activated dep isn't dropped on a spurious string mismatch.
+    #[test]
+    fn activation_match_is_hyphen_underscore_insensitive() {
+        let resolved = vec!["sqlx_postgres".to_string()];
+        assert!(optional_dep_activated(&resolved, "sqlx-postgres"));
+        let resolved = vec!["sqlx-postgres".to_string()];
+        assert!(optional_dep_activated(&resolved, "sqlx_postgres"));
+    }
+
+    /// A non-weak `dep/feature` (no `?`) DOES activate the dep, so cargo puts
+    /// the implicit feature in the resolved set — the predicate keeps it.
+    #[test]
+    fn non_weak_reference_activates_the_dep() {
+        // `some-feat = ["mydep/x"]` (non-weak) → mydep implicit feature ON.
+        let resolved = vec!["some-feat".to_string(), "mydep".to_string()];
+        assert!(
+            optional_dep_activated(&resolved, "mydep"),
+            "a non-weak dep/feature edge activates the dep — keep it"
+        );
+    }
+
+    #[test]
+    fn no_features_means_no_optional_activation() {
+        assert!(!optional_dep_activated(&[], "anything"));
+    }
+}
 
 #[cfg(test)]
 mod path_helper_tests {

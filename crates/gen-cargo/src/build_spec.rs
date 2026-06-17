@@ -1371,7 +1371,27 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                     let dep_name = declared
                         .and_then(|d| d.rename.clone())
                         .unwrap_or_else(|| local_name.clone());
-                    if !optional_dep_activated(consuming_feats, &pkg.features, &dep_name) {
+                    // TARGET-CFG-GATED OPTIONAL DEPS are activated by the
+                    // PLATFORM match, NOT a feature. cargo's `--filter-platform`
+                    // resolve already evaluated the `[target.'cfg(...)']` guard
+                    // and lists the edge only when the target matched — e.g.
+                    // rustix's `libc`/`libc_errno` (its libc backend) are
+                    // `optional = true` but pulled purely by
+                    // `cfg(all(not(windows), any(rustix_use_libc, miri,
+                    // not(all(target_os = "linux", ...)))))` matching apple/bsd,
+                    // with NO `use-libc` feature in the resolved set. The
+                    // feature-only activation check below cannot see this path
+                    // and would drop the edge → rustc fails with
+                    // `error[E0432]: unresolved import libc` on darwin. So an
+                    // optional dep whose matched manifest declaration is
+                    // target-scoped (`d.target.is_some()`) and which survived
+                    // --filter-platform is trusted as activated. NON-target
+                    // optional deps (the sqlx-sqlite feature-gated case) keep
+                    // the strict feature filter.
+                    let target_gated = declared.is_some_and(|d| d.target.is_some());
+                    if !target_gated
+                        && !optional_dep_activated(consuming_feats, &pkg.features, &dep_name)
+                    {
                         // Unactivated optional dep — skip this edge entirely.
                         continue;
                     }

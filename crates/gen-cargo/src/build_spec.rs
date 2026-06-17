@@ -1998,6 +1998,18 @@ pub fn generate_for_target_and_write(root: &Path, target: &str) -> Result<std::p
 
 // ─── DETERMINISM CANONICALIZATION ──────────────────────────────────────
 //
+// CONTRACT FOR EVERY gen ADAPTER (cargo today; bundler/gomod/npm/pip/ansible/
+// helm when they leave stub state — theory/ECOSYSTEM-INTAKE.md): a committed
+// build-spec MUST be byte-identical regardless of the build host. Any adapter
+// whose resolver emits maps/Vecs in dependency-resolution order owes the same
+// two-boundary canonicalization shipped here for cargo: (1) output-bearing
+// keyed-by-string maps are `BTreeMap` (canonical by construction); (2) a
+// `canonicalize()` stable-sorts every resolve-ordered Vec by a total content
+// key, called before BOTH the full-spec write and the delta distill. Until an
+// adapter does real platform-dependent resolution its IndexMaps are inert, so
+// this is a forward contract, not a present bug — but a live adapter that skips
+// it reintroduces the cross-platform-drift class this section eliminates.
+//
 // `gen build` resolves per target via `cargo metadata --filter-platform`;
 // cargo's resolve-traversal + `meta.packages` iteration order is NOT a stable
 // cross-platform contract (linux CI ≠ darwin), so a naively-emitted spec is

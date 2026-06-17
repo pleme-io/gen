@@ -114,8 +114,10 @@ pub struct MemberDelta {
     pub module_trio: Option<ModuleTrioSpec>,
 }
 
-/// `Cargo.gen.lock` — the slim resolver delta. Field order is the JSON
-/// layout; `IndexMap` keeps emission deterministic.
+/// `Cargo.gen.lock` — the slim resolver delta. Struct field order is the JSON
+/// layout; the keyed maps are `BTreeMap` so key order is canonical (sorted) by
+/// construction — cross-platform byte-stable, independent of the build host's
+/// cargo resolve-traversal order.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GenDelta {
     pub schema_version: u32,
@@ -226,7 +228,11 @@ impl GenDeltaArtifact for GenDelta {
 }
 
 impl GenDelta {
-    /// Serialize to pretty JSON (deterministic via `IndexMap` ordering).
+    /// Serialize to pretty JSON. Cross-platform byte-stable: the keyed maps
+    /// are `BTreeMap` (canonical key order by construction) and the spec's
+    /// resolve-ordered Vecs are pre-sorted by `BuildSpec::canonicalize()`
+    /// before distillation, so identical content yields identical bytes on
+    /// any build host.
     pub fn to_json(&self) -> Result<String, GenDeltaError> {
         Ok(serde_json::to_string_pretty(self)?)
     }

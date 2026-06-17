@@ -741,10 +741,14 @@ pub fn generate_multi_target(root: &Path) -> Result<BuildSpec> {
     // typical 8-core machines. Hot-cache (--if-stale fast-path) is
     // unaffected; this only matters when a regen actually fires.
     //
-    // Order is preserved by collecting into a Vec keyed by the
-    // FLEET_TARGETS index, then folding into the IndexMap in target
-    // order — IndexMap iteration order is part of the spec's
-    // determinism contract (catalog + downstream substrate hashing).
+    // `per_target` is an INTERMEDIATE IndexMap (never serialized directly):
+    // collected into a Vec keyed by the FLEET_TARGETS index, then folded in
+    // target order, so its iteration order is FLEET_TARGETS-deterministic
+    // (platform-INDEPENDENT) by construction. The SERIALIZED maps it feeds
+    // (CompactTargetResolves.{base,targets,overrides}, BuildSpec.crates) are
+    // BTreeMap — canonical key order regardless of this fold order. So the
+    // emitted spec is cross-platform byte-stable; this intermediate's order
+    // only governs which target is `first` in from_full's universe pick.
     let per_target_vec: Vec<(String, BuildSpec)> = FLEET_TARGETS
         .par_iter()
         .map(|target| {

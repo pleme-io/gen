@@ -1388,9 +1388,24 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                     // --filter-platform is trusted as activated. NON-target
                     // optional deps (the sqlx-sqlite feature-gated case) keep
                     // the strict feature filter.
-                    let target_gated = declared.is_some_and(|d| d.target.is_some());
-                    if !target_gated
-                        && !optional_dep_activated(consuming_feats, &pkg.features, &dep_name)
+                    // Typed, exhaustive emit/skip decision. The previously-inline
+                    // boolean (`!target_gated && !optional_dep_activated(...)`) is
+                    // now `classify_optional_dep(...).is_emitted()` — one named
+                    // total function over the four activation outcomes (see
+                    // `OptionalDepActivation`). We are inside `if optional`, so the
+                    // `is_optional` argument is `true`; this guard IS the
+                    // `NotOptional` arm. Byte-identical to the old boolean: the
+                    // edge is dropped iff classification is `Unactivated`
+                    // (optional ∧ not target-gated ∧ no active feature).
+                    let is_target_gated = declared.is_some_and(|d| d.target.is_some());
+                    if !classify_optional_dep(
+                        true,
+                        is_target_gated,
+                        consuming_feats,
+                        &pkg.features,
+                        &dep_name,
+                    )
+                    .is_emitted()
                     {
                         // Unactivated optional dep — skip this edge entirely.
                         continue;
@@ -2221,9 +2236,93 @@ fn pathdiff_relative(from: &str, base: &str) -> Option<String> {
 // shigoto.retry-outcome, kura.node-kind. The macro keeps registration
 // in lockstep with the variant universe; silent drift impossible.
 
+/// Why an OPTIONAL dependency edge survives (or is dropped from) the build
+/// spec — the single emit/skip decision at the resolve-edge call site, which
+/// was previously an opaque inline boolean
+/// (`!target_gated && !optional_dep_activated(...)`).
+///
+/// EXHAUSTIVE over the four reachable outcomes; the sole non-emitting variant
+/// is [`OptionalDepActivation::Unactivated`]. Behavior-preserving by
+/// construction — [`classify_optional_dep`] reproduces the old boolean exactly.
+///
+/// NOTE (tier-honest): this enum NAMES the decision; it does not yet close the
+/// known coverage gaps. [`OptionalDepActivation::TargetGated`] trusts the
+/// platform match alone, even for a dep that is ALSO weak/feature-gated — over-
+/// including rather than DROPPING a platform-essential dep (rustix's libc on
+/// apple). That tradeoff is deliberate: dropping a target-cfg backend dep wedges
+/// the build (`error[E0432]: unresolved import libc`), whereas over-including a
+/// rare target+feature-gated optional is usually harmless. Tightening the
+/// target+feature intersection is a future ONE-ARM change here (split
+/// `TargetGated` into trusted / feature-checked), NOT a call-site rewrite.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum OptionalDepActivation {
+    /// The dep is non-optional. The `if optional` guard at the call site is
+    /// never entered, so the edge is emitted unconditionally.
+    NotOptional,
+    /// Optional AND the matched manifest declaration is target-scoped
+    /// (`declared.target.is_some()`). cargo's `--filter-platform` resolve
+    /// already evaluated the `[target.'cfg(...)']` guard and listed the edge
+    /// only when the platform matched, so it is trusted as activated and the
+    /// feature filter is bypassed (rustix's `libc`/`libc_errno` on apple/bsd).
+    TargetGated,
+    /// Optional, NOT target-gated, AND an active feature names it via
+    /// `dep:<name>`, a NON-weak `<name>/x` slash form, or the bare implicit
+    /// `<name>` feature (see [`optional_dep_activated`]).
+    FeatureActivated,
+    /// Optional, NOT target-gated, AND no active feature activates it —
+    /// referenced only via a weak `<name>?/x` form, or by no active feature at
+    /// all (sqlx-sqlite via `migrate = [.., "sqlx-sqlite?/migrate"]`). The sole
+    /// non-emitting outcome.
+    Unactivated,
+}
+
+impl OptionalDepActivation {
+    /// True iff this edge must be emitted into the build spec. False ONLY for
+    /// [`OptionalDepActivation::Unactivated`].
+    fn is_emitted(self) -> bool {
+        !matches!(self, OptionalDepActivation::Unactivated)
+    }
+}
+
+/// Classify whether a resolved dependency edge is emitted, folding optionality,
+/// the target-cfg `--filter-platform` trust, and the feature-matrix filter
+/// ([`optional_dep_activated`]) into ONE typed, total decision. This is the one
+/// place the emit rule lives.
+///
+/// Byte-identical to the old inline logic, including precedence (the target-cfg
+/// arm is checked BEFORE the feature filter, reproducing the old
+/// `!target_gated && !optional_dep_activated(...)`):
+///   - `!is_optional`                 → `NotOptional`     (emit)
+///   - `is_target_gated`              → `TargetGated`     (emit)
+///   - `optional_dep_activated(...)`  → `FeatureActivated`(emit)
+///   - else                           → `Unactivated`    (drop)
+///
+/// Takes plain booleans (not `&cargo_metadata::Dependency`) so it is a pure
+/// function, fully unit-testable for every variant; the call site derives
+/// `is_optional` / `is_target_gated` from the matched declaration.
+fn classify_optional_dep(
+    is_optional: bool,
+    is_target_gated: bool,
+    consuming_feats: &[String],
+    feature_table: &std::collections::BTreeMap<String, Vec<String>>,
+    dep_name: &str,
+) -> OptionalDepActivation {
+    if !is_optional {
+        return OptionalDepActivation::NotOptional;
+    }
+    if is_target_gated {
+        return OptionalDepActivation::TargetGated;
+    }
+    if optional_dep_activated(consuming_feats, feature_table, dep_name) {
+        OptionalDepActivation::FeatureActivated
+    } else {
+        OptionalDepActivation::Unactivated
+    }
+}
+
 #[cfg(test)]
 mod weak_dependency_tests {
-    use super::optional_dep_activated;
+    use super::{classify_optional_dep, optional_dep_activated, OptionalDepActivation};
     use std::collections::BTreeMap;
 
     /// Build a feature table from `(feat, [refs])` pairs.
@@ -2237,6 +2336,60 @@ mod weak_dependency_tests {
                 )
             })
             .collect()
+    }
+
+    /// Verification matrix (CLOSED-LOOP MASS-SYNTHESIS Rule 1) for
+    /// `classify_optional_dep`: every activation OUTCOME has a row, and the
+    /// exhaustive `match` over `OptionalDepActivation` is the forcing function —
+    /// adding a variant without a row here is a COMPILE error. Pins the
+    /// behavior-preserving contract: the edge is dropped iff `Unactivated`.
+    #[test]
+    fn classify_optional_dep_emit_matrix() {
+        use OptionalDepActivation::{FeatureActivated, NotOptional, TargetGated, Unactivated};
+        let empty = BTreeMap::new();
+
+        // NotOptional: `!is_optional` short-circuits before the target arm,
+        // regardless of target-scope or features.
+        assert_eq!(
+            classify_optional_dep(false, false, &[], &empty, "anything"),
+            NotOptional
+        );
+        assert_eq!(
+            classify_optional_dep(false, true, &[], &empty, "anything"),
+            NotOptional
+        );
+
+        // TargetGated: optional + target-scoped → trusted on the platform match,
+        // feature filter bypassed (rustix -> libc/libc_errno on apple/bsd).
+        assert_eq!(
+            classify_optional_dep(true, true, &[], &empty, "libc"),
+            TargetGated
+        );
+
+        // FeatureActivated: optional, not target, an active feature names it —
+        // here the bare implicit feature (sqlx -> sqlx-postgres via
+        // `postgres = ["sqlx-postgres"]`).
+        assert_eq!(
+            classify_optional_dep(true, false, &["sqlx-postgres".to_string()], &empty, "sqlx-postgres"),
+            FeatureActivated
+        );
+
+        // Unactivated: optional, not target, no active feature (sqlx-sqlite when
+        // only weak-referenced / its gating feature is off). Sole non-emit case.
+        assert_eq!(
+            classify_optional_dep(true, false, &[], &empty, "sqlx-sqlite"),
+            Unactivated
+        );
+
+        // is_emitted() forcing function — exhaustive over EVERY variant; a new
+        // variant added without a row fails to compile.
+        for v in [NotOptional, TargetGated, FeatureActivated, Unactivated] {
+            let expect = match v {
+                NotOptional | TargetGated | FeatureActivated => true,
+                Unactivated => false,
+            };
+            assert_eq!(v.is_emitted(), expect, "{v:?}");
+        }
     }
 
     /// The sqlx case, distilled. The `sqlx` facade declares optional driver

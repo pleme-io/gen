@@ -191,6 +191,7 @@ mod tests {
         TargetResolve, WorkspaceSpec,
     };
     use indexmap::IndexMap;
+    use std::collections::BTreeMap;
 
     fn empty_spec() -> BuildSpec {
         BuildSpec {
@@ -199,10 +200,10 @@ mod tests {
                 root: "/x".into(),
                 members: vec![],
             },
-            crates: IndexMap::new(),
+            crates: BTreeMap::new(),
             root_crate: String::new(),
             workspace_members: vec![],
-            flake_metadata: IndexMap::new(),
+            flake_metadata: BTreeMap::new(),
             target_resolves: None,
             cargo_lock_sha256: None,
         }
@@ -215,7 +216,7 @@ mod tests {
             version: Some(version.into()),
             edition: Some("2024".into()),
             features: features.clone(),
-            crate_renames: IndexMap::new(),
+            crate_renames: BTreeMap::new(),
             release: Some(true),
             proc_macro: None,
             build: None,
@@ -246,13 +247,13 @@ mod tests {
                 dependencies: vec![],
                 runtime_dependencies: vec![],
                 build_dependencies: vec![],
-                crate_renames: IndexMap::new(),
+                crate_renames: BTreeMap::new(),
             },
         )
     }
 
     fn target_resolve_for(key: &str, features: Vec<String>) -> TargetResolve {
-        let mut crates = IndexMap::new();
+        let mut crates = BTreeMap::new();
         crates.insert(
             key.to_string(),
             CrateTargetEdges {

@@ -14,7 +14,10 @@
 
 use std::path::Path;
 
-use indexmap::IndexMap;
+// BTreeMap (not IndexMap): the delta's keyed maps are canonical (sorted-by-key)
+// by construction, so `Cargo.gen.lock` is byte-identical across build platforms.
+// They are cloned/collected from the already-canonical BuildSpec.
+use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -123,15 +126,15 @@ pub struct GenDelta {
     /// the bulk of the delta and the whole reason it can't be empty.
     pub target_resolves: CompactTargetResolves,
     /// Target-invariant per-crate scalars, keyed by `<name>-<version>`.
-    pub per_crate: IndexMap<String, PerCrateScalars>,
+    pub per_crate: BTreeMap<String, PerCrateScalars>,
     /// Git-source NAR sha256 (SRI `sha256-<base64>`), keyed by crate key.
     /// The lock carries the rev; this fixed-output hash is gen's prefetch.
     #[serde(default)]
-    pub git_nar_sha256: IndexMap<String, String>,
+    pub git_nar_sha256: BTreeMap<String, String>,
     /// Per-member module-trio specs (only members that authored
     /// `[package.metadata.pleme]`).
     #[serde(default)]
-    pub flake_metadata: IndexMap<String, MemberDelta>,
+    pub flake_metadata: BTreeMap<String, MemberDelta>,
 }
 
 impl GenDeltaArtifact for GenDelta {
@@ -157,7 +160,7 @@ impl GenDeltaArtifact for GenDelta {
             .clone()
             .ok_or(GenDeltaError::NoLockSha)?;
 
-        let per_crate: IndexMap<String, PerCrateScalars> = spec
+        let per_crate: BTreeMap<String, PerCrateScalars> = spec
             .crates
             .iter()
             .map(|(key, c)| {
@@ -181,7 +184,7 @@ impl GenDeltaArtifact for GenDelta {
         }
 
         // Git NAR sha256: the lock has the rev, never this fixed-output hash.
-        let git_nar_sha256: IndexMap<String, String> = spec
+        let git_nar_sha256: BTreeMap<String, String> = spec
             .crates
             .iter()
             .filter_map(|(key, c)| match &c.source {
@@ -192,7 +195,7 @@ impl GenDeltaArtifact for GenDelta {
             })
             .collect();
 
-        let flake_metadata: IndexMap<String, MemberDelta> = spec
+        let flake_metadata: BTreeMap<String, MemberDelta> = spec
             .flake_metadata
             .iter()
             .filter_map(|(name, m)| {

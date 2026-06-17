@@ -492,7 +492,7 @@ mod tests {
     use crate::build_spec::{
         BuildSpec, CrateSource, CrateSpec, BuildRustCrateArgs, WorkspaceSpec,
     };
-    use indexmap::IndexMap;
+    use std::collections::BTreeMap;
 
     fn empty_spec(version: u32) -> BuildSpec {
         BuildSpec {
@@ -501,10 +501,10 @@ mod tests {
                 root: "/x".into(),
                 members: vec![],
             },
-            crates: IndexMap::new(),
+            crates: BTreeMap::new(),
             root_crate: String::new(),
             workspace_members: vec![],
-            flake_metadata: IndexMap::new(),
+            flake_metadata: BTreeMap::new(),
             target_resolves: None,
             cargo_lock_sha256: None,
         }
@@ -526,7 +526,7 @@ mod tests {
             dependencies: vec![],
             runtime_dependencies: vec![],
             build_dependencies: vec![],
-            crate_renames: IndexMap::new(),
+            crate_renames: BTreeMap::new(),
             build_rust_crate_args: BuildRustCrateArgs::default(),
         }
     }

@@ -331,13 +331,13 @@ fn schema_is_v10_on_freshly_generated_spec() {
 #[test]
 fn minimal_empty_spec_roundtrips_without_network() {
     use gen_cargo::build_spec::{CrateSpec, WorkspaceSpec};
-    use indexmap::IndexMap;
+    use std::collections::BTreeMap;
 
     // A crate whose build_rust_crate_args are entirely default (so every
     // skip_serializing_if fires) and whose collections are empty. Before
     // the fix, serializing then deserializing this errored with
     // `missing field crateRenames`.
-    let mut crates = IndexMap::new();
+    let mut crates = BTreeMap::new();
     crates.insert(
         "x-0.1.0".to_string(),
         CrateSpec {
@@ -357,7 +357,7 @@ fn minimal_empty_spec_roundtrips_without_network() {
             dependencies: Vec::new(),
             runtime_dependencies: Vec::new(),
             build_dependencies: Vec::new(),
-            crate_renames: IndexMap::new(),
+            crate_renames: BTreeMap::new(),
             build_rust_crate_args: Default::default(),
         },
     );
@@ -371,7 +371,7 @@ fn minimal_empty_spec_roundtrips_without_network() {
         crates,
         root_crate: "x-0.1.0".to_string(),
         workspace_members: vec!["x-0.1.0".to_string()],
-        flake_metadata: IndexMap::new(),
+        flake_metadata: BTreeMap::new(),
         target_resolves: None,
         cargo_lock_sha256: None,
     };
@@ -397,6 +397,7 @@ use gen_cargo::build_spec::{
     CompactTargetResolves, CrateDepSpec, CrateTargetEdges, DepKind, TargetResolve,
 };
 use indexmap::IndexMap;
+use std::collections::BTreeMap;
 
 fn edge(pkg_key: &str, feature: &str) -> CrateTargetEdges {
     CrateTargetEdges {
@@ -419,7 +420,7 @@ fn edge(pkg_key: &str, feature: &str) -> CrateTargetEdges {
 /// A multi-target full map covering the three split cases.
 fn fixture_full() -> IndexMap<String, TargetResolve> {
     let mk = |differing_feature: &str, include_linux_only: bool| {
-        let mut crates: IndexMap<String, CrateTargetEdges> = IndexMap::new();
+        let mut crates: BTreeMap<String, CrateTargetEdges> = BTreeMap::new();
         // identical on every target
         crates.insert("common-1.0.0".to_string(), edge("dep-1.0.0", "std"));
         // present everywhere, but edges vary by target
@@ -551,7 +552,7 @@ fn single_target_compaction_is_all_base_empty_overrides() {
     // still lossless. The reserved-keys invariant holds (no triple is
     // named `base`/`targets`).
     let mut full: IndexMap<String, TargetResolve> = IndexMap::new();
-    let mut crates: IndexMap<String, CrateTargetEdges> = IndexMap::new();
+    let mut crates: BTreeMap<String, CrateTargetEdges> = BTreeMap::new();
     crates.insert("a-1.0.0".to_string(), edge("dep-1.0.0", "std"));
     crates.insert("b-2.0.0".to_string(), edge("dep-1.0.0", "alloc"));
     full.insert(

@@ -15,6 +15,13 @@ use std::path::Path;
 
 use cargo_metadata::MetadataCommand;
 use indexmap::IndexMap;
+// Output-bearing keyed-by-string maps use BTreeMap so their JSON key order is
+// canonical (lexicographic) BY CONSTRUCTION — the serialized spec is then
+// byte-identical regardless of cargo's resolve-traversal order, which is
+// platform-dependent (linux CI vs darwin). IndexMap stays for working/
+// intermediate maps whose order is FLEET_TARGETS-deterministic or never
+// serialized. (Determinism canonicalization — GEN TYPED-SPEC CONTRACT.)
+use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 
 use crate::error::{CargoError, Result};
@@ -41,7 +48,7 @@ pub struct BuildSpec {
     pub version: u32,
     pub workspace: WorkspaceSpec,
     #[serde(default)]
-    pub crates: IndexMap<String, CrateSpec>,
+    pub crates: BTreeMap<String, CrateSpec>,
     /// The workspace's primary buildable crate's key in `crates`. Always
     /// populated — either a single-crate workspace's only member or the
     /// first workspace member by declaration order.
@@ -53,7 +60,7 @@ pub struct BuildSpec {
     /// `cargo metadata`'s package.repository + targets without forcing
     /// Nix to re-parse Cargo.toml.
     #[serde(default)]
-    pub flake_metadata: IndexMap<String, MemberFlakeMetadata>,
+    pub flake_metadata: BTreeMap<String, MemberFlakeMetadata>,
     /// Schema v5+: per-target resolved dep edges. When present,
     /// substrate's lockfile-builder reads dependencies for a given
     /// triple as `base // overrides[triple]` instead of the per-crate
@@ -116,7 +123,7 @@ pub struct TargetResolve {
     /// Per-crate edge sets for this target. Keyed by the same
     /// `<name>-<version>` key as BuildSpec.crates.
     #[serde(default)]
-    pub crates: IndexMap<String, CrateTargetEdges>,
+    pub crates: BTreeMap<String, CrateTargetEdges>,
 }
 
 /// Compact serialized representation of per-target resolves (schema v10).
@@ -137,11 +144,11 @@ pub struct TargetResolve {
 pub struct CompactTargetResolves {
     /// Per-crate edges identical across every target — stored once.
     #[serde(default)]
-    pub base: IndexMap<String, CrateTargetEdges>,
+    pub base: BTreeMap<String, CrateTargetEdges>,
     /// Per-triple overrides — only the crates that differ from `base`
     /// (or are absent from it) on that triple.
     #[serde(default)]
-    pub targets: IndexMap<String, TargetOverrides>,
+    pub targets: BTreeMap<String, TargetOverrides>,
 }
 
 /// Per-triple override set inside `CompactTargetResolves`.
@@ -150,7 +157,7 @@ pub struct TargetOverrides {
     /// Crates whose edges on this triple differ from (or are absent
     /// from) `base`. Keyed by the same `<name>-<version>` key.
     #[serde(default)]
-    pub overrides: IndexMap<String, CrateTargetEdges>,
+    pub overrides: BTreeMap<String, CrateTargetEdges>,
 }
 
 impl CompactTargetResolves {
@@ -185,7 +192,7 @@ impl CompactTargetResolves {
         // candidate set (a crate absent from the first target can't be
         // present in EVERY target). The per-target loop below visits
         // every target, so `present_in_all` implies true universality.
-        let mut base: IndexMap<String, CrateTargetEdges> = IndexMap::new();
+        let mut base: BTreeMap<String, CrateTargetEdges> = BTreeMap::new();
         for (key, first_edges) in &first_resolve.crates {
             let present_in_all = full
                 .values()
@@ -196,9 +203,9 @@ impl CompactTargetResolves {
         }
 
         // overrides[T] = crates in T not captured by base.
-        let mut targets: IndexMap<String, TargetOverrides> = IndexMap::new();
+        let mut targets: BTreeMap<String, TargetOverrides> = BTreeMap::new();
         for (triple, resolve) in &full {
-            let mut overrides: IndexMap<String, CrateTargetEdges> = IndexMap::new();
+            let mut overrides: BTreeMap<String, CrateTargetEdges> = BTreeMap::new();
             for (key, edges) in &resolve.crates {
                 if !base.contains_key(key) {
                     overrides.insert(key.clone(), edges.clone());
@@ -439,7 +446,7 @@ pub struct CrateSpec {
     /// Threads through to buildRustCrate's `crateRenames` arg
     /// verbatim. Nix doesn't do any synthesis here.
     #[serde(default)]
-    pub crate_renames: IndexMap<String, Vec<CrateRenameRecord>>,
+    pub crate_renames: BTreeMap<String, Vec<CrateRenameRecord>>,
     /// Pre-computed kwarg attrset for nixpkgs `buildRustCrate`.
     /// Field names match buildRustCrate's exact arg names so that the
     /// substrate consumer is a pure spread — no per-field
@@ -488,8 +495,8 @@ pub struct BuildRustCrateArgs {
     pub edition: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub features: Vec<String>,
-    #[serde(rename = "crateRenames", default, skip_serializing_if = "IndexMap::is_empty")]
-    pub crate_renames: IndexMap<String, Vec<CrateRenameRecord>>,
+    #[serde(rename = "crateRenames", default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub crate_renames: BTreeMap<String, Vec<CrateRenameRecord>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub release: Option<bool>,
     #[serde(rename = "procMacro", default, skip_serializing_if = "Option::is_none")]
@@ -833,7 +840,7 @@ pub fn generate_multi_target(root: &Path) -> Result<BuildSpec> {
     // notify+macos_fsevent leak that prompted this field).
     let mut resolves: IndexMap<String, TargetResolve> = IndexMap::new();
     for (target, spec) in &per_target {
-        let mut crates: IndexMap<String, CrateTargetEdges> = IndexMap::new();
+        let mut crates: BTreeMap<String, CrateTargetEdges> = BTreeMap::new();
         for (key, crate_spec) in &spec.crates {
             crates.insert(
                 key.clone(),
@@ -1006,7 +1013,7 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         })
         .unwrap_or_default();
 
-    let mut crates: IndexMap<String, CrateSpec> = IndexMap::new();
+    let mut crates: BTreeMap<String, CrateSpec> = BTreeMap::new();
     for pkg in &meta.packages {
         let key = format!("{}-{}", pkg.name, pkg.version);
         let is_member = workspace_member_names.contains(pkg.name.as_str());
@@ -1599,7 +1606,7 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
     // here so the Nix consumer doesn't re-parse Cargo.toml. cargo
     // resolves [workspace.package] inheritance into package.repository
     // already; we read the resolved value.
-    let mut flake_metadata: IndexMap<String, MemberFlakeMetadata> = IndexMap::new();
+    let mut flake_metadata: BTreeMap<String, MemberFlakeMetadata> = BTreeMap::new();
     for m in &workspace_members {
         let Some(pkg) = meta.packages.iter().find(|p| p.name.as_str() == m.name) else {
             continue;
@@ -1915,7 +1922,10 @@ pub fn generate_and_write_if_stale(root: &Path) -> Result<(Freshness, std::path:
 /// (FLEET_TARGETS). One committed spec, every target's resolves
 /// available — gen-bootstrap chicken-and-egg permanently resolved.
 pub fn generate_multi_target_and_write(root: &Path) -> Result<std::path::PathBuf> {
-    let spec = generate_multi_target(root)?;
+    let mut spec = generate_multi_target(root)?;
+    // Canonicalize BEFORE both the full-spec write AND the delta distill so
+    // both artifacts are byte-identical across build platforms.
+    spec.canonicalize();
     if let Err(violations) = crate::invariants::assert_well_formed(&spec) {
         return Err(CargoError::Io {
             path: root.to_path_buf(),
@@ -1954,7 +1964,8 @@ pub fn generate_multi_target_and_write(root: &Path) -> Result<std::path::PathBuf
 /// invariant (cfg-conditional dep filtering); also the canonical
 /// fleet-CI entrypoint for cross-build spec emission.
 pub fn generate_for_target_and_write(root: &Path, target: &str) -> Result<std::path::PathBuf> {
-    let spec = generate_for_target(root, target)?;
+    let mut spec = generate_for_target(root, target)?;
+    spec.canonicalize();
     // Algorithmic guarantee: every emitted spec satisfies the
     // substrate-side invariants. Violations surface as typed errors
     // before the file lands on disk — operators never see a downstream
@@ -1983,6 +1994,93 @@ pub fn generate_for_target_and_write(root: &Path, target: &str) -> Result<std::p
     })?;
     prune_and_log(root);
     Ok(out)
+}
+
+// ─── DETERMINISM CANONICALIZATION ──────────────────────────────────────
+//
+// `gen build` resolves per target via `cargo metadata --filter-platform`;
+// cargo's resolve-traversal + `meta.packages` iteration order is NOT a stable
+// cross-platform contract (linux CI ≠ darwin), so a naively-emitted spec is
+// byte-UNSTABLE across build hosts — which breaks the GEN TYPED-SPEC
+// CONTRACT's "re-render → empty git diff" freshness check. Every serialized
+// keyed map is canonical (sorted by key) BY CONSTRUCTION (BTreeMap); the
+// resolve-ordered Vecs (dep edges, features, renames, binaries) are NOT
+// auto-canonical, so `canonicalize` stable-sorts each by a TOTAL content key.
+//
+// Content-preserving by construction: stable `sort_by`, never dedup/filter —
+// only a permutation of an unchanged multiset (SCHEMA_VERSION unchanged).
+// Substrate is provably order-independent (rustc `--extern` is name-explicit;
+// the crate set is `lib.unique`; deps dispatch by `package_key` lookup;
+// renames match by version — verified in lockfile-builder.nix), so reordering
+// changes no build semantics. Idempotent.
+
+/// Total, content-derived ordering key for a resolved dependency edge.
+fn edge_sort_key(d: &CrateDepSpec) -> (&str, &str, u8, Option<&str>) {
+    let kind_rank = match d.kind {
+        DepKind::Normal => 0,
+        DepKind::Build => 1,
+        DepKind::Dev => 2,
+    };
+    (
+        d.package_key.as_str(),
+        d.name.as_str(),
+        kind_rank,
+        d.target.as_deref(),
+    )
+}
+
+/// Stable-sort an edge Vec into canonical order, and canonicalize each edge's
+/// own feature list. Keeps ALL entries (a rare duplicate-extern-name edge with
+/// distinct `package_key`/kind/target stays, disambiguated by the secondary key).
+fn canonical_edges(v: &mut [CrateDepSpec]) {
+    for d in v.iter_mut() {
+        d.features.sort();
+    }
+    v.sort_by(|a, b| edge_sort_key(a).cmp(&edge_sort_key(b)));
+}
+
+/// Sort each rename record list by `(version, rename)` — the map itself is a
+/// BTreeMap (already key-sorted).
+fn canonical_renames(m: &mut BTreeMap<String, Vec<CrateRenameRecord>>) {
+    for recs in m.values_mut() {
+        recs.sort_by(|a, b| (&a.version, &a.rename).cmp(&(&b.version, &b.rename)));
+    }
+}
+
+/// Canonicalize every `CrateTargetEdges` value's Vecs in a per-target map.
+fn canonical_edges_map(m: &mut BTreeMap<String, CrateTargetEdges>) {
+    for e in m.values_mut() {
+        canonical_edges(&mut e.dependencies);
+        canonical_edges(&mut e.runtime_dependencies);
+        canonical_edges(&mut e.build_dependencies);
+        e.features.sort();
+    }
+}
+
+impl BuildSpec {
+    /// Canonicalize all resolve-ordered Vec ordering so the serialized spec
+    /// (and the delta distilled from it) is byte-identical across build
+    /// platforms. Maps are already canonical (`BTreeMap`). Stable-sort,
+    /// content-preserving, idempotent. Call once before serializing the full
+    /// spec or distilling `Cargo.gen.lock`.
+    pub fn canonicalize(&mut self) {
+        for c in self.crates.values_mut() {
+            canonical_edges(&mut c.dependencies);
+            canonical_edges(&mut c.runtime_dependencies);
+            canonical_edges(&mut c.build_dependencies);
+            c.features.sort();
+            c.binaries.sort_by(|a, b| a.name.cmp(&b.name));
+            canonical_renames(&mut c.crate_renames);
+            canonical_renames(&mut c.build_rust_crate_args.crate_renames);
+            c.build_rust_crate_args.features.sort();
+        }
+        if let Some(tr) = self.target_resolves.as_mut() {
+            canonical_edges_map(&mut tr.base);
+            for ov in tr.targets.values_mut() {
+                canonical_edges_map(&mut ov.overrides);
+            }
+        }
+    }
 }
 
 /// Remove deprecated crate2nix-era sidecars that the typed build-spec
@@ -2133,8 +2231,8 @@ fn synthesize_crate_renames(
     runtime: &[CrateDepSpec],
     build: &[CrateDepSpec],
     by_id: &IndexMap<String, &cargo_metadata::Package>,
-) -> IndexMap<String, Vec<CrateRenameRecord>> {
-    let mut out: IndexMap<String, Vec<CrateRenameRecord>> = IndexMap::new();
+) -> BTreeMap<String, Vec<CrateRenameRecord>> {
+    let mut out: BTreeMap<String, Vec<CrateRenameRecord>> = BTreeMap::new();
     for d in runtime.iter().chain(build.iter()) {
         // Parse canonical from package_key ("<name>-<version>").
         // We could carry the canonical name as a field too — current

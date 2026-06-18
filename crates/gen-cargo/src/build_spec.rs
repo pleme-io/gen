@@ -1259,6 +1259,60 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         let mut dependencies: Vec<CrateDepSpec> = Vec::new();
         for (local_name, dep_pkg_id, dep_kinds) in &edges_for_pkg {
             let Some(dep_pkg) = by_id.get(dep_pkg_id) else { continue; };
+
+            // Prune phantom optional edges. cargo_metadata's resolve
+            // graph lists an OPTIONAL dependency edge even when its
+            // gating feature is OFF — the node's resolved `features`
+            // list is the source of truth, the `deps` array
+            // over-reports. Building such a phantom crate in isolation
+            // is actively wrong: its features come out as the crate's
+            // bare defaults rather than what the (never-activated)
+            // consumer would have selected, so e.g. `sqlx-sqlite`
+            // drags in `libsqlite3-sys` which then lands on its
+            // prepare_v2-only sqlite-3.6.8 bindings and the compile
+            // dies with `E0432: no sqlite3_prepare_v3`. cargo's own
+            // build never compiles it (the `sqlite` feature is off);
+            // gen must match that. An optional dep is ACTIVE iff its
+            // implicit feature name (rename-or-crate-name) is in the
+            // parent's resolved features, OR a resolved feature
+            // expands to `dep:<name>` (namespaced-feature style).
+            // Match the consumer's declaration(s) by crate name (both
+            // sides hyphenated — robust against the underscored lib
+            // name in `local_name` and against renames). Conservative:
+            // only prune when EVERY declaration of the target is
+            // optional AND none is activated.
+            {
+                let decls: Vec<&cargo_metadata::Dependency> = pkg
+                    .dependencies
+                    .iter()
+                    .filter(|d| d.name == dep_pkg.name)
+                    .collect();
+                let all_optional = !decls.is_empty() && decls.iter().all(|d| d.optional);
+                if all_optional {
+                    let parent_feats = resolved_features
+                        .get(&pkg.id.repr)
+                        .map(Vec::as_slice)
+                        .unwrap_or(&[]);
+                    let activated = decls.iter().any(|d| {
+                        let implicit = d.rename.clone().unwrap_or_else(|| d.name.clone());
+                        parent_feats.iter().any(|f| f == &implicit)
+                            || parent_feats.iter().any(|f| {
+                                pkg.features.get(f).is_some_and(|exp| {
+                                    exp.iter().any(|e| {
+                                        e.strip_prefix("dep:").is_some_and(|n| {
+                                            n == implicit || n == d.name
+                                        })
+                                    })
+                                })
+                            })
+                    });
+                    if !activated {
+                        // Phantom optional edge — cargo never builds it.
+                        continue;
+                    }
+                }
+            }
+
             // Edge target key: `name-version-rev` for a git dep so it points at
             // the SPECIFIC rev this edge uses (two revs of one version are
             // distinct crates — TOOLCHAIN-FRESHNESS §X.4b.b); `name-version`

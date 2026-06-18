@@ -1309,7 +1309,35 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 // fall through to the `None` branch (which would forge
                 // `optional = false` onto a genuinely-optional edge — the
                 // sqlx-sqlite `optional: false` bug).
-                let declared = pkg.dependencies.iter().find(|d| {
+                //
+                // TARGET-DISAMBIGUATED MATCH. A single dep name + kind can be
+                // declared MULTIPLE times in one manifest — once bare under
+                // `[dependencies]` and once (or more) under
+                // `[target.'cfg(...)'.dependencies]` — and the two declarations
+                // can disagree on `optional`. `wgpu` is the canonical case:
+                //   [dependencies.wgpu-core]                           # optional=true
+                //   [target.'cfg(not(target_arch="wasm32"))'.dependencies.wgpu-core] # optional=false
+                // A plain `.find()` on name+kind returns the FIRST (bare,
+                // optional) declaration, so its `optional=true` + `target=None`
+                // win even when the resolved edge cargo actually pulled is the
+                // non-optional `cfg(not(wasm32))` one. The downstream
+                // optional-dep activation guard then sees `optional && not
+                // target-gated && no feature` → drops the edge entirely. On
+                // native targets that silently removed wgpu's wgpu-core /
+                // wgpu-hal backend deps, so `wgpu`'s own `backend/wgpu_core.rs`
+                // (`use wgc::command::bundle_ffi::*`) failed to compile with 17×
+                // E0425 `cannot find function wgpu_render_bundle_draw_indexed_indirect`
+                // and siblings — fleet-wide Linux build break (escriba, mado,
+                // every GPU consumer).
+                //
+                // The resolved edge's `target` (`graph_kind.target`) is the
+                // authoritative cfg cargo evaluated under --filter-platform.
+                // Disambiguate by it: among name+kind matches, prefer the
+                // declaration whose `target` string-equals the edge's target;
+                // only fall back to a name+kind-only match when no
+                // target-aligned declaration exists (the common single-decl
+                // case, byte-identical to the old behavior).
+                let name_kind_matches = |d: &&cargo_metadata::Dependency| -> bool {
                     let consumer_name = d
                         .rename
                         .clone()
@@ -1317,7 +1345,15 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                         .replace('-', "_");
                     consumer_name == local_name.replace('-', "_")
                         && d.kind == graph_kind.kind
-                });
+                };
+                let declared = pkg
+                    .dependencies
+                    .iter()
+                    .find(|d| {
+                        name_kind_matches(d)
+                            && d.target.as_ref().map(ToString::to_string) == target
+                    })
+                    .or_else(|| pkg.dependencies.iter().find(name_kind_matches));
                 let (features, uses_default_features, optional) = match declared {
                     Some(d) => (
                         d.features.iter().map(String::from).collect(),

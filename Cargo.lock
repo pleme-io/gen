@@ -617,6 +617,7 @@ dependencies = [
 name = "gen-gomod"
 version = "0.1.17"
 dependencies = [
+ "blake3",
  "gen-macros",
  "gen-platform",
  "gen-types",
@@ -624,6 +625,7 @@ dependencies = [
  "inventory",
  "serde",
  "serde_json",
+ "sha2",
  "thiserror 2.0.18",
 ]
 

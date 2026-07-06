@@ -32,13 +32,24 @@ fn adapter_exposes_quirks_via_default_envelope() {
 
 #[test]
 fn invariants_run_clean_against_minimal_spec() {
-    use gen_gomod::build_spec::BuildSpec;
-    use indexmap::IndexMap;
+    use gen_gomod::build_spec::{BuildSpec, DepMode, ModuleSpec, Renderer, SCHEMA_VERSION};
+    use std::collections::BTreeMap;
     let spec = BuildSpec {
-        version: gen_gomod::build_spec::SCHEMA_VERSION,
-        packages: IndexMap::new(),
+        version: SCHEMA_VERSION,
+        renderer: Renderer::Incremental,
+        module: ModuleSpec {
+            module_path: "example.com/x".into(),
+            go_version: "1.25".into(),
+            toolchain: None,
+            has_external_deps: false,
+            dep_mode: DepMode::Vendored,
+            vendor_hash: None,
+        },
+        packages: BTreeMap::new(),
         root_package: String::new(),
         workspace_members: vec![],
+        target_resolves: None,
+        go_sum_sha256: None,
     };
     let violations = <GomodInvariants as Invariants>::check(&spec);
     assert!(violations.is_empty(), "minimal spec violated: {violations:?}");

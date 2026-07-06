@@ -25,6 +25,14 @@ serde_json = { workspace = true }
 indexmap = { workspace = true }
 thiserror = { workspace = true }
 inventory = { workspace = true }
+# Content-address of a node's resolved sources (source_hash). BLAKE3 to
+# match the estante/CA discipline used fleet-wide for content keys.
+blake3 = { workspace = true }
+# go_sum_sha256 freshness tie. SHA-256 specifically (not BLAKE3) because
+# Nix has built-in `builtins.hashFile "sha256"` but no BLAKE3 surface —
+# same rationale as gen-cargo's cargo_lock_sha256.
+sha2 = "0.10"
 
 [dev-dependencies]
 indexmap = { workspace = true }
+serde_json = { workspace = true }

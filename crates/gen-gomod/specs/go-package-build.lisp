@@ -18,8 +18,10 @@
    (:name go-list        :env    GoBuildEnv
     :produces "concatenated go list -json objects")
    (:name parse-go-list  :produces "Vec<GoListPackage>" :via "golist::parse_stream")
-   (:name reject-cgo-asm :guard  Go-I12
-    :fail-closed t :doc "cgo/asm on a non-std node ⇒ typed rejection (deferred to M-cgo/M-asm)")
+   (:name reject-cgo     :guard  Go-I12
+    :fail-closed t :doc "cgo sources on a non-std node ⇒ typed rejection (deferred to M-cgo)")
+   (:name reject-asm     :guard  Go-I12
+    :fail-closed t :doc "asm sources on a non-std node ⇒ typed rejection (std asm lives in the opaque std-tree; deferred to M-asm)")
    (:name relative-path  :guard  Go-I3  :produces "PackageSource::Vendored{relative_path}")
    (:name read-source    :env    GoBuildEnv :produces "go_files ++ embed.files bytes")
    (:name source-hash    :guard  Go-I8  :produces "blake3 content address")
@@ -31,7 +33,8 @@
    (:name go-sum-tie     :guard  Go-I7  :produces "go_sum_sha256"))
 
   ;; Package kinds (M1). Cgo/Tool are deferred — structurally
-  ;; unrepresentable in the M1 enum, so Go-I12 is enforced at encode.
+  ;; unrepresentable in the M1 enum, so Go-I12 is enforced at encode via
+  ;; the two fail-closed phases reject-cgo + reject-asm.
   :kinds (std module main)
 
   ;; Invariants — asserted on BOTH sides (encoder property test +

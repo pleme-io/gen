@@ -3,7 +3,7 @@
 //! Walks the encoder phases over `go list -deps -json` output:
 //!
 //! ```text
-//! read-go-mod → go-list → parse-go-list → reject-cgo/asm (Go-I12)
+//! read-go-mod → go-list → parse-go-list → reject-cgo + reject-asm (Go-I12)
 //!   → per-node: relative-path (Go-I3) → read-source + source_hash (Go-I8)
 //!   → resolve-imports (Go-I1) → embed (Go-I9) → tree (Go-I2)
 //!   → roots/members → compact target_resolves → go_sum tie (Go-I7)

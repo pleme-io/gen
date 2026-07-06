@@ -722,6 +722,22 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                         commit_spec_if_drifted(&root)?;
                     }
                 }
+                "gomod" => {
+                    // gomod M1 is a single-tuple per-package incremental
+                    // encoder. It has no Cargo.lock-hash fast-path, so
+                    // --if-stale / --single-target / --commit are cargo-
+                    // only and don't apply here; --filter-platform (a Rust
+                    // triple) selects the Go (goos, goarch) tuple, else the
+                    // build host. Emits Go.build-spec.json next to go.mod.
+                    let out = match filter_platform {
+                        Some(triple) => {
+                            gen_gomod::generate_for_target_and_write(&root, triple)
+                                .map_err(CliError::Gomod)?
+                        }
+                        None => gen_gomod::generate_and_write(&root).map_err(CliError::Gomod)?,
+                    };
+                    eprintln!("gen build: wrote {}", out.display());
+                }
                 other => {
                     return Err(CliError::RenderNotImplementedForAdapter(other.to_string()));
                 }
@@ -1211,6 +1227,8 @@ enum CliError {
     Npm(#[from] gen_npm::NpmError),
     #[error(transparent)]
     Bundler(#[from] gen_bundler::BundlerError),
+    #[error(transparent)]
+    Gomod(#[from] gen_gomod::GomodError),
     #[error(transparent)]
     Json(#[from] serde_json::Error),
     #[error(transparent)]

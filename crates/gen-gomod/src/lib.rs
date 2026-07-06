@@ -14,6 +14,7 @@
 
 pub mod adapter;
 pub mod build_spec;
+pub mod emit;
 pub mod error;
 pub mod gen_delta;
 pub mod golist;
@@ -25,5 +26,6 @@ pub mod testkit;
 
 pub use adapter::GomodAdapter;
 pub use build_spec::{BuildSpec, PackageKind, PackageSpec, SCHEMA_VERSION};
+pub use emit::{generate_and_write, generate_for_target_and_write, SPEC_FILENAME};
 pub use error::{GomodError, Result};
 pub use interp::{apply, EncodeCtx, GoBuildEnv, RealGoBuildEnv};

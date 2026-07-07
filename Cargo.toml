@@ -22,6 +22,7 @@ members = [
     "crates/gen-buck",
     "crates/gen-cache-attic",
     "crates/gen-caixa-bridge",
+    "crates/gen-pdc",
     "crates/gen-cli",
 ]
 
@@ -37,6 +38,7 @@ authors = ["pleme-io"]
 [workspace.dependencies]
 # Workspace crates
 gen-types = { path = "crates/gen-types", version = "0.1.0" }
+gen-pdc = { path = "crates/gen-pdc", version = "0.1.0" }
 gen-platform = { path = "crates/gen-platform", version = "0.1.0" }
 gen-cargo = { path = "crates/gen-cargo", version = "0.1.0" }
 gen-npm = { path = "crates/gen-npm", version = "0.1.0" }

@@ -1,0 +1,31 @@
+[package]
+name = "gen-pdc"
+description = "gen — the Per-Dependency Content-Addressed Cacheability (PDC) contract. The typed variant CATALOG of ecosystem adapters (cargo/gomod/npm/pip/…) + the universal PDC invariant checker + the verification MATRIX forcing-function. Codifies the per-dependency-caching law that gen-cargo (shipped) and gen-gomod (M1) already implement implicitly, so a new ecosystem cannot ship without a PDC conformance proof. See theory/PDC-CONTRACT.md."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_pdc"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+# ONLY the stable trait surface (gen-types). gen-pdc deliberately does
+# NOT depend on the per-ecosystem adapter crates: their internals are
+# either heavy (gen-cargo) or under active development on branches
+# (gen-gomod M1). The PDC invariant is a pure law over the universal
+# `gen_types::Spec` accessor surface, exercised against synthetic
+# per-ecosystem fixture specs — so this crate stays decoupled from any
+# one adapter's churn.
+gen-types = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+blake3 = { workspace = true }
+indexmap = { workspace = true }

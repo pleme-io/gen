@@ -688,6 +688,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "gen-pdc"
+version = "0.1.17"
+dependencies = [
+ "blake3",
+ "gen-types",
+ "indexmap",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "gen-pip"
 version = "0.1.17"
 dependencies = [

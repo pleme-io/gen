@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "cargo_lock_sha256": "bb9b9acd749bfba6b956cdd713458a229615706fa928e48b529b38245dae97a2",
+  "cargo_lock_sha256": "2eb92f9c2d1ee68ffd0f013c510ad7909f8be67de361a473703d9b354f9896a2",
   "target_resolves": {
     "base": {
       "anstream-1.0.0": {
@@ -2685,6 +2685,34 @@
             "package_key": "thiserror-2.0.18",
             "kind": "normal",
             "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          }
+        ],
+        "build_dependencies": [],
+        "features": []
+      },
+      "gen-secattest-0.1.17": {
+        "runtime_dependencies": [
+          {
+            "name": "gen_pdc",
+            "package_key": "gen-pdc-0.1.17",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
+            "name": "serde",
+            "package_key": "serde-1.0.228",
+            "kind": "normal",
+            "features": [
+              "derive"
+            ],
             "uses_default_features": true,
             "optional": false,
             "target": null,
@@ -8633,6 +8661,13 @@
       "edition": "2024",
       "lib_target": {
         "name": "gen_polyglot",
+        "path": "src/lib.rs"
+      }
+    },
+    "gen-secattest-0.1.17": {
+      "edition": "2024",
+      "lib_target": {
+        "name": "gen_secattest",
         "path": "src/lib.rs"
       }
     },

@@ -54,6 +54,49 @@ pub enum PdcViolation {
     MemberNotAMember { key: String },
     /// Clause 6: the spec is below the variant's current schema version.
     StaleSchema { found: u32, expected: u32 },
+    /// Clause 3 (drift facet). Two DISTINCT nodes present the SAME content
+    /// address where one lists the other as a dependency edge — a
+    /// self-referential address collapse (a dependent whose address folded
+    /// to equal its dependency's). A correct Merkle fold with domain
+    /// separation cannot produce this, so it fires only on a hand-crafted /
+    /// corrupted spec; a defensive detector, not the realization of dedup
+    /// (that is the interpreter's C1 ceiling). (Absorbed from the standalone
+    /// supercache-contract codification.)
+    AddressCollision { addr: String, key_a: String, key_b: String },
+}
+
+impl PdcViolation {
+    /// A stable kebab-case rule name + optional locus, for an adapter's
+    /// `confirm` typed report (mirrors gomod's `violation_locus`). One
+    /// vocabulary fleet-wide so `gen confirm` and cse-lint report the same
+    /// rule names regardless of which ecosystem raised the clause.
+    #[must_use]
+    pub fn locus(&self) -> (&'static str, Option<String>) {
+        match self {
+            PdcViolation::MissingContentAddress { key, .. } => {
+                ("pdc-missing-content-address", Some(key.clone()))
+            }
+            PdcViolation::AddressNotMerkleConsistent { key } => {
+                ("pdc-address-not-merkle-consistent", Some(key.clone()))
+            }
+            PdcViolation::UnresolvedEdge { from, .. } => {
+                ("pdc-unresolved-edge", Some(from.clone()))
+            }
+            PdcViolation::DependencyCycle { key } => {
+                ("pdc-dependency-cycle", Some(key.clone()))
+            }
+            PdcViolation::KindNotAdmitted { key, .. } => {
+                ("pdc-kind-not-admitted", Some(key.clone()))
+            }
+            PdcViolation::MemberNotAMember { key } => {
+                ("pdc-member-not-a-member", Some(key.clone()))
+            }
+            PdcViolation::StaleSchema { .. } => ("pdc-stale-schema", None),
+            PdcViolation::AddressCollision { key_a, .. } => {
+                ("pdc-address-collision", Some(key_a.clone()))
+            }
+        }
+    }
 }
 
 /// Outcome of a PDC check: the violations (empty = well-formed) plus the
@@ -131,6 +174,38 @@ pub fn check(spec: &PdcSpec, admitted: &[SourceClass]) -> PdcCheckOutcome {
         match spec.nodes.get(m) {
             Some(n) if n.is_member => {}
             _ => violations.push(PdcViolation::MemberNotAMember { key: m.clone() }),
+        }
+    }
+
+    // ── clause 3 (drift facet) — pathological self-referential address ──
+    // Legitimate dedup (two DISTINCT keys, SAME address, no edge between
+    // them) is silent + desirable. We surface only the impossible-for-a-
+    // correct-fold state: two keys with the same DECLARED address where one
+    // lists the other as an edge (a dependent whose address folded to equal
+    // its dependency's). Domain separation in the Merkle fold prevents this,
+    // so it fires only on a hand-crafted / corrupted spec. Detector, not the
+    // realization of dedup. (Absorbed from the standalone codification.)
+    {
+        let mut by_addr: HashMap<&str, &str> = HashMap::new();
+        for (key, node) in &spec.nodes {
+            let Some(addr) = &node.addr else { continue };
+            let hex = addr.as_str();
+            if let Some(&prev) = by_addr.get(hex) {
+                let dependent_on_prev = node.deps.iter().any(|e| e == prev);
+                let prev_depends_on_key = spec
+                    .nodes
+                    .get(prev)
+                    .is_some_and(|p| p.deps.iter().any(|e| e == key.as_str()));
+                if dependent_on_prev || prev_depends_on_key {
+                    violations.push(PdcViolation::AddressCollision {
+                        addr: hex.to_string(),
+                        key_a: prev.to_string(),
+                        key_b: key.clone(),
+                    });
+                }
+            } else {
+                by_addr.insert(hex, key.as_str());
+            }
         }
     }
 
@@ -265,4 +340,126 @@ fn run_fixpoint(spec: &PdcSpec, violations: &mut Vec<PdcViolation>) -> (usize, u
     }
 
     (memo.len(), requests)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::content_addr::ContentAddr;
+    use crate::spec::{PdcNode, PdcSpec, SourceClass};
+    use indexmap::IndexMap;
+
+    fn node(class: SourceClass, source: &[u8], deps: &[&str], is_member: bool) -> PdcNode {
+        let addr = if class.requires_address() {
+            Some(ContentAddr::merkle(source, vec![]))
+        } else {
+            None
+        };
+        PdcNode {
+            class,
+            addr,
+            source: source.to_vec(),
+            deps: deps.iter().map(|s| (*s).into()).collect(),
+            is_member,
+        }
+    }
+
+    fn spec_of(nodes: Vec<(&str, PdcNode)>, members: &[&str]) -> PdcSpec {
+        let mut map = IndexMap::new();
+        for (k, n) in nodes {
+            map.insert(k.to_string(), n);
+        }
+        PdcSpec {
+            schema_version: 1,
+            current_schema_version: 1,
+            nodes: map,
+            members: members.iter().map(|s| (*s).into()).collect(),
+        }
+    }
+
+    #[test]
+    fn legitimate_dedup_is_silent() {
+        // Two DISTINCT keys with the SAME address and NO edge between them ⇒
+        // legitimate dedup. It must NOT be flagged (that is the whole point).
+        let shared = ContentAddr::merkle(b"shared", vec![]);
+        let a = PdcNode {
+            class: SourceClass::Registry,
+            addr: Some(shared.clone()),
+            source: b"shared".to_vec(),
+            deps: vec![],
+            is_member: false,
+        };
+        let b = PdcNode {
+            class: SourceClass::Registry,
+            addr: Some(shared),
+            source: b"shared".to_vec(),
+            deps: vec![],
+            is_member: false,
+        };
+        let spec = spec_of(vec![("copy-a", a), ("copy-b", b)], &[]);
+        let out = check(&spec, &[SourceClass::Registry]);
+        assert!(
+            !out.violations.iter().any(|v| matches!(v, PdcViolation::AddressCollision { .. })),
+            "identical-source dedup must be silent, not flagged"
+        );
+    }
+
+    #[test]
+    fn self_referential_address_collision_is_caught() {
+        // A dependent whose declared address EQUALS its dependency's, with an
+        // edge between them — the pathological collapse. Absorbed detector.
+        let shared = ContentAddr::merkle(b"x", vec![]);
+        let dep = PdcNode {
+            class: SourceClass::Registry,
+            addr: Some(shared.clone()),
+            source: b"x".to_vec(),
+            deps: vec![],
+            is_member: false,
+        };
+        let dependent = PdcNode {
+            class: SourceClass::Registry,
+            addr: Some(shared), // same address AND depends on `dep`
+            source: b"y".to_vec(),
+            deps: vec!["dep".into()],
+            is_member: false,
+        };
+        let spec = spec_of(vec![("dep", dep), ("dependent", dependent)], &[]);
+        let out = check(&spec, &[SourceClass::Registry]);
+        assert!(
+            out.violations.iter().any(|v| matches!(v, PdcViolation::AddressCollision { .. })),
+            "a self-referential address collapse must be caught"
+        );
+    }
+
+    #[test]
+    fn violation_locus_is_stable_kebab() {
+        let v = PdcViolation::UnresolvedEdge { from: "x".into(), missing: "y".into() };
+        assert_eq!(v.locus(), ("pdc-unresolved-edge", Some("x".to_string())));
+        let s = PdcViolation::StaleSchema { found: 1, expected: 2 };
+        assert_eq!(s.locus(), ("pdc-stale-schema", None));
+        let c = PdcViolation::AddressCollision {
+            addr: "a".into(),
+            key_a: "p".into(),
+            key_b: "q".into(),
+        };
+        assert_eq!(c.locus(), ("pdc-address-collision", Some("p".to_string())));
+    }
+
+    #[test]
+    fn a_clean_conformant_spec_still_passes() {
+        // Regression guard: the absorbed detector does not disturb the
+        // happy path — a normal graph with a shared dep stays clean.
+        let leaf = node(SourceClass::Registry, b"leaf", &[], false);
+        let leaf_addr = leaf.addr.clone().unwrap();
+        let root = PdcNode {
+            class: SourceClass::WorkspaceMember,
+            addr: Some(ContentAddr::merkle(b"root", vec![&leaf_addr])),
+            source: b"root".to_vec(),
+            deps: vec!["leaf".into()],
+            is_member: true,
+        };
+        let spec = spec_of(vec![("root", root), ("leaf", leaf)], &["root"]);
+        let out = check(&spec, &[SourceClass::WorkspaceMember, SourceClass::Registry]);
+        assert!(out.is_valid(), "conformant spec must stay PDC-clean: {:?}", out.violations);
+    }
 }

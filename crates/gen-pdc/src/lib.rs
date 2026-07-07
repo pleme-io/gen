@@ -62,3 +62,44 @@ pub use check::{check, PdcCheckOutcome, PdcViolation};
 pub use clause::{PdcClause, UnrepTier};
 pub use content_addr::{ContentAddr, ContentAddrError};
 pub use spec::{PdcNode, PdcSpec, SourceClass};
+
+/// The six-clause PDC invariant, one line each — the human-readable form of
+/// the doctrine header ([`clause::PdcClause`] is the typed form). Used by
+/// operator reporting + the doctrine-parity test so the prose statement and
+/// the [`PdcClause`] enum stay bound (they can never drift apart in count or
+/// order). Absorbed from the standalone supercache-contract codification.
+pub const PDC_CLAUSES: [&str; 6] = [
+    "1. content-addressed: every node carries a non-empty addr = H(source ∪ dep-addrs)",
+    "2. edge-resolvable: every edge resolves to a node in the same spec",
+    "3. dedup-by-address: one address ⇒ one build, reused by every dependent",
+    "4. boundary-precise: editing a node re-derives only it + its transitive dependents",
+    "5. kind ⟺ source: an unbuildable source class is structurally absent from the kind enum",
+    "6. freshness-gated: a below-current-schema spec is a violation; CI fails on spec drift",
+];
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn prose_clauses_and_typed_clauses_agree_on_count_and_order() {
+        // The doctrine-parity gate: the human-readable clause strings and the
+        // typed `PdcClause` partition must stay in lock-step. If a clause is
+        // added to one and not the other, this fails — the prose can never
+        // round up (or down) past the typed enum.
+        assert_eq!(PDC_CLAUSES.len(), PdcClause::ALL.len());
+        assert_eq!(PDC_CLAUSES.len(), 6);
+        // Each prose line is 1-indexed to match the typed clause's position:
+        // line 0 starts "1. ", line 1 "2. ", … so prose and enum never drift.
+        let expected_prefixes = ["1. ", "2. ", "3. ", "4. ", "5. ", "6. "];
+        for (i, clause) in PdcClause::ALL.iter().enumerate() {
+            // Every clause has an achievable tier declared (no gap).
+            let _ = clause.achievable_tier();
+            assert!(
+                PDC_CLAUSES[i].starts_with(expected_prefixes[i]),
+                "prose clause {} must be 1-indexed to its typed position",
+                i + 1
+            );
+        }
+    }
+}

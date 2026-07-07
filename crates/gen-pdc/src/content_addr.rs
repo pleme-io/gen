@@ -54,10 +54,23 @@ pub struct ContentAddr(String);
 
 /// Why a candidate string is not a valid content address. Surfaced at the
 /// parse boundary (deserialize) and by `try_parse`.
+///
+/// The `WrongLength` / `NotHex` / `Genesis` variants back the stricter
+/// [`ContentAddr::parse_digest`] constructor (absorbed from the standalone
+/// supercache-contract codification), which enforces the canonical
+/// 64-lowercase-hex BLAKE3 form so a cache key has exactly one spelling.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ContentAddrError {
     /// The address is empty — clause 1's forbidden state.
     Empty,
+    /// The address was not exactly 64 chars (a BLAKE3-256 digest is 64 hex).
+    WrongLength(usize),
+    /// The address contained a non-`[0-9a-f]` character — uppercase and
+    /// non-hex are both rejected so the canonical form is unambiguous.
+    NotHex(char),
+    /// The address decoded to the all-zero genesis sentinel — a "not yet
+    /// content-addressed" marker, never a valid per-dependency address.
+    Genesis,
 }
 
 impl std::fmt::Display for ContentAddrError {
@@ -65,6 +78,15 @@ impl std::fmt::Display for ContentAddrError {
         match self {
             ContentAddrError::Empty => {
                 write!(f, "content address is empty (PDC clause 1 forbids it)")
+            }
+            ContentAddrError::WrongLength(n) => {
+                write!(f, "content address must be 64 hex chars, got {n}")
+            }
+            ContentAddrError::NotHex(c) => {
+                write!(f, "content address contains a non-lowercase-hex character: {c:?}")
+            }
+            ContentAddrError::Genesis => {
+                write!(f, "content address is the all-zero genesis sentinel (no source hashed)")
             }
         }
     }
@@ -83,6 +105,41 @@ impl ContentAddr {
             return Err(ContentAddrError::Empty);
         }
         Ok(ContentAddr(s))
+    }
+
+    /// The STRICT constructor: accept only the canonical 64-lowercase-hex
+    /// BLAKE3-256 form, rejecting wrong-length, uppercase / non-hex, and the
+    /// all-zero genesis sentinel at the boundary. (Absorbed from the
+    /// standalone supercache-contract codification.)
+    ///
+    /// [`try_parse`](Self::try_parse) stays lenient by design — it accepts an
+    /// opaque upstream content-address token a variant sources verbatim (a
+    /// registry `sha256`, etc.). `parse_digest` is for the destination form
+    /// where the address IS a BLAKE3 digest and a cache key must have exactly
+    /// one spelling. An adapter that has moved its border to the digest form
+    /// calls this; the merkle output already satisfies it.
+    ///
+    /// # Errors
+    /// [`ContentAddrError::WrongLength`] / [`ContentAddrError::NotHex`] /
+    /// [`ContentAddrError::Genesis`] when `s` is not a canonical digest.
+    pub fn parse_digest(s: &str) -> Result<Self, ContentAddrError> {
+        if s.len() != 64 {
+            return Err(ContentAddrError::WrongLength(s.len()));
+        }
+        // Reject uppercase + non-hex so the canonical form is unambiguous.
+        let mut all_zero = true;
+        for c in s.chars() {
+            match c {
+                '1'..='9' => all_zero = false,
+                'a'..='f' => all_zero = false,
+                '0' => {}
+                other => return Err(ContentAddrError::NotHex(other)),
+            }
+        }
+        if all_zero {
+            return Err(ContentAddrError::Genesis);
+        }
+        Ok(ContentAddr(s.to_string()))
     }
 
     /// Compute the Merkle content address of a node from its own source
@@ -170,6 +227,41 @@ mod tests {
         // re-derives the dependent — PDC clause 4, boundary-precise).
         let n4 = ContentAddr::merkle(b"n", vec![&a]);
         assert_ne!(n1, n4);
+    }
+
+    #[test]
+    fn parse_digest_accepts_a_real_merkle_hex() {
+        // The merkle output IS a canonical 64-lowercase-hex digest, so the
+        // strict constructor round-trips it.
+        let a = ContentAddr::merkle(b"payload", vec![]);
+        let strict = ContentAddr::parse_digest(a.as_str()).expect("merkle hex is canonical");
+        assert_eq!(a, strict);
+        assert_eq!(a.as_str().len(), 64);
+    }
+
+    #[test]
+    fn parse_digest_rejects_wrong_length() {
+        assert_eq!(ContentAddr::parse_digest("abc"), Err(ContentAddrError::WrongLength(3)));
+        assert!(matches!(
+            ContentAddr::parse_digest(&"a".repeat(63)),
+            Err(ContentAddrError::WrongLength(63))
+        ));
+    }
+
+    #[test]
+    fn parse_digest_rejects_uppercase_and_non_hex() {
+        // uppercase is a non-canonical spelling of the same bytes — a cache
+        // key must have exactly one form, so uppercase is rejected.
+        let upper = "A".repeat(64);
+        assert!(matches!(ContentAddr::parse_digest(&upper), Err(ContentAddrError::NotHex('A'))));
+        let bad = "z".repeat(64);
+        assert!(matches!(ContentAddr::parse_digest(&bad), Err(ContentAddrError::NotHex('z'))));
+    }
+
+    #[test]
+    fn parse_digest_rejects_genesis_sentinel() {
+        let genesis = "0".repeat(64);
+        assert_eq!(ContentAddr::parse_digest(&genesis), Err(ContentAddrError::Genesis));
     }
 
     #[test]

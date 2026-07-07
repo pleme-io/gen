@@ -756,6 +756,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "gen-secattest"
+version = "0.1.17"
+dependencies = [
+ "gen-pdc",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "gen-swift"
 version = "0.1.17"
 dependencies = [

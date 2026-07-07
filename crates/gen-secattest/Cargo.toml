@@ -1,0 +1,28 @@
+[package]
+name = "gen-secattest"
+description = "gen — the Security-Attestation (SecAttest) INVARIANT contract. The universal typed law that every derivation carries a COMPLETE, content-addressed, FAIL-CLOSED security verdict {signature, SBOM, CVE⊖VEX, provenance} keyed by the SAME content hash PDC uses (the attestation address = the third use of PDC clause-4's one cell), verified before use: an unverified/incomplete/tampered artifact has no run path. Ships the six-clause law, the sealed RunToken capability, the fail-closed checker + Attestable trait, and the verdict-kind CATALOG + verification MATRIX forcing-function. Security peer of gen-pdc; OSS-first (cosign/sbomnix/Trivy/osv/OpenVEX/SLSA/in-toto plug in as producers)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_secattest"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+# The attestation address IS the PDC content hash — reused, not forked
+# (the third use of PDC clause-4's one cell). gen-secattest depends ONLY on
+# gen-pdc (which re-exports the sealed `ContentAddr`) + serde, so it stays
+# decoupled from every per-ecosystem adapter's churn, exactly like gen-pdc.
+gen-pdc = { workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "cargo_lock_sha256": "b17bce65269207e1e1af163c2fdd42d3f405cd1fb6842008eba33003869fb15d",
+  "cargo_lock_sha256": "bb9b9acd749bfba6b956cdd713458a229615706fa928e48b529b38245dae97a2",
   "target_resolves": {
     "base": {
       "anstream-1.0.0": {
@@ -1874,6 +1874,16 @@
       "gen-gomod-0.1.17": {
         "runtime_dependencies": [
           {
+            "name": "blake3",
+            "package_key": "blake3-1.8.5",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
             "name": "gen_macros",
             "package_key": "gen-macros-0.1.17",
             "kind": "normal",
@@ -1940,6 +1950,16 @@
           {
             "name": "serde_json",
             "package_key": "serde_json-1.0.150",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
+            "name": "sha2",
+            "package_key": "sha2-0.10.9",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2265,6 +2285,66 @@
           {
             "name": "thiserror",
             "package_key": "thiserror-2.0.18",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          }
+        ],
+        "build_dependencies": [],
+        "features": []
+      },
+      "gen-pdc-0.1.17": {
+        "runtime_dependencies": [
+          {
+            "name": "blake3",
+            "package_key": "blake3-1.8.5",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
+            "name": "gen_types",
+            "package_key": "gen-types-0.1.17",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
+            "name": "indexmap",
+            "package_key": "indexmap-2.14.0",
+            "kind": "normal",
+            "features": [
+              "serde"
+            ],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
+            "name": "serde",
+            "package_key": "serde-1.0.228",
+            "kind": "normal",
+            "features": [
+              "derive"
+            ],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
+            "name": "serde_json",
+            "package_key": "serde_json-1.0.150",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -8518,6 +8598,13 @@
       "edition": "2024",
       "lib_target": {
         "name": "gen_npm",
+        "path": "src/lib.rs"
+      }
+    },
+    "gen-pdc-0.1.17": {
+      "edition": "2024",
+      "lib_target": {
+        "name": "gen_pdc",
         "path": "src/lib.rs"
       }
     },

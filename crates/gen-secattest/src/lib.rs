@@ -38,11 +38,18 @@
 //!    universal `verify` (S3/S4/S5), the [`Attestable`] trait's provided
 //!    `admit` (S1→S5 in one call), and the S6 dedup witness (`CeilingC1`).
 //! 4. **The verdict-kind CATALOG** ([`catalog`], CATALOG REFLECTION) — the
-//!    §4 verdict-store schema, self-describing + matrix-enforced.
+//!    §4 verdict-store schema (the DATA axis), self-describing + matrix-enforced.
+//! 5. **The security-CONCERN CATALOG** ([`concern`], CATALOG REFLECTION) — the
+//!    layered enjulho ship (the DELIVERY axis): eight typed concern slots
+//!    (signing/SBOM/CVE⊖VEX/provenance+VSA/transparency/GUAC/Scorecard/
+//!    admission), each with its best-in-class OSS engine, `Shipped/Wired/
+//!    Design` maturity, and NIST 800-53 crosswalk. The four fail-closed
+//!    concerns cross-witness the four required verdict kinds.
 //!
-//! The verification MATRIX (one row per verdict kind + one per clause failure
-//! mode, failing the build when a kind lands without a row) lives in
-//! `tests/secattest_matrix.rs`.
+//! The verification MATRICES (one row per verdict kind / per concern, failing
+//! the build when one lands without a row) live in `tests/secattest_matrix.rs`
+//! + `tests/concern_matrix.rs` (`matrix_covers_every_concern` +
+//! `no_verdict_slot_rounded_up`).
 //!
 //! ## Named EXTERNAL gates (never claimed done)
 //!
@@ -62,11 +69,15 @@
 
 pub mod catalog;
 pub mod clause;
+pub mod concern;
 pub mod fixture;
 pub mod invariant;
 pub mod verdict;
 
 pub use catalog::{entry_for, maturity_histogram, VerdictKindEntry, CATALOG};
+pub use concern::{
+    concern_slot, Concern, ConcernSlot, Layer, ShipMaturity, CONCERN_CATALOG,
+};
 pub use clause::{AttestTier, SecClause};
 pub use invariant::{
     dedup_witness, verify, Attestable, DedupOutcome, VerdictViolation,

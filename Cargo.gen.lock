@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "cargo_lock_sha256": "73a066df9dac1711657ffaeeee02021c450d2d41a3df1f56df2ae3cd1c4db7c6",
+  "cargo_lock_sha256": "ec9f589c75b5181249f503ac1165831d6aacc04c0d696febe8e7cfea78f10835",
   "target_resolves": {
     "base": {
       "anstream-1.0.0": {
@@ -874,11 +874,11 @@
           "std"
         ]
       },
-      "gen-adapter-forge-0.1.18": {
+      "gen-adapter-forge-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -924,11 +924,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-ansible-0.1.18": {
+      "gen-ansible-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.18",
+            "package_key": "gen-macros-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -938,7 +938,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.18",
+            "package_key": "gen-platform-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -948,7 +948,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1014,11 +1014,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-bazel-0.1.18": {
+      "gen-bazel-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1052,11 +1052,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-buck-0.1.18": {
+      "gen-buck-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_bazel",
-            "package_key": "gen-bazel-0.1.18",
+            "package_key": "gen-bazel-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1066,7 +1066,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1100,11 +1100,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-bundler-0.1.18": {
+      "gen-bundler-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.18",
+            "package_key": "gen-macros-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1114,7 +1114,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.18",
+            "package_key": "gen-platform-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1124,7 +1124,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1190,11 +1190,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-cache-attic-0.1.18": {
+      "gen-cache-attic-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_config",
-            "package_key": "gen-config-0.1.18",
+            "package_key": "gen-config-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1204,7 +1204,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1250,11 +1250,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-caixa-bridge-0.1.18": {
+      "gen-caixa-bridge-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_config",
-            "package_key": "gen-config-0.1.18",
+            "package_key": "gen-config-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1264,7 +1264,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1310,7 +1310,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-cargo-0.1.18": {
+      "gen-cargo-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "async_trait",
@@ -1344,7 +1344,7 @@
           },
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.18",
+            "package_key": "gen-macros-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1354,7 +1354,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.18",
+            "package_key": "gen-platform-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1364,7 +1364,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1544,7 +1544,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-cli-0.1.18": {
+      "gen-cli-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "clap",
@@ -1560,7 +1560,7 @@
           },
           {
             "name": "gen_ansible",
-            "package_key": "gen-ansible-0.1.18",
+            "package_key": "gen-ansible-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1570,7 +1570,7 @@
           },
           {
             "name": "gen_bundler",
-            "package_key": "gen-bundler-0.1.18",
+            "package_key": "gen-bundler-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1580,7 +1580,7 @@
           },
           {
             "name": "gen_cache_attic",
-            "package_key": "gen-cache-attic-0.1.18",
+            "package_key": "gen-cache-attic-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1590,7 +1590,7 @@
           },
           {
             "name": "gen_cargo",
-            "package_key": "gen-cargo-0.1.18",
+            "package_key": "gen-cargo-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1600,7 +1600,7 @@
           },
           {
             "name": "gen_config",
-            "package_key": "gen-config-0.1.18",
+            "package_key": "gen-config-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1610,7 +1610,7 @@
           },
           {
             "name": "gen_gomod",
-            "package_key": "gen-gomod-0.1.18",
+            "package_key": "gen-gomod-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1620,7 +1620,7 @@
           },
           {
             "name": "gen_helm",
-            "package_key": "gen-helm-0.1.18",
+            "package_key": "gen-helm-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1630,7 +1630,7 @@
           },
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.18",
+            "package_key": "gen-macros-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1640,7 +1640,7 @@
           },
           {
             "name": "gen_nix",
-            "package_key": "gen-nix-0.1.18",
+            "package_key": "gen-nix-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1650,7 +1650,7 @@
           },
           {
             "name": "gen_npm",
-            "package_key": "gen-npm-0.1.18",
+            "package_key": "gen-npm-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1660,7 +1660,7 @@
           },
           {
             "name": "gen_pip",
-            "package_key": "gen-pip-0.1.18",
+            "package_key": "gen-pip-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1670,7 +1670,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.18",
+            "package_key": "gen-platform-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1680,7 +1680,7 @@
           },
           {
             "name": "gen_poetry",
-            "package_key": "gen-poetry-0.1.18",
+            "package_key": "gen-poetry-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1690,7 +1690,7 @@
           },
           {
             "name": "gen_swift",
-            "package_key": "gen-swift-0.1.18",
+            "package_key": "gen-swift-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1700,7 +1700,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1811,11 +1811,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-config-0.1.18": {
+      "gen-config-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1871,7 +1871,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-gomod-0.1.18": {
+      "gen-gomod-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "blake3",
@@ -1885,7 +1885,7 @@
           },
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.18",
+            "package_key": "gen-macros-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1895,7 +1895,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.18",
+            "package_key": "gen-platform-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1905,7 +1905,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1981,11 +1981,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-helm-0.1.18": {
+      "gen-helm-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.18",
+            "package_key": "gen-macros-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1995,7 +1995,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.18",
+            "package_key": "gen-platform-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2005,7 +2005,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2071,7 +2071,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-macros-0.1.18": {
+      "gen-macros-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "proc_macro2",
@@ -2110,11 +2110,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-nix-0.1.18": {
+      "gen-nix-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2148,11 +2148,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-nix-bulk-0.1.18": {
+      "gen-nix-bulk-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_nix",
-            "package_key": "gen-nix-0.1.18",
+            "package_key": "gen-nix-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2162,7 +2162,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2196,11 +2196,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-npm-0.1.18": {
+      "gen-npm-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.18",
+            "package_key": "gen-macros-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2210,7 +2210,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.18",
+            "package_key": "gen-platform-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2220,7 +2220,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2296,7 +2296,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-pdc-0.1.18": {
+      "gen-pdc-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "blake3",
@@ -2310,7 +2310,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2356,11 +2356,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-pip-0.1.18": {
+      "gen-pip-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.18",
+            "package_key": "gen-macros-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2370,7 +2370,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.18",
+            "package_key": "gen-platform-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2380,7 +2380,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2446,11 +2446,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-platform-0.1.18": {
+      "gen-platform-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.18",
+            "package_key": "gen-macros-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2460,7 +2460,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2514,11 +2514,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-poetry-0.1.18": {
+      "gen-poetry-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.18",
+            "package_key": "gen-macros-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2528,7 +2528,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.18",
+            "package_key": "gen-platform-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2538,7 +2538,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2604,11 +2604,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-polyglot-0.1.18": {
+      "gen-polyglot-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_bundler",
-            "package_key": "gen-bundler-0.1.18",
+            "package_key": "gen-bundler-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2618,7 +2618,7 @@
           },
           {
             "name": "gen_cargo",
-            "package_key": "gen-cargo-0.1.18",
+            "package_key": "gen-cargo-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2628,7 +2628,7 @@
           },
           {
             "name": "gen_config",
-            "package_key": "gen-config-0.1.18",
+            "package_key": "gen-config-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2638,7 +2638,7 @@
           },
           {
             "name": "gen_npm",
-            "package_key": "gen-npm-0.1.18",
+            "package_key": "gen-npm-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2648,7 +2648,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2694,11 +2694,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-secattest-0.1.18": {
+      "gen-secattest-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_pdc",
-            "package_key": "gen-pdc-0.1.18",
+            "package_key": "gen-pdc-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2722,11 +2722,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-swift-0.1.18": {
+      "gen-swift-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "gen_macros",
-            "package_key": "gen-macros-0.1.18",
+            "package_key": "gen-macros-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2736,7 +2736,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.18",
+            "package_key": "gen-platform-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2746,7 +2746,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2812,7 +2812,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "gen-types-0.1.18": {
+      "gen-types-0.1.19": {
         "runtime_dependencies": [
           {
             "name": "blake3",
@@ -4865,7 +4865,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.18",
+            "package_key": "gen-platform-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4875,7 +4875,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4979,7 +4979,7 @@
           },
           {
             "name": "gen_platform",
-            "package_key": "gen-platform-0.1.18",
+            "package_key": "gen-platform-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4989,7 +4989,7 @@
           },
           {
             "name": "gen_types",
-            "package_key": "gen-types-0.1.18",
+            "package_key": "gen-types-0.1.19",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -8514,63 +8514,63 @@
         "path": "lib.rs"
       }
     },
-    "gen-adapter-forge-0.1.18": {
+    "gen-adapter-forge-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_adapter_forge",
         "path": "src/lib.rs"
       }
     },
-    "gen-ansible-0.1.18": {
+    "gen-ansible-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_ansible",
         "path": "src/lib.rs"
       }
     },
-    "gen-bazel-0.1.18": {
+    "gen-bazel-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_bazel",
         "path": "src/lib.rs"
       }
     },
-    "gen-buck-0.1.18": {
+    "gen-buck-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_buck",
         "path": "src/lib.rs"
       }
     },
-    "gen-bundler-0.1.18": {
+    "gen-bundler-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_bundler",
         "path": "src/lib.rs"
       }
     },
-    "gen-cache-attic-0.1.18": {
+    "gen-cache-attic-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_cache_attic",
         "path": "src/lib.rs"
       }
     },
-    "gen-caixa-bridge-0.1.18": {
+    "gen-caixa-bridge-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_caixa_bridge",
         "path": "src/lib.rs"
       }
     },
-    "gen-cargo-0.1.18": {
+    "gen-cargo-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_cargo",
         "path": "src/lib.rs"
       }
     },
-    "gen-cli-0.1.18": {
+    "gen-cli-0.1.19": {
       "edition": "2024",
       "binaries": [
         {
@@ -8579,28 +8579,28 @@
         }
       ]
     },
-    "gen-config-0.1.18": {
+    "gen-config-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_config",
         "path": "src/lib.rs"
       }
     },
-    "gen-gomod-0.1.18": {
+    "gen-gomod-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_gomod",
         "path": "src/lib.rs"
       }
     },
-    "gen-helm-0.1.18": {
+    "gen-helm-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_helm",
         "path": "src/lib.rs"
       }
     },
-    "gen-macros-0.1.18": {
+    "gen-macros-0.1.19": {
       "edition": "2024",
       "proc_macro": true,
       "lib_target": {
@@ -8608,77 +8608,77 @@
         "path": "src/lib.rs"
       }
     },
-    "gen-nix-0.1.18": {
+    "gen-nix-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_nix",
         "path": "src/lib.rs"
       }
     },
-    "gen-nix-bulk-0.1.18": {
+    "gen-nix-bulk-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_nix_bulk",
         "path": "src/lib.rs"
       }
     },
-    "gen-npm-0.1.18": {
+    "gen-npm-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_npm",
         "path": "src/lib.rs"
       }
     },
-    "gen-pdc-0.1.18": {
+    "gen-pdc-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_pdc",
         "path": "src/lib.rs"
       }
     },
-    "gen-pip-0.1.18": {
+    "gen-pip-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_pip",
         "path": "src/lib.rs"
       }
     },
-    "gen-platform-0.1.18": {
+    "gen-platform-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_platform",
         "path": "src/lib.rs"
       }
     },
-    "gen-poetry-0.1.18": {
+    "gen-poetry-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_poetry",
         "path": "src/lib.rs"
       }
     },
-    "gen-polyglot-0.1.18": {
+    "gen-polyglot-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_polyglot",
         "path": "src/lib.rs"
       }
     },
-    "gen-secattest-0.1.18": {
+    "gen-secattest-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_secattest",
         "path": "src/lib.rs"
       }
     },
-    "gen-swift-0.1.18": {
+    "gen-swift-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_swift",
         "path": "src/lib.rs"
       }
     },
-    "gen-types-0.1.18": {
+    "gen-types-0.1.19": {
       "edition": "2024",
       "lib_target": {
         "name": "gen_types",

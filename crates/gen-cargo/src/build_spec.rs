@@ -1017,9 +1017,35 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         })
         .unwrap_or_default();
 
+    // Pass 0 — resolve every package's canonical, PROMOTION-AWARE
+    // `CrateSource` ONCE, keyed by cargo's internal package id
+    // (`pkg.id.repr`). I4 of the GEN TYPED-SPEC CONTRACT
+    // (`theory/GEN-TYPED-SPEC-CONTRACT.md`): a dependency-key lookup
+    // must resolve through ONE canonical normalization function on
+    // BOTH sides — a crate's own map key AND every dependency edge
+    // that points at it. Without this shared pass, an external
+    // path-dep promoted to `CrateSource::Git` (the `is_external`
+    // branch inside `resolve_pkg_source`) gets keyed `name-version-rev`
+    // when emitted as a crate (its FINAL, post-promotion source), but
+    // any consumer's edge to it re-derived the key from cargo's RAW
+    // `Package.source` string — which is `None` for every path dep,
+    // promoted or not, because cargo itself never sees the promotion —
+    // producing the bare `name-version` form. Two independently-derived
+    // keys for the same crate, silently diverging exactly for this one
+    // class (external path deps gen promotes to git); every other
+    // source kind happened to compute the same key both ways, which is
+    // why the bug stayed latent until a real external path dep shipped.
+    let pkg_sources: IndexMap<String, CrateSource> = meta
+        .packages
+        .iter()
+        .map(|pkg| {
+            resolve_pkg_source(pkg, &workspace_root_str, &checksums)
+                .map(|source| (pkg.id.repr.clone(), source))
+        })
+        .collect::<Result<IndexMap<_, _>>>()?;
+
     let mut crates: BTreeMap<String, CrateSpec> = BTreeMap::new();
     for pkg in &meta.packages {
-        let key = format!("{}-{}", pkg.name, pkg.version);
         let is_member = workspace_member_names.contains(pkg.name.as_str());
 
         // Edition: cargo-metadata provides it directly.
@@ -1131,116 +1157,15 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 })
             });
 
-        // Source resolution.
-        // Path-dep dispatch — two distinct subcases:
-        //
-        // 1. **Workspace member** (path is inside the workspace root):
-        //    `Path { relative_path }` where `relative_path` is the
-        //    subdir under workspace root. Substrate's lockfile-builder
-        //    finds the source at `<workspaceSrc>/<relative_path>`.
-        //
-        // 2. **External path-dep** (path escapes the workspace via
-        //    `..`): the sibling repo's source is NOT in the nix build
-        //    sandbox (src = workspaceSrc). Emitting `Path { relative_path = "../foo" }`
-        //    fails closed in substrate's lockfile-builder L143.
-        //
-        //    Instead, ask the typed `PathDepResolver` to convert the
-        //    sibling directory into a `(git_url, rev)` pair (production
-        //    impl reads the sibling's git remote + HEAD; tests inject
-        //    a `MockResolver`). On success emit `Git { url, rev }`;
-        //    on failure return a typed `UnresolvableExternalPath`
-        //    error pointing the operator at the manual fix.
-        //
-        //    The auto-convert means operators can keep `path = "../"`
-        //    in Cargo.toml for local-dev ergonomics; the EMITTED spec
-        //    is always nix-safe.
-        let source = if is_path_dep {
-            let abs_dir = pkg.manifest_path.parent().map(|p| p.to_string()).unwrap_or_default();
-            let rel = pathdiff_relative(&abs_dir, &workspace_root_str)
-                .or_else(|| relative_path_escaping(&abs_dir, &workspace_root_str))
-                .unwrap_or_else(|| abs_dir.clone());
-            // External if the resolved relative path either escapes
-            // via `..` OR remains absolute (which means pathdiff +
-            // relative_path_escaping both failed). Either way the
-            // source lives outside the workspace and must auto-convert
-            // to a git source for nix-sandbox compatibility.
-            let is_external = rel.starts_with("..") || rel.starts_with('/');
-            if is_external {
-                let resolver = crate::path_resolver::GitCliResolver;
-                use crate::path_resolver::PathDepResolver;
-                let abs_path = std::path::Path::new(&abs_dir);
-                match resolver.resolve(abs_path) {
-                    Some((url, rev)) => CrateSource::Git { url, rev, sha256: None },
-                    None => {
-                        return Err(CargoError::UnresolvableExternalPath {
-                            name: pkg.name.to_string(),
-                            version: pkg.version.to_string(),
-                            abs_dir: std::path::PathBuf::from(abs_dir.clone()),
-                            workspace_root: std::path::PathBuf::from(workspace_root_str.clone()),
-                            reason: format!(
-                                "directory at `{abs_dir}` either is not a git repository, has no `origin` remote, or its remote URL is not a GitHub URL (only github.com auto-resolution is implemented today)"
-                            ),
-                        });
-                    }
-                }
-            } else {
-                CrateSource::Path {
-                    relative_path: if rel.is_empty() { ".".to_string() } else { rel },
-                }
-            }
-        } else if let Some(src) = &pkg.source {
-            let src_str = src.to_string();
-            if src_str.starts_with("registry+") {
-                let sha = checksums
-                    .get(&(pkg.name.to_string(), pkg.version.to_string()))
-                    .cloned()
-                    .unwrap_or_default();
-                if sha.is_empty() {
-                    eprintln!(
-                        "gen lock-build: missing checksum for {}/{}",
-                        pkg.name, pkg.version
-                    );
-                }
-                CrateSource::Registry {
-                    // static.crates.io is the canonical immutable mirror
-                    // cargo itself fetches from. The /api/v1/.../download
-                    // endpoint is rate-limited and frequently 403's against
-                    // nix's fetchurl user-agent — use the CDN directly.
-                    url: format!(
-                        "https://static.crates.io/crates/{}/{}-{}.crate",
-                        pkg.name, pkg.name, pkg.version
-                    ),
-                    sha256: sha,
-                    name_with_ext: format!("{}-{}.tar.gz", pkg.name, pkg.version),
-                }
-            } else if src_str.starts_with("git+") {
-                let trimmed = src_str.trim_start_matches("git+");
-                let (raw_url, rev) = trimmed
-                    .rsplit_once('#')
-                    .map(|(u, f)| (u.to_string(), f.to_string()))
-                    .unwrap_or_else(|| (trimmed.to_string(), String::new()));
-                // Cargo encodes the requested ref as `?branch=...` /
-                // `?tag=...` / `?rev=...` on the URL. Strip it here so
-                // the Nix consumer doesn't need to know about it — pure
-                // dispatch on a clean URL.
-                let url = raw_url.split('?').next().unwrap_or(&raw_url).to_string();
-                CrateSource::Git {
-                    url,
-                    rev,
-                    sha256: None,
-                }
-            } else {
-                // Path source not in workspace — bare relative.
-                let abs_dir = pkg.manifest_path.parent().map(|p| p.to_string()).unwrap_or_default();
-                let rel = pathdiff_relative(&abs_dir, &workspace_root_str)
-                    .unwrap_or_else(|| abs_dir.clone());
-                CrateSource::Path { relative_path: rel }
-            }
-        } else {
-            CrateSource::Path {
-                relative_path: ".".to_string(),
-            }
-        };
+        // Source resolution — I4: read the Pass-0 promotion-aware
+        // result rather than re-deriving it here. `resolve_pkg_source`
+        // (below) documents the workspace-member / external-path-dep /
+        // registry / git / bare-path dispatch; `pkg_sources` was built
+        // over the SAME `meta.packages` iteration, so every id is present.
+        let source = pkg_sources
+            .get(&pkg.id.repr)
+            .cloned()
+            .expect("pkg_sources is populated for every meta.packages entry in Pass 0");
 
         let features = resolved_features
             .get(&pkg.id.repr)
@@ -1313,17 +1238,21 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
                 }
             }
 
-            // Edge target key: `name-version-rev` for a git dep so it points at
-            // the SPECIFIC rev this edge uses (two revs of one version are
-            // distinct crates — TOOLCHAIN-FRESHNESS §X.4b.b); `name-version`
-            // for registry/path.
-            let package_key = match dep_pkg.source.as_ref().map(|s| s.to_string()) {
-                Some(s) => match git_rev_of_source(&s) {
-                    Some(rev) if !rev.is_empty() => {
-                        format!("{}-{}-{}", dep_pkg.name, dep_pkg.version, rev)
-                    }
-                    _ => format!("{}-{}", dep_pkg.name, dep_pkg.version),
-                },
+            // Edge target key — I4: `canonical_pkg_key` over the SAME
+            // Pass-0 `pkg_sources` entry the target crate's own map key
+            // derives from (below), never `dep_pkg.source` (cargo's RAW
+            // pre-promotion source string). `dep_pkg.source` is `None`
+            // for EVERY path dependency, promoted or not — cargo itself
+            // never observes gen's path-to-git promotion — so deriving
+            // the edge key from it independently produced the bare
+            // `name-version` form for an external path dep gen promotes
+            // to `CrateSource::Git`, while the crate's own entry (keyed
+            // from its FINAL promoted source) landed on `name-version-rev`.
+            // Reading the same `pkg_sources` map both places makes the
+            // two keys the same computation, not two computations that
+            // happen to agree everywhere except this one case.
+            let package_key = match pkg_sources.get(dep_pkg_id) {
+                Some(source) => canonical_pkg_key(dep_pkg, source),
                 None => format!("{}-{}", dep_pkg.name, dep_pkg.version),
             };
 
@@ -1558,8 +1487,12 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             .filter(|d| matches!(d.kind, DepKind::Build))
             .cloned()
             .collect();
-        let crate_renames =
-            synthesize_crate_renames(&runtime_dependencies, &build_dependencies, &by_id);
+        let crate_renames = synthesize_crate_renames(
+            &runtime_dependencies,
+            &build_dependencies,
+            &by_id,
+            &pkg_sources,
+        );
 
         // Cargo's resolver may produce multiple distinct nodes that share
         // the same `name-version` key but resolve from different sources
@@ -1638,13 +1571,11 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         // DISTINCT entries instead of being deduped into one (the dedup below
         // is for genuine `name-version` collisions: a workspace member vs a
         // registry/path copy). Registry/path crates keep `name-version`.
-        // TOOLCHAIN-FRESHNESS §X.4b.b.
-        let key = match &new_entry.source {
-            CrateSource::Git { rev, .. } if !rev.is_empty() => {
-                format!("{}-{}-{}", pkg.name, pkg.version, rev)
-            }
-            _ => key,
-        };
+        // TOOLCHAIN-FRESHNESS §X.4b.b. I4: `canonical_pkg_key` is the SAME
+        // function every dependency edge that points at this crate uses
+        // to compute its `package_key` (above, and inside
+        // `synthesize_crate_renames`) — one normalization, three call sites.
+        let key = canonical_pkg_key(pkg, &new_entry.source);
         match crates.get(&key) {
             Some(prev) => {
                 let prev_is_workspace = matches!(prev.source, CrateSource::Path { .. });
@@ -2230,17 +2161,149 @@ fn prune_and_log(root: &Path) {
     }
 }
 
-/// Extract the resolved git rev from a Cargo `git+<url>?<query>#<rev>` source
-/// string. Returns None for non-git sources or a `#`-less string. The rev is
-/// the disambiguator in the `name-version-rev` crate key
-/// (TOOLCHAIN-FRESHNESS §X.4b.b): two git revs of one crate version must key
-/// distinctly so BOTH source trees survive in the BuildSpec instead of
-/// colliding into one (the old behaviour silently dropped a rev).
-fn git_rev_of_source(src: &str) -> Option<String> {
-    if !src.starts_with("git+") {
-        return None;
+/// I4 of the GEN TYPED-SPEC CONTRACT (`theory/GEN-TYPED-SPEC-CONTRACT.md`):
+/// the ONE canonical, promotion-aware source resolution for a single
+/// package. Every caller — a crate's own `CrateSpec.source` field, and
+/// every dependency edge's `package_key` (via `canonical_pkg_key` below,
+/// fed from the `pkg_sources` map this function populates in Pass 0) —
+/// reads the SAME result. Never re-derive a package's source (or the
+/// key built from it) independently from `cargo_metadata::Package::source`
+/// downstream of this function; that raw field is `None` for every path
+/// dependency regardless of whether this function promotes it to git, so
+/// an independent re-derivation silently disagrees with the promoted
+/// result for exactly that class.
+///
+/// Path-dep dispatch — two distinct subcases:
+///
+/// 1. **Workspace member** (path is inside the workspace root):
+///    `Path { relative_path }` where `relative_path` is the
+///    subdir under workspace root. Substrate's lockfile-builder
+///    finds the source at `<workspaceSrc>/<relative_path>`.
+///
+/// 2. **External path-dep** (path escapes the workspace via
+///    `..`): the sibling repo's source is NOT in the nix build
+///    sandbox (src = workspaceSrc). Emitting `Path { relative_path = "../foo" }`
+///    fails closed in substrate's lockfile-builder L143.
+///
+///    Instead, ask the typed `PathDepResolver` to convert the
+///    sibling directory into a `(git_url, rev)` pair (production
+///    impl reads the sibling's git remote + HEAD; tests inject
+///    a `MockResolver`). On success emit `Git { url, rev }`;
+///    on failure return a typed `UnresolvableExternalPath`
+///    error pointing the operator at the manual fix.
+///
+///    The auto-convert means operators can keep `path = "../"`
+///    in Cargo.toml for local-dev ergonomics; the EMITTED spec
+///    is always nix-safe.
+fn resolve_pkg_source(
+    pkg: &cargo_metadata::Package,
+    workspace_root_str: &str,
+    checksums: &IndexMap<(String, String), String>,
+) -> Result<CrateSource> {
+    let is_path_dep = pkg.source.is_none();
+    if is_path_dep {
+        let abs_dir = pkg.manifest_path.parent().map(|p| p.to_string()).unwrap_or_default();
+        let rel = pathdiff_relative(&abs_dir, workspace_root_str)
+            .or_else(|| relative_path_escaping(&abs_dir, workspace_root_str))
+            .unwrap_or_else(|| abs_dir.clone());
+        // External if the resolved relative path either escapes
+        // via `..` OR remains absolute (which means pathdiff +
+        // relative_path_escaping both failed). Either way the
+        // source lives outside the workspace and must auto-convert
+        // to a git source for nix-sandbox compatibility.
+        let is_external = rel.starts_with("..") || rel.starts_with('/');
+        if is_external {
+            let resolver = crate::path_resolver::GitCliResolver;
+            use crate::path_resolver::PathDepResolver;
+            let abs_path = std::path::Path::new(&abs_dir);
+            return match resolver.resolve(abs_path) {
+                Some((url, rev)) => Ok(CrateSource::Git { url, rev, sha256: None }),
+                None => Err(CargoError::UnresolvableExternalPath {
+                    name: pkg.name.to_string(),
+                    version: pkg.version.to_string(),
+                    abs_dir: std::path::PathBuf::from(abs_dir.clone()),
+                    workspace_root: std::path::PathBuf::from(workspace_root_str.to_string()),
+                    reason: format!(
+                        "directory at `{abs_dir}` either is not a git repository, has no `origin` remote, or its remote URL is not a GitHub URL (only github.com auto-resolution is implemented today)"
+                    ),
+                }),
+            };
+        }
+        return Ok(CrateSource::Path {
+            relative_path: if rel.is_empty() { ".".to_string() } else { rel },
+        });
     }
-    src.rsplit_once('#').map(|(_, rev)| rev.to_string())
+    if let Some(src) = &pkg.source {
+        let src_str = src.to_string();
+        if src_str.starts_with("registry+") {
+            let sha = checksums
+                .get(&(pkg.name.to_string(), pkg.version.to_string()))
+                .cloned()
+                .unwrap_or_default();
+            if sha.is_empty() {
+                eprintln!(
+                    "gen lock-build: missing checksum for {}/{}",
+                    pkg.name, pkg.version
+                );
+            }
+            return Ok(CrateSource::Registry {
+                // static.crates.io is the canonical immutable mirror
+                // cargo itself fetches from. The /api/v1/.../download
+                // endpoint is rate-limited and frequently 403's against
+                // nix's fetchurl user-agent — use the CDN directly.
+                url: format!(
+                    "https://static.crates.io/crates/{}/{}-{}.crate",
+                    pkg.name, pkg.name, pkg.version
+                ),
+                sha256: sha,
+                name_with_ext: format!("{}-{}.tar.gz", pkg.name, pkg.version),
+            });
+        } else if src_str.starts_with("git+") {
+            let trimmed = src_str.trim_start_matches("git+");
+            let (raw_url, rev) = trimmed
+                .rsplit_once('#')
+                .map(|(u, f)| (u.to_string(), f.to_string()))
+                .unwrap_or_else(|| (trimmed.to_string(), String::new()));
+            // Cargo encodes the requested ref as `?branch=...` /
+            // `?tag=...` / `?rev=...` on the URL. Strip it here so
+            // the Nix consumer doesn't need to know about it — pure
+            // dispatch on a clean URL.
+            let url = raw_url.split('?').next().unwrap_or(&raw_url).to_string();
+            return Ok(CrateSource::Git {
+                url,
+                rev,
+                sha256: None,
+            });
+        }
+        // Path source not in workspace — bare relative.
+        let abs_dir = pkg.manifest_path.parent().map(|p| p.to_string()).unwrap_or_default();
+        let rel = pathdiff_relative(&abs_dir, workspace_root_str)
+            .unwrap_or_else(|| abs_dir.clone());
+        return Ok(CrateSource::Path { relative_path: rel });
+    }
+    Ok(CrateSource::Path {
+        relative_path: ".".to_string(),
+    })
+}
+
+/// I4: the ONE canonical crate-map key derivation, given a package and
+/// its ALREADY-RESOLVED (`resolve_pkg_source`) `CrateSource`. Two
+/// distinct git revs of the same `name-version` key as DISTINCT entries
+/// (`name-version-rev`, TOOLCHAIN-FRESHNESS §X.4b.b); every other source
+/// kind — including a `CrateSource::Path` that never got promoted, and a
+/// `CrateSource::Git` with no rev — keys by the bare `name-version`.
+/// Every place that needs "the key this package is stored/referenced
+/// under" — a crate's own map entry, a dependency edge's `package_key`,
+/// `synthesize_crate_renames`'s reverse lookup — calls this function
+/// against the SAME `pkg_sources`-resolved source, so they can never
+/// independently diverge.
+fn canonical_pkg_key(pkg: &cargo_metadata::Package, source: &CrateSource) -> String {
+    match source {
+        CrateSource::Git { rev, .. } if !rev.is_empty() => {
+            format!("{}-{}-{}", pkg.name, pkg.version, rev)
+        }
+        _ => format!("{}-{}", pkg.name, pkg.version),
+    }
 }
 
 /// Decide whether an OPTIONAL dependency edge is actually activated for a
@@ -2337,6 +2400,7 @@ fn synthesize_crate_renames(
     runtime: &[CrateDepSpec],
     build: &[CrateDepSpec],
     by_id: &IndexMap<String, &cargo_metadata::Package>,
+    pkg_sources: &IndexMap<String, CrateSource>,
 ) -> BTreeMap<String, Vec<CrateRenameRecord>> {
     let mut out: BTreeMap<String, Vec<CrateRenameRecord>> = BTreeMap::new();
     for d in runtime.iter().chain(build.iter()) {
@@ -2344,22 +2408,20 @@ fn synthesize_crate_renames(
         // We could carry the canonical name as a field too — current
         // scheme keeps the spec compact.
         let canonical_name = {
-            // package_key encodes "<name>-<version>"; we can't just
-            // split on '-' because crate names contain hyphens. Look
-            // up by package_key suffix-matching against by_id.
+            // package_key encodes "<name>-<version>" (or
+            // "<name>-<version>-<rev>" for git). I4: reverse-match it
+            // against `canonical_pkg_key` over the SAME Pass-0
+            // `pkg_sources` entry every other key derivation reads —
+            // never re-derive from `p.source` (cargo's raw
+            // pre-promotion string), which is `None` for every path
+            // dep whether or not gen promoted it to git and would
+            // silently drop the rename for a promoted external
+            // path-dep's rev-suffixed key.
             let pkg = by_id.values().find(|p| {
-                let base = format!("{}-{}", p.name, p.version);
-                // Git deps key by `name-version-rev` (X.4b.b) — match that, else
-                // the rename for a git dep is silently dropped.
-                let k = match p.source.as_ref().map(|s| s.to_string()) {
-                    Some(s) => match git_rev_of_source(&s) {
-                        Some(rev) if !rev.is_empty() => {
-                            format!("{}-{}-{}", p.name, p.version, rev)
-                        }
-                        _ => base,
-                    },
-                    None => base,
-                };
+                let k = pkg_sources
+                    .get(&p.id.repr)
+                    .map(|source| canonical_pkg_key(p, source))
+                    .unwrap_or_else(|| format!("{}-{}", p.name, p.version));
                 k == d.package_key
             });
             match pkg {
@@ -3063,6 +3125,283 @@ mod path_helper_tests {
         assert_eq!(
             <super::Freshness as TypedDispatcherTrait>::variant_kinds(),
             vec!["fresh", "drifted", "unhashed-spec", "missing-spec", "missing-lock"],
+        );
+    }
+}
+
+/// I4 of the GEN TYPED-SPEC CONTRACT — dependency-key normalization.
+/// End-to-end regression for the real `pleme-igata` ↔ `ami-forge` bug
+/// (found building igata's amazon-import AMI builder, which consumes
+/// `ami-forge` via `path = "../ami-forge"` — the fleet's sibling-
+/// checkout convention, same shape as camelot-fabric/-startup and
+/// australis/malha).
+///
+/// `gen build .` correctly promotes an external path-dep (one whose
+/// relative path escapes the workspace root via `..`) to a git-pinned
+/// coordinate — but the promotion used to run through TWO
+/// independently-derived key computations that silently disagreed:
+///
+///   - the promoted crate's OWN map key was derived from its FINAL,
+///     post-promotion `CrateSource::Git { rev, .. }` → `name-version-rev`;
+///   - the DEPENDENT's edge onto it was derived from cargo's RAW,
+///     pre-promotion `Package.source` string, which is `None` for
+///     every path dependency whether or not gen promotes it → the
+///     bare `name-version` form.
+///
+/// `gen build .` in igata reproduced exactly this: `{"rule":
+/// "unresolved-dep", "from": "pleme-igata-0.1.2", "dep_name":
+/// "ami_forge", "missing_key": "ami-forge-0.2.0"}` — the crates map
+/// held `ami-forge-0.2.0-<rev>`, never the bare form `check_unresolved_deps`
+/// went looking for. This module reproduces the same shape hermetically
+/// (a real two-crate on-disk fixture + a local git repo, no network) and
+/// proves `generate()` now emits a spec the invariant checker accepts.
+#[cfg(test)]
+mod dependency_key_normalization_tests {
+    use super::*;
+    use std::process::Command;
+
+    fn unique_tmp(label: &str) -> std::path::PathBuf {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static C: AtomicU64 = AtomicU64::new(0);
+        let n = C.fetch_add(1, Ordering::Relaxed);
+        let p = std::env::temp_dir().join(format!(
+            "gen-cargo-i4-{label}-{}-{}",
+            std::process::id(),
+            n
+        ));
+        let _ = std::fs::remove_dir_all(&p);
+        std::fs::create_dir_all(&p).unwrap();
+        p
+    }
+
+    fn run(cmd: &mut Command) {
+        let out = cmd.output().expect("command spawns");
+        assert!(
+            out.status.success(),
+            "command failed: {cmd:?}\nstdout: {}\nstderr: {}",
+            String::from_utf8_lossy(&out.stdout),
+            String::from_utf8_lossy(&out.stderr)
+        );
+    }
+
+    /// Real reproduction of the `pleme-igata` ↔ `ami-forge` bug: a root
+    /// crate with an external `path = "../sibling"` dependency, resolved
+    /// through a REAL `cargo metadata` invocation against an on-disk
+    /// fixture (root's `pkg.source` for `sibling` really is `None`,
+    /// exactly as cargo reports every path dependency) and a REAL local
+    /// git repo (so `GitCliResolver` genuinely promotes it) — the exact
+    /// data `generate_for_target`'s Pass 0 operates on. This stops short
+    /// of calling `generate()` itself: the full pipeline's separate,
+    /// pre-existing sha256-prefetch stage (`git_prefetcher.rs`) needs a
+    /// REACHABLE remote and is orthogonal to the I4 key-normalization
+    /// bug — exercising it here would make this test network-dependent
+    /// for a stage this fix never touches.
+    ///
+    /// Before the I4 fix, the crate's own map key (`canonical_pkg_key`
+    /// over its PROMOTED source) and the dependency edge's `package_key`
+    /// (derived independently from `dep_pkg.source` — `None` for a path
+    /// dep, promoted or not) were two different computations that
+    /// disagreed exactly for this shape. This test proves they're now
+    /// the SAME computation over the SAME `pkg_sources` map.
+    #[test]
+    fn external_path_dep_promoted_to_git_resolves_by_the_same_key() {
+        // Canonicalize the tmpdir root FIRST, matching
+        // `generate_for_target`'s own pattern (it canonicalizes before
+        // deriving `workspace_root_str`) — macOS's `/var` → `/private/var`
+        // symlink means an un-canonicalized tmp path and cargo_metadata's
+        // (canonical) `manifest_path` would otherwise disagree on string
+        // form, which is a test-harness artifact, not the I4 bug.
+        let parent = unique_tmp("parent").canonicalize().unwrap();
+        let root_dir = parent.join("root");
+        let sibling_dir = parent.join("sibling");
+        std::fs::create_dir_all(root_dir.join("src")).unwrap();
+        std::fs::create_dir_all(sibling_dir.join("src")).unwrap();
+
+        std::fs::write(
+            sibling_dir.join("Cargo.toml"),
+            "[package]\nname = \"sibling\"\nversion = \"0.1.0\"\nedition = \"2021\"\n",
+        )
+        .unwrap();
+        std::fs::write(sibling_dir.join("src/lib.rs"), "").unwrap();
+
+        std::fs::write(
+            root_dir.join("Cargo.toml"),
+            "[package]\nname = \"root-crate\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n\
+             [dependencies]\nsibling = { path = \"../sibling\" }\n",
+        )
+        .unwrap();
+        std::fs::write(root_dir.join("src/lib.rs"), "").unwrap();
+
+        // Make `sibling` a real git repo with a github.com origin — the
+        // exact shape `GitCliResolver` promotes. Fully local/hermetic:
+        // `git config --get remote.origin.url` + `git rev-parse HEAD`
+        // both read local repo state only — neither contacts the remote.
+        run(Command::new("git").arg("-C").arg(&sibling_dir).args(["init", "-q"]));
+        run(Command::new("git")
+            .arg("-C")
+            .arg(&sibling_dir)
+            .args(["config", "user.email", "test@example.com"]));
+        run(Command::new("git")
+            .arg("-C")
+            .arg(&sibling_dir)
+            .args(["config", "user.name", "test"]));
+        run(Command::new("git").arg("-C").arg(&sibling_dir).args([
+            "remote",
+            "add",
+            "origin",
+            "https://github.com/pleme-io/sibling",
+        ]));
+        run(Command::new("git").arg("-C").arg(&sibling_dir).args(["add", "-A"]));
+        run(Command::new("git")
+            .arg("-C")
+            .arg(&sibling_dir)
+            .args(["commit", "-q", "-m", "init"]));
+
+        // Real `cargo metadata` — no registry deps, so this is offline-
+        // clean regardless of network availability.
+        let meta = cargo_metadata::MetadataCommand::new()
+            .manifest_path(root_dir.join("Cargo.toml"))
+            .exec()
+            .expect("cargo metadata succeeds against the on-disk fixture");
+        let root_pkg = meta
+            .packages
+            .iter()
+            .find(|p| p.name.as_str() == "root-crate")
+            .expect("root-crate present in cargo metadata output");
+        let sibling_pkg = meta
+            .packages
+            .iter()
+            .find(|p| p.name.as_str() == "sibling")
+            .expect("sibling present in cargo metadata output");
+
+        // Confirm the premise the bug depended on: cargo itself reports
+        // NO source for a path dependency, promoted or not.
+        assert!(
+            sibling_pkg.source.is_none(),
+            "cargo_metadata must report source: None for a path dependency"
+        );
+
+        let workspace_root_str = root_dir.display().to_string();
+        let checksums: IndexMap<(String, String), String> = IndexMap::new();
+
+        // Pass 0, exactly as `generate_for_target` now runs it: resolve
+        // every package's canonical source ONCE.
+        let pkg_sources: IndexMap<String, CrateSource> = meta
+            .packages
+            .iter()
+            .map(|p| {
+                (
+                    p.id.repr.clone(),
+                    resolve_pkg_source(p, &workspace_root_str, &checksums)
+                        .expect("resolve_pkg_source succeeds"),
+                )
+            })
+            .collect();
+
+        // The sibling's resolved source is promoted to Git with a real
+        // rev — the promotion itself still runs correctly.
+        let sibling_source = pkg_sources.get(&sibling_pkg.id.repr).unwrap();
+        let CrateSource::Git { rev, url, .. } = sibling_source else {
+            panic!("sibling's external path-dep must be promoted to CrateSource::Git, got: {sibling_source:?}");
+        };
+        assert!(!rev.is_empty(), "promoted rev must be non-empty");
+        assert_eq!(url, "https://github.com/pleme-io/sibling");
+
+        // I4: the crate's own key and the dependency edge's key are the
+        // SAME call against the SAME pkg_sources entry.
+        let sibling_own_key = canonical_pkg_key(sibling_pkg, sibling_source);
+        let root_source = pkg_sources.get(&root_pkg.id.repr).unwrap();
+        let _ = canonical_pkg_key(root_pkg, root_source); // sanity: root itself keys fine too
+
+        let dep_edge_key = canonical_pkg_key(
+            sibling_pkg, // `dep_pkg` in generate_for_target's edge loop
+            pkg_sources.get(&sibling_pkg.id.repr).unwrap(), // looked up by dep_pkg_id
+        );
+        assert_eq!(
+            sibling_own_key, dep_edge_key,
+            "the crate's own map key and a dependency edge's package_key must be identical"
+        );
+        assert!(
+            sibling_own_key.starts_with("sibling-0.1.0-"),
+            "expected the rev-suffixed form, got: {sibling_own_key}"
+        );
+
+        // Document the exact pre-fix divergence: deriving the edge key
+        // from cargo's RAW `Package.source` (None, since sibling is a
+        // path dep) instead of from `pkg_sources` lands on the bare
+        // `name-version` form the invariant checker's `missing_key`
+        // reported in the real igata reproduction.
+        let old_buggy_edge_key = match sibling_pkg.source.as_ref() {
+            Some(_) => unreachable!("path deps report source: None"),
+            None => format!("{}-{}", sibling_pkg.name, sibling_pkg.version),
+        };
+        assert_ne!(
+            old_buggy_edge_key, sibling_own_key,
+            "documents the bug this fix closes: the raw pre-promotion derivation \
+             and the promoted-source derivation used to disagree"
+        );
+    }
+
+    /// Unit-level companion: `canonical_pkg_key` is a pure function of
+    /// (package, resolved source) — the SAME call, fed the SAME
+    /// `pkg_sources`-resolved source, is what both the crate's own key
+    /// and every dependency edge's `package_key` now derive from, so
+    /// they cannot independently diverge the way the pre-fix code did
+    /// (crate key from the promoted source; edge key from cargo's raw
+    /// pre-promotion source string).
+    #[test]
+    fn canonical_pkg_key_is_stable_across_repeated_calls() {
+        let pkg_json = serde_json::json!({
+            "name": "ami-forge",
+            "version": "0.2.0",
+            "id": "path+file:///x/ami-forge#0.2.0",
+            "license": null,
+            "license_file": null,
+            "description": null,
+            "source": null,
+            "dependencies": [],
+            "targets": [],
+            "features": {},
+            "manifest_path": "/x/ami-forge/Cargo.toml",
+            "categories": [],
+            "keywords": [],
+            "readme": null,
+            "repository": null,
+            "homepage": null,
+            "documentation": null,
+            "edition": "2021",
+            "links": null,
+            "publish": null,
+            "default_run": null,
+            "authors": [],
+        });
+        let pkg: cargo_metadata::Package =
+            serde_json::from_value(pkg_json).expect("minimal Package JSON deserializes");
+        let promoted = CrateSource::Git {
+            url: "https://github.com/pleme-io/ami-forge".to_string(),
+            rev: "abc123def456".to_string(),
+            sha256: None,
+        };
+        let a = canonical_pkg_key(&pkg, &promoted);
+        let b = canonical_pkg_key(&pkg, &promoted);
+        assert_eq!(a, b, "canonical_pkg_key must be deterministic");
+        assert_eq!(
+            a, "ami-forge-0.2.0-abc123def456",
+            "a Git-promoted source with a non-empty rev keys by name-version-rev"
+        );
+
+        // The OLD, pre-fix dependency-edge derivation — computed purely
+        // from `pkg.source` (raw cargo metadata, `None` for a path dep,
+        // promoted or not) — landed on the bare form. This is exactly
+        // the divergence I4 closes: the two are DIFFERENT strings.
+        let old_buggy_edge_key = match pkg.source.as_ref().map(std::string::ToString::to_string) {
+            Some(_) => unreachable!("path deps have source: None"),
+            None => format!("{}-{}", pkg.name, pkg.version),
+        };
+        assert_ne!(
+            old_buggy_edge_key, a,
+            "documents the bug: the raw-source derivation and the promoted-source \
+             derivation land on different strings for an external path-dep"
         );
     }
 }

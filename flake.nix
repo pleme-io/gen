@@ -1,19 +1,11 @@
 {
   description = "gen — typed lockfile → Cargo.build-spec.json generator (Cargo / npm / Bundler / polyglot)";
 
-  nixConfig.allow-import-from-derivation = true;
+  # substrate.rust.library dispatches over Cargo.gen.lock (the slim gen delta,
+  # reconstructed to the full BuildSpec in pure Nix) — no crate2nix, no Cargo.nix.
+  inputs.substrate.url = "github:pleme-io/substrate";
 
-  inputs = {
-    nixpkgs.follows = "substrate/nixpkgs";
-    crate2nix.url = "github:nix-community/crate2nix";
-    flake-utils.url = "github:numtide/flake-utils";
-    substrate = {
-      url = "github:pleme-io/substrate";
-    };
-  };
-
-  outputs = inputs: inputs.substrate.mkRustToolFlake {
-    inherit inputs;
+  outputs = { substrate, ... }: substrate.rust.library {
     src = ./.;
     member = "gen-cli";
   };

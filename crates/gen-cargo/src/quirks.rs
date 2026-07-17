@@ -95,36 +95,46 @@ pub fn registry() -> Vec<(&'static str, Vec<CrateQuirk>)> {
             "mime_guess",
             vec![CrateQuirk::FoldNormalIntoBuild { extern_crate: None }],
         ),
-        // wgpu-hal 25.0.2 + siblings use `cfg_aliases!` to compute
-        // `supports_64bit_atomics` from `target_has_atomic = "64"`.
-        // The build script's `cargo:rustc-cfg=supports_64bit_atomics`
-        // isn't propagated to the lib compile by buildRustCrate.
-        // Every host where pleme-io GPU apps run (aarch64-darwin,
-        // x86_64-darwin/linux) has native 64-bit atomics, so forcing
-        // is safe.
+        // wgpu-hal + siblings use `cfg_aliases!` to compute BOTH
+        // `supports_64bit_atomics` (from `target_has_atomic = "64"`) and
+        // `supports_ptr_atomics` (from `target_has_atomic = "ptr"`). The
+        // build script's `cargo:rustc-cfg=...` isn't propagated to the lib
+        // compile by buildRustCrate, and gen does not model
+        // `target_has_atomic`, so it drops BOTH cfgs AND the
+        // `cfg(not(target_has_atomic = "ptr"))`-gated `portable-atomic-util`
+        // dep — so wgpu-hal 27 takes the portable-atomic fallback arm and
+        // fails E0432 (unresolved `portable_atomic_util`). Every host where
+        // pleme-io GPU apps run (aarch64-darwin, x86_64-darwin/linux) has
+        // native 64-bit AND pointer-width atomics, so forcing both is safe
+        // and makes wgpu-hal take the `alloc::sync::Arc` arm (the fallback
+        // portable-atomic dep is then never needed).
         (
             "wgpu-hal",
-            vec![CrateQuirk::ForceCfg {
-                cfg: "supports_64bit_atomics".to_string(),
-            }],
+            vec![
+                CrateQuirk::ForceCfg { cfg: "supports_64bit_atomics".to_string() },
+                CrateQuirk::ForceCfg { cfg: "supports_ptr_atomics".to_string() },
+            ],
         ),
         (
             "wgpu-core",
-            vec![CrateQuirk::ForceCfg {
-                cfg: "supports_64bit_atomics".to_string(),
-            }],
+            vec![
+                CrateQuirk::ForceCfg { cfg: "supports_64bit_atomics".to_string() },
+                CrateQuirk::ForceCfg { cfg: "supports_ptr_atomics".to_string() },
+            ],
         ),
         (
             "wgpu",
-            vec![CrateQuirk::ForceCfg {
-                cfg: "supports_64bit_atomics".to_string(),
-            }],
+            vec![
+                CrateQuirk::ForceCfg { cfg: "supports_64bit_atomics".to_string() },
+                CrateQuirk::ForceCfg { cfg: "supports_ptr_atomics".to_string() },
+            ],
         ),
         (
             "wgpu-types",
-            vec![CrateQuirk::ForceCfg {
-                cfg: "supports_64bit_atomics".to_string(),
-            }],
+            vec![
+                CrateQuirk::ForceCfg { cfg: "supports_64bit_atomics".to_string() },
+                CrateQuirk::ForceCfg { cfg: "supports_ptr_atomics".to_string() },
+            ],
         ),
     ]
 }

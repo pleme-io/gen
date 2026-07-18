@@ -56,12 +56,20 @@ pub enum CrateQuirk {
     },
     /// Add extra `nativeBuildInputs` packages to the crate's
     /// buildRustCrate derivation. Used for crates whose build.rs shells
-    /// out to a native toolchain binary (e.g. protobuf-src's
-    /// cmake-driven vendored protobuf build) that isn't part of the
-    /// default buildRustCrate sandbox. Each `packages` entry must be a
-    /// real top-level nixpkgs attribute name — the substrate consumer
-    /// resolves it via `pkgs.${name}`. Maps to substrate's
-    /// `nativeBuildInputs <names>` class-helper.
+    /// out to a native toolchain binary (e.g. a compiler, `cmake`,
+    /// `protoc`) that isn't part of the default buildRustCrate sandbox.
+    /// Each `packages` entry must be a real top-level nixpkgs attribute
+    /// name — the substrate consumer resolves it via `pkgs.${name}`.
+    /// Maps to substrate's `nativeBuildInputs <names>` class-helper.
+    ///
+    /// Not a fit for crates that locate a *vendored* binary via
+    /// `env!("CARGO_MANIFEST_DIR")` or their own build.rs's `OUT_DIR`
+    /// (e.g. `protobuf-src`, `protoc-bin-vendored`) — that path is
+    /// baked in at THEIR OWN compile time and doesn't survive past
+    /// their own ephemeral Nix build sandbox once a *different* crate's
+    /// build.rs calls the function later, in a separate derivation.
+    /// Give the crate that actually needs the tool a real nixpkgs
+    /// package on PATH instead (see the `vigy-rpc` registry entry).
     NativeBuildInputs { packages: Vec<String> },
 }
 
@@ -145,16 +153,22 @@ pub fn registry() -> Vec<(&'static str, Vec<CrateQuirk>)> {
                 CrateQuirk::ForceCfg { cfg: "supports_ptr_atomics".to_string() },
             ],
         ),
-        // protobuf-src's build.rs shells out to `cmake` to compile a
-        // vendored protobuf from source, producing a hermetic `protoc`
-        // binary for consumers (e.g. pleme-io/vigy's vigy-rpc build.rs
-        // calls `protobuf_src::protoc()`) that want no system-protoc
-        // dependency. `cmake` isn't part of the default buildRustCrate
-        // sandbox, so the build.rs's `Command::new("cmake")` fails with
-        // ENOENT (os error 2).
+        // pleme-io/vigy's vigy-rpc build.rs calls
+        // `tonic_build::configure().compile_protos(...)`, which shells
+        // out to a `protoc` binary. Vendored-protoc crates
+        // (protobuf-src, protoc-bin-vendored) locate their bundled
+        // binary via `env!("CARGO_MANIFEST_DIR")` / a build.rs-produced
+        // OUT_DIR — a path baked in at THEIR OWN compile time that
+        // doesn't survive past their own ephemeral Nix build sandbox,
+        // so calling that function from a DIFFERENT crate's build.rs
+        // (a separate derivation) always reports "protoc not found".
+        // Give vigy-rpc's own build a real, nixpkgs-built `protoc` on
+        // PATH instead (`pkgs.protobuf` is a normal nixpkgs derivation
+        // with no baked-path problem) — tonic-build/prost-build search
+        // PATH when `PROTOC` isn't set.
         (
-            "protobuf-src",
-            vec![CrateQuirk::NativeBuildInputs { packages: vec!["cmake".to_string()] }],
+            "vigy-rpc",
+            vec![CrateQuirk::NativeBuildInputs { packages: vec!["protobuf".to_string()] }],
         ),
     ]
 }

@@ -36,6 +36,10 @@ fn cargo_dispatcher() -> gen_platform::SealedDispatcher<CrateQuirk, Ctx, Overrid
             ctx.cargo_calls += 1;
             Override { tag: "cargo:sub".into() }
         })
+        .with_helper("native-build-inputs", |_, ctx| {
+            ctx.cargo_calls += 1;
+            Override { tag: "cargo:native-build-inputs".into() }
+        })
         .into_sealed()
         .unwrap()
 }
@@ -91,6 +95,7 @@ fn composition_succeeds_on_disjoint_kinds() {
         .with_helper("force-cfg", |_, _| Override { tag: "c:fc".into() })
         .with_helper("fold-normal-into-build", |_, _| Override { tag: "c:fn".into() })
         .with_helper("substitute-source", |_, _| Override { tag: "c:ss".into() })
+        .with_helper("native-build-inputs", |_, _| Override { tag: "c:nbi".into() })
         .into_sealed()
         .unwrap();
 
@@ -104,11 +109,12 @@ fn composition_succeeds_on_disjoint_kinds() {
     let c = ComposedDispatcher::<Ctx, Override>::new()
         .add("gen.cargo", cargo_partial)
         .expect("single-dispatcher composition is always disjoint");
-    assert_eq!(c.helper_count(), 3);
+    assert_eq!(c.helper_count(), 4);
     let kinds = c.covered_kinds();
     assert!(kinds.contains(&"force-cfg"));
     assert!(kinds.contains(&"fold-normal-into-build"));
     assert!(kinds.contains(&"substitute-source"));
+    assert!(kinds.contains(&"native-build-inputs"));
 }
 
 #[test]
@@ -162,7 +168,7 @@ fn sources_track_per_dispatcher_kind_contributions() {
     let sources = c.sources();
     assert_eq!(sources.len(), 1);
     assert_eq!(sources[0].label, "gen.cargo");
-    assert_eq!(sources[0].kinds.len(), 3);
+    assert_eq!(sources[0].kinds.len(), 4);
 }
 
 #[test]

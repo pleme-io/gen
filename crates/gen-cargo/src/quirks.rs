@@ -54,6 +54,15 @@ pub enum CrateQuirk {
         from: String,
         to: String,
     },
+    /// Add extra `nativeBuildInputs` packages to the crate's
+    /// buildRustCrate derivation. Used for crates whose build.rs shells
+    /// out to a native toolchain binary (e.g. protobuf-src's
+    /// cmake-driven vendored protobuf build) that isn't part of the
+    /// default buildRustCrate sandbox. Each `packages` entry must be a
+    /// real top-level nixpkgs attribute name — the substrate consumer
+    /// resolves it via `pkgs.${name}`. Maps to substrate's
+    /// `nativeBuildInputs <names>` class-helper.
+    NativeBuildInputs { packages: Vec<String> },
 }
 
 /// The canonical registry. Sorted by crate name for stable diffs.
@@ -135,6 +144,17 @@ pub fn registry() -> Vec<(&'static str, Vec<CrateQuirk>)> {
                 CrateQuirk::ForceCfg { cfg: "supports_64bit_atomics".to_string() },
                 CrateQuirk::ForceCfg { cfg: "supports_ptr_atomics".to_string() },
             ],
+        ),
+        // protobuf-src's build.rs shells out to `cmake` to compile a
+        // vendored protobuf from source, producing a hermetic `protoc`
+        // binary for consumers (e.g. pleme-io/vigy's vigy-rpc build.rs
+        // calls `protobuf_src::protoc()`) that want no system-protoc
+        // dependency. `cmake` isn't part of the default buildRustCrate
+        // sandbox, so the build.rs's `Command::new("cmake")` fails with
+        // ENOENT (os error 2).
+        (
+            "protobuf-src",
+            vec![CrateQuirk::NativeBuildInputs { packages: vec!["cmake".to_string()] }],
         ),
     ]
 }

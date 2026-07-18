@@ -111,7 +111,7 @@ fn variant_kind_counts() {
     // Tracks the substrate's typed-dispatcher surface area.
     // Update when an enum gains/loses a variant — the test fails
     // and the substrate's Nix helpers table needs the matching arm.
-    assert_eq!(gen_cargo::quirks::CrateQuirk::variant_count(), 3);
+    assert_eq!(gen_cargo::quirks::CrateQuirk::variant_count(), 4);
     assert_eq!(gen_npm::quirks::NpmQuirk::variant_count(), 5);
     assert_eq!(gen_bundler::quirks::BundlerQuirk::variant_count(), 5);
     assert_eq!(gen_helm::quirks::HelmQuirk::variant_count(), 4);

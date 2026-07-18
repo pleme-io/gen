@@ -57,6 +57,7 @@ fn happy_path_seal_then_apply() {
                 Override::default()
             }
         })
+        .with_helper("native-build-inputs", |_, _| Override::default())
         .into_sealed()
         .expect("seal succeeds — every variant covered");
 
@@ -91,7 +92,8 @@ fn seal_fails_on_missing_coverage() {
     };
     assert!(missing.contains(&"fold-normal-into-build".to_string()));
     assert!(missing.contains(&"substitute-source".to_string()));
-    assert_eq!(missing.len(), 2);
+    assert!(missing.contains(&"native-build-inputs".to_string()));
+    assert_eq!(missing.len(), 3);
 }
 
 #[test]
@@ -113,6 +115,7 @@ fn try_apply_each_surfaces_unknown_kinds_defensively() {
         .with_helper("force-cfg", |_, _| Override::default())
         .with_helper("fold-normal-into-build", |_, _| Override::default())
         .with_helper("substitute-source", |_, _| Override::default())
+        .with_helper("native-build-inputs", |_, _| Override::default())
         .into_sealed()
         .unwrap();
 
@@ -125,9 +128,9 @@ fn try_apply_each_surfaces_unknown_kinds_defensively() {
 
 #[test]
 fn variant_count_matches_dispatcher_universe() {
-    // gen-cargo::CrateQuirk has 3 variants — match against the
+    // gen-cargo::CrateQuirk has 4 variants — match against the
     // sealed dispatcher's coverage requirement.
-    assert_eq!(<CrateQuirk as TypedDispatcherTrait>::variant_count(), 3);
+    assert_eq!(<CrateQuirk as TypedDispatcherTrait>::variant_count(), 4);
 }
 
 #[test]
@@ -137,6 +140,7 @@ fn strategy_is_settable_and_observable() {
         .with_helper("force-cfg", |_, _| Override::default())
         .with_helper("fold-normal-into-build", |_, _| Override::default())
         .with_helper("substitute-source", |_, _| Override::default())
+        .with_helper("native-build-inputs", |_, _| Override::default())
         .into_sealed()
         .unwrap();
     assert_eq!(d.strategy(), MergeStrategy::Accumulate);
@@ -148,6 +152,7 @@ fn empty_variants_returns_empty_results() {
         .with_helper("force-cfg", |_, _| Override::default())
         .with_helper("fold-normal-into-build", |_, _| Override::default())
         .with_helper("substitute-source", |_, _| Override::default())
+        .with_helper("native-build-inputs", |_, _| Override::default())
         .into_sealed()
         .unwrap();
     let mut ctx = Ctx::default();

@@ -33,6 +33,7 @@ fn pure_dispatcher() -> gen_platform::SealedDispatcher<CrateQuirk, Ctx, Override
         })
         .with_helper("fold-normal-into-build", |_, _| Override::default())
         .with_helper("substitute-source", |_, _| Override::default())
+        .with_helper("native-build-inputs", |_, _| Override::default())
         .into_sealed()
         .unwrap()
 }
@@ -74,6 +75,7 @@ fn impure_dispatcher_fails_determinism() {
         })
         .with_helper("fold-normal-into-build", |_, _| Override::default())
         .with_helper("substitute-source", |_, _| Override::default())
+        .with_helper("native-build-inputs", |_, _| Override::default())
         .into_sealed()
         .unwrap();
     let variants = vec![CrateQuirk::ForceCfg { cfg: "a".into() }];
@@ -110,6 +112,7 @@ fn strategy_observable_post_seal() {
         .with_helper("force-cfg", |_, _| Override::default())
         .with_helper("fold-normal-into-build", |_, _| Override::default())
         .with_helper("substitute-source", |_, _| Override::default())
+        .with_helper("native-build-inputs", |_, _| Override::default())
         .into_sealed()
         .unwrap();
     assert_eq!(d.strategy(), MergeStrategy::Accumulate);

@@ -91,27 +91,49 @@ fn substitute_source_carries_all_three_fields() {
 }
 
 #[test]
+fn native_build_inputs_serializes_with_packages_field() {
+    let q = CrateQuirk::NativeBuildInputs {
+        packages: vec!["cmake".to_string(), "perl".to_string()],
+    };
+    let v: serde_json::Value = serde_json::to_value(&q).unwrap();
+    assert_eq!(
+        v.get("kind"),
+        Some(&serde_json::json!("native-build-inputs"))
+    );
+    assert_eq!(
+        v.get("packages"),
+        Some(&serde_json::json!(["cmake", "perl"]))
+    );
+}
+
+#[test]
 fn registry_covers_every_class_helper_at_least_once() {
-    // The Nix dispatch table has three arms — `force-cfg`,
-    // `fold-normal-into-build`, `substitute-source`. Every arm
-    // should be exercised by at least one real registry entry; if
-    // not, the dispatch dies for an unused variant the first time
-    // somebody adds one.
+    // The Nix dispatch table has four arms — `force-cfg`,
+    // `fold-normal-into-build`, `substitute-source`,
+    // `native-build-inputs`. Every arm should be exercised by at
+    // least one real registry entry; if not, the dispatch dies for
+    // an unused variant the first time somebody adds one.
     let mut seen_force_cfg = false;
     let mut seen_fold = false;
     let mut seen_substitute = false;
+    let mut seen_native_build_inputs = false;
     for (_, quirks) in registry() {
         for q in quirks {
             match q {
                 CrateQuirk::ForceCfg { .. } => seen_force_cfg = true,
                 CrateQuirk::FoldNormalIntoBuild { .. } => seen_fold = true,
                 CrateQuirk::SubstituteSource { .. } => seen_substitute = true,
+                CrateQuirk::NativeBuildInputs { .. } => seen_native_build_inputs = true,
             }
         }
     }
     assert!(seen_force_cfg, "no ForceCfg quirk in registry");
     assert!(seen_fold, "no FoldNormalIntoBuild quirk in registry");
     assert!(seen_substitute, "no SubstituteSource quirk in registry");
+    assert!(
+        seen_native_build_inputs,
+        "no NativeBuildInputs quirk in registry"
+    );
 }
 
 #[test]

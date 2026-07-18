@@ -64,7 +64,7 @@ fn each_production_variant_count_matches_expected() {
     // substrate's lib/build/shared/dispatcher-catalog.json + add
     // the matching helpers arm in substrate/lib/build/<eco>/quirk-apply.nix.
     let expected: &[(&str, usize)] = &[
-        ("gen.cargo.crate-quirk", 3),
+        ("gen.cargo.crate-quirk", 4),
         ("gen.npm.npm-quirk", 5),
         ("gen.bundler.bundler-quirk", 5),
         ("gen.helm.helm-quirk", 4),

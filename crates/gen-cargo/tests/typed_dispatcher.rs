@@ -13,7 +13,12 @@ fn crate_quirk_variant_kinds_match_serde_tags() {
     let kinds = CrateQuirk::variant_kinds();
     assert_eq!(
         kinds,
-        vec!["force-cfg", "fold-normal-into-build", "substitute-source"]
+        vec![
+            "force-cfg",
+            "fold-normal-into-build",
+            "substitute-source",
+            "native-build-inputs"
+        ]
     );
 }
 
@@ -26,13 +31,14 @@ fn crate_quirk_variant_fields_match_struct_shape() {
             ("force-cfg", vec!["cfg"]),
             ("fold-normal-into-build", vec!["extern_crate"]),
             ("substitute-source", vec!["file", "from", "to"]),
+            ("native-build-inputs", vec!["packages"]),
         ]
     );
 }
 
 #[test]
 fn variant_count_matches_kinds_len() {
-    assert_eq!(CrateQuirk::variant_count(), 3);
+    assert_eq!(CrateQuirk::variant_count(), 4);
     assert_eq!(CrateQuirk::variant_count(), CrateQuirk::variant_kinds().len());
 }
 
@@ -48,6 +54,9 @@ fn reflection_kinds_match_serde_serialized_tags() {
             file: "a".into(),
             from: "b".into(),
             to: "c".into(),
+        },
+        CrateQuirk::NativeBuildInputs {
+            packages: vec!["cmake".into()],
         },
     ];
     let reflected = CrateQuirk::variant_kinds();

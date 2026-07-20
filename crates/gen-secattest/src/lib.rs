@@ -45,11 +45,21 @@
 //!    admission), each with its best-in-class OSS engine, `Shipped/Wired/
 //!    Design` maturity, and NIST 800-53 crosswalk. The four fail-closed
 //!    concerns cross-witness the four required verdict kinds.
+//! 6. **The security-REMEDIATION CATALOG** ([`remediation`], CATALOG
+//!    REFLECTION) — a growable library of "which CVEs we already know how to
+//!    fix": a typed [`remediation::Fix`] pin/overlay/patch reference per
+//!    finding, the shared dependency edge it applies to, which consumers a
+//!    real trivy re-scan has actually confirmed closed, and a
+//!    [`remediation::RemediationMaturity`] (design → verified-once →
+//!    propagated-fleet-wide). The sibling axis to `catalog`/`concern`:
+//!    "what's checked" + "what's addressed" + now "what's already fixed and
+//!    where that knowledge lives" (`theory/SECURITY-LAYER.md` §10).
 //!
-//! The verification MATRICES (one row per verdict kind / per concern, failing
-//! the build when one lands without a row) live in `tests/secattest_matrix.rs`
-//! + `tests/concern_matrix.rs` (`matrix_covers_every_concern` +
-//! `no_verdict_slot_rounded_up`).
+//! The verification MATRICES (one row per verdict kind / per concern / per
+//! known CVE finding, failing the build when one lands without a row) live
+//! in `tests/secattest_matrix.rs` + `tests/concern_matrix.rs` +
+//! `tests/remediation_matrix.rs` (`matrix_covers_every_concern` +
+//! `no_verdict_slot_rounded_up` + `matrix_covers_every_known_finding`).
 //!
 //! ## Named EXTERNAL gates (never claimed done)
 //!
@@ -72,6 +82,7 @@ pub mod clause;
 pub mod concern;
 pub mod fixture;
 pub mod invariant;
+pub mod remediation;
 pub mod verdict;
 
 pub use catalog::{entry_for, maturity_histogram, VerdictKindEntry, CATALOG};
@@ -81,6 +92,10 @@ pub use concern::{
 pub use clause::{AttestTier, SecClause};
 pub use invariant::{
     dedup_witness, verify, Attestable, DedupOutcome, VerdictViolation,
+};
+pub use remediation::{
+    remediation_for, remediation_for_cve_id, AppliesTo, CveFinding, Fix, RemediationEntry,
+    RemediationMaturity, REMEDIATION_CATALOG,
 };
 pub use verdict::{
     AttestationAddr, CompleteVerdict, CveDbEpoch, CveSlot, EpochTtl, IncompleteVerdict,

@@ -303,6 +303,14 @@ pub struct MemberFlakeMetadata {
     ///   with-mcp           = false
     ///   with-http          = false
     ///   with-system-daemon = false
+    ///
+    /// `[package.metadata.pleme]` also carries a sibling `features` key
+    /// (NOT part of this struct — consumed earlier, directly off the
+    /// raw `--no-deps` pre-pass, by `opt_in_feature_selectors` in this
+    /// module) that opts specific non-default Cargo features into gen's
+    /// resolve, e.g. `features = ["watch-cli"]` for a crate with an
+    /// optional CLI binary gated by `required-features`. See that
+    /// function's doc comment for the full rationale.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub module_trio: Option<ModuleTrioSpec>,
 }
@@ -867,6 +875,83 @@ pub fn generate_multi_target(root: &Path) -> Result<BuildSpec> {
     Ok(base)
 }
 
+/// Package-qualified `<crate-name>/<feature>` selectors for every
+/// workspace member that OPTS a non-default feature into gen's resolve
+/// via `[package.metadata.pleme].features` in its own `Cargo.toml`.
+///
+/// Read via a cheap `cargo metadata --no-deps` pre-pass: `--no-deps`
+/// skips the resolver entirely (no registry/network touch, no lockfile
+/// requirement), so this is safe in every posture `generate_for_target`
+/// runs in (offline fleet-sweep, the network-less substrate IFD
+/// sandbox). It also delegates workspace-member discovery (including
+/// glob members like `crates/*` and `[workspace.package.metadata]`
+/// inheritance) to cargo's own manifest reader instead of gen
+/// re-implementing it.
+///
+/// **Why this exists (the class of bug it closes):** `cargo_metadata`'s
+/// default resolve activates only DEFAULT features — i.e. exactly what
+/// plain `cargo build` (no flags) would build. A crate whose optional
+/// binary or deps are gated behind a non-default feature (e.g.
+/// `breathe-retirada-ci`'s `watch-cli`, which gates its
+/// `retirada-ci-watch` `[[bin]]` via `required-features`) never gets
+/// those deps activated, so the phantom-optional-dep filter below
+/// correctly prunes them — and the emitted spec can advertise a binary
+/// target whose deps were never resolved. There was previously NO way
+/// for a workspace member to opt into having gen build a specific
+/// non-default feature.
+///
+/// **Why this is NOT `CargoOpt::AllFeatures`:** several fleet crates
+/// rely on an optional dep staying OFF unless a consumer explicitly
+/// activates it — `sqlx-sqlite` dragging in `libsqlite3-sys`'s stale
+/// `prepare_v2`-only bindings is the documented precedent this file's
+/// own phantom-optional-dep pruning (below) was hardened against.
+/// Blanket-activating every optional feature fleet-wide would silently
+/// re-introduce that exact regression for every crate that deliberately
+/// keeps a feature off. So activation here is OPT-IN and
+/// PACKAGE-QUALIFIED (`SomeFeatures(["pkg/feat", ...])`) — a crate that
+/// declares nothing gets byte-identical behavior to before this
+/// function existed (no `.features(..)` call is even made).
+///
+/// Authoring in Cargo.toml (sibling of the existing `hm-leaf` /
+/// `binary-name` / … module-trio keys under the same table):
+///
+///   [package.metadata.pleme]
+///   features = ["watch-cli"]
+fn opt_in_feature_selectors(manifest_path: &Path) -> Result<Vec<String>> {
+    let meta = MetadataCommand::new()
+        .manifest_path(manifest_path)
+        .no_deps()
+        .exec()
+        .map_err(|e| CargoError::Io {
+            path: manifest_path.to_path_buf(),
+            source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+        })?;
+    let mut selectors: Vec<String> = meta
+        .packages
+        .iter()
+        .filter_map(|pkg| {
+            let feats = pkg
+                .metadata
+                .as_object()?
+                .get("pleme")?
+                .as_object()?
+                .get("features")?
+                .as_array()?;
+            Some((pkg.name.to_string(), feats.clone()))
+        })
+        .flat_map(|(name, feats)| {
+            feats
+                .into_iter()
+                .filter_map(move |f| f.as_str().map(|s| format!("{name}/{s}")))
+        })
+        .collect();
+    // Deterministic — the emitted spec's resolve must not depend on
+    // cargo_metadata's package-iteration order.
+    selectors.sort();
+    selectors.dedup();
+    Ok(selectors)
+}
+
 /// Generate the BuildSpec for an explicit target triple. Used by
 /// cross-build CI to produce a per-target spec.
 pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
@@ -910,6 +995,11 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         // pairs with `--offline` as a single hermetic posture.
         unsafe { std::env::set_var("GIT_TERMINAL_PROMPT", "0") };
     }
+    // Opt-in, package-qualified non-default feature activation — see
+    // `opt_in_feature_selectors`'s doc comment for the full rationale
+    // (why this exists, and why it is deliberately NOT AllFeatures).
+    let opt_in_features = opt_in_feature_selectors(&manifest_path)?;
+
     let mut cmd = MetadataCommand::new();
     cmd.manifest_path(&manifest_path);
     let mut opts: Vec<String> = Vec::new();
@@ -921,6 +1011,12 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         opts.push(target.to_string());
     }
     cmd.other_options(opts);
+    // Only invoked when at least one workspace member opted in — a
+    // workspace with no `[package.metadata.pleme].features` anywhere
+    // constructs the EXACT same MetadataCommand as before this fix.
+    if !opt_in_features.is_empty() {
+        cmd.features(cargo_metadata::CargoOpt::SomeFeatures(opt_in_features));
+    }
     let meta = cmd.exec().map_err(|e| CargoError::Io {
         path: manifest_path.clone(),
         source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
@@ -3402,6 +3498,89 @@ mod dependency_key_normalization_tests {
             old_buggy_edge_key, a,
             "documents the bug: the raw-source derivation and the promoted-source \
              derivation land on different strings for an external path-dep"
+        );
+    }
+}
+
+/// Unit tests for `opt_in_feature_selectors` — the opt-in,
+/// package-qualified `--features` pass-through fix (2026-07-23). See
+/// that function's doc comment for the bug it closes and why it is
+/// deliberately not `CargoOpt::AllFeatures`.
+///
+/// These exercise the selector-reading function directly (a real
+/// `cargo metadata --no-deps` pre-pass against an on-disk fixture, no
+/// network — `--no-deps` never touches the registry). The end-to-end
+/// "the activation actually reaches the emitted spec" proof lives in
+/// `tests/opt_in_feature_selectors.rs` against the public
+/// `generate_for_target` API.
+#[cfg(test)]
+mod opt_in_feature_selector_tests {
+    use super::opt_in_feature_selectors;
+
+    fn unique_tmp(label: &str) -> std::path::PathBuf {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static C: AtomicU64 = AtomicU64::new(0);
+        let n = C.fetch_add(1, Ordering::Relaxed);
+        let p = std::env::temp_dir().join(format!(
+            "gen-cargo-opt-in-{label}-{}-{}",
+            std::process::id(),
+            n
+        ));
+        let _ = std::fs::remove_dir_all(&p);
+        std::fs::create_dir_all(&p).unwrap();
+        p
+    }
+
+    #[test]
+    fn reads_package_metadata_pleme_features_as_qualified_selectors() {
+        let root = unique_tmp("present");
+        std::fs::write(
+            root.join("Cargo.toml"),
+            r#"[package]
+name = "demo"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.pleme]
+features = ["watch-cli", "extra"]
+"#,
+        )
+        .unwrap();
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::write(root.join("src/lib.rs"), "").unwrap();
+
+        let selectors = opt_in_feature_selectors(&root.join("Cargo.toml"))
+            .expect("opt_in_feature_selectors over a no-deps single-crate manifest");
+        assert_eq!(
+            selectors,
+            vec!["demo/extra".to_string(), "demo/watch-cli".to_string()],
+            "expected both declared features as sorted, package-qualified selectors"
+        );
+    }
+
+    #[test]
+    fn absent_metadata_pleme_yields_zero_selectors() {
+        let root = unique_tmp("absent");
+        std::fs::write(
+            root.join("Cargo.toml"),
+            r#"[package]
+name = "demo"
+version = "0.1.0"
+edition = "2021"
+"#,
+        )
+        .unwrap();
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::write(root.join("src/lib.rs"), "").unwrap();
+
+        let selectors = opt_in_feature_selectors(&root.join("Cargo.toml"))
+            .expect("opt_in_feature_selectors over a manifest with no [package.metadata.pleme]");
+        assert!(
+            selectors.is_empty(),
+            "a crate with no [package.metadata.pleme].features must yield zero \
+             selectors — the backward-compat invariant that keeps \
+             MetadataCommand::features() uncalled for every crate that \
+             doesn't opt in. got {selectors:?}"
         );
     }
 }

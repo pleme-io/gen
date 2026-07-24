@@ -1865,7 +1865,14 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
 /// in `lockfile-builder.nix`). SHA-256 specifically because nix
 /// has built-in hashFile but no BLAKE3 surface; the perf cost is
 /// rounding error on <500 KB lockfiles.
-fn hash_cargo_lock(root: &Path) -> Option<String> {
+///
+/// `pub` so the offline delta-freshness check
+/// (`gen_delta::confirm_freshness`) reuses the EXACT hash function the
+/// spec producer uses — one definition of "how we hash the lock", so the
+/// D2 freshness tie can never drift between the side that WRITES
+/// `cargo_lock_sha256` and the side that VERIFIES it.
+#[must_use]
+pub fn hash_cargo_lock(root: &Path) -> Option<String> {
     use sha2::{Digest, Sha256};
     let lock_path = root.join("Cargo.lock");
     let bytes = std::fs::read(&lock_path).ok()?;

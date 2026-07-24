@@ -251,6 +251,109 @@ pub fn write_gen_delta(root: &Path, spec: &BuildSpec) -> Result<(), GenDeltaErro
     Ok(())
 }
 
+// ── OFFLINE delta-freshness check — the D2 tie, verified from committed
+//    artifacts alone (no cargo, no network, no `~/.cargo`) ───────────────────
+
+/// Minimal decode of `Cargo.gen.lock` — ONLY the freshness tie. Decoupled
+/// from the full [`GenDelta`] (same discipline as `build_spec::SpecHeader`):
+/// a delta whose resolver subtree has evolved (a new `PerCrateScalars` field,
+/// a bumped `schema_version`) still yields a usable freshness reading, because
+/// the D2 tie is all `gen confirm` consults.
+#[derive(Deserialize)]
+struct DeltaShaHeader {
+    #[serde(default)]
+    cargo_lock_sha256: Option<String>,
+}
+
+/// The offline delta-freshness verdict. Computed by reading ONLY `Cargo.lock`
+/// + the committed `Cargo.gen.lock` at the workspace root — no `cargo
+/// metadata`, no network, no `~/.cargo`. Serialized as a discriminated union
+/// (`status` tag) an operator or CI gate can branch on.
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "status", rename_all = "kebab-case")]
+pub enum DeltaFreshness {
+    /// `sha256(Cargo.lock)` matches the delta's recorded `cargo_lock_sha256`.
+    Fresh { cargo_lock_sha256: String },
+    /// The delta's recorded sha differs from the current `Cargo.lock` — the
+    /// lock changed without regenerating `Cargo.gen.lock` (`gen build`).
+    Stale { expected: String, actual: String },
+    /// No `Cargo.gen.lock` at the workspace root (never generated, or lost).
+    MissingDelta { actual: String },
+    /// `Cargo.gen.lock` exists but carries no `cargo_lock_sha256` tie
+    /// (corrupt, or a pre-D2 artifact) — cannot prove freshness, so stale.
+    UntiedDelta { actual: String },
+    /// No `Cargo.lock` at the workspace root — nothing to tie against.
+    MissingLock,
+}
+
+impl DeltaFreshness {
+    /// True unless the committed delta is PROVEN fresh against its lock.
+    /// Drives the non-zero exit code of `gen confirm` — a missing / untied /
+    /// mismatched delta all gate the build, never silently pass.
+    #[must_use]
+    pub fn is_stale(&self) -> bool {
+        !matches!(self, DeltaFreshness::Fresh { .. })
+    }
+
+    /// One-line operator summary.
+    #[must_use]
+    pub fn summary(&self) -> String {
+        match self {
+            DeltaFreshness::Fresh { .. } => {
+                "fresh: Cargo.gen.lock matches Cargo.lock".to_string()
+            }
+            DeltaFreshness::Stale { expected, actual } => format!(
+                "STALE: Cargo.lock changed without `gen build` — \
+                 Cargo.gen.lock records {expected}, Cargo.lock is {actual}"
+            ),
+            DeltaFreshness::MissingDelta { .. } => {
+                "MISSING: no Cargo.gen.lock — run `gen build`".to_string()
+            }
+            DeltaFreshness::UntiedDelta { .. } => {
+                "UNTIED: Cargo.gen.lock has no cargo_lock_sha256 — run `gen build`".to_string()
+            }
+            DeltaFreshness::MissingLock => "MISSING: no Cargo.lock".to_string(),
+        }
+    }
+}
+
+/// Pure, OFFLINE delta-freshness check — the D2 freshness tie verified from
+/// the committed artifacts alone. Reads ONLY `Cargo.lock` and `Cargo.gen.lock`
+/// at `root`: recomputes `sha256(Cargo.lock)` (via `build_spec::hash_cargo_lock`
+/// — the SAME digest the producer wrote, identical to `builtins.hashFile
+/// "sha256"`) and compares it to the delta's recorded `cargo_lock_sha256`.
+///
+/// No `cargo metadata`, no network, no `~/.cargo` registry — safe inside a Nix
+/// `runCommand` / `nix flake check` sandbox. This is the offline-safe
+/// DESTINATION of the `gen-confirm` substrate check: `gen check` proves the
+/// workspace PARSES; `gen confirm` proves the committed delta is FRESH against
+/// its lock (a `cargo update` without a `gen build` is caught, offline).
+#[must_use]
+pub fn confirm_freshness(root: &Path) -> DeltaFreshness {
+    let actual = match crate::build_spec::hash_cargo_lock(root) {
+        Some(h) => h,
+        None => return DeltaFreshness::MissingLock,
+    };
+    let delta_path = root.join(GenDelta::FILENAME);
+    let text = match std::fs::read_to_string(&delta_path) {
+        Ok(t) => t,
+        Err(_) => return DeltaFreshness::MissingDelta { actual },
+    };
+    let header: DeltaShaHeader = match serde_json::from_str(&text) {
+        Ok(h) => h,
+        // A `Cargo.gen.lock` we cannot even read the tie out of cannot prove
+        // freshness — refuse it rather than round up to fresh.
+        Err(_) => return DeltaFreshness::UntiedDelta { actual },
+    };
+    match header.cargo_lock_sha256 {
+        Some(expected) if expected == actual => {
+            DeltaFreshness::Fresh { cargo_lock_sha256: actual }
+        }
+        Some(expected) => DeltaFreshness::Stale { expected, actual },
+        None => DeltaFreshness::UntiedDelta { actual },
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -409,5 +512,104 @@ mod tests {
             Value::Array(a) => a.iter().for_each(|c| collect_keys(c, out)),
             _ => {}
         }
+    }
+
+    // ── confirm_freshness: pure OFFLINE D2-tie verification ──────────────
+
+    fn confirm_tmpdir() -> std::path::PathBuf {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static C: AtomicU64 = AtomicU64::new(0);
+        let n = C.fetch_add(1, Ordering::Relaxed);
+        let p = std::env::temp_dir().join(format!(
+            "gen-confirm-freshness-{}-{}",
+            std::process::id(),
+            n
+        ));
+        let _ = std::fs::remove_dir_all(&p);
+        std::fs::create_dir_all(&p).unwrap();
+        p
+    }
+
+    /// The exact digest `confirm_freshness` will recompute for a given
+    /// `Cargo.lock` body — mirrors `build_spec::hash_cargo_lock`.
+    fn sha256_hex(bytes: &[u8]) -> String {
+        use sha2::{Digest, Sha256};
+        let mut h = Sha256::new();
+        h.update(bytes);
+        format!("{:x}", h.finalize())
+    }
+
+    fn write_gen_lock(dir: &Path, sha: &str) {
+        // A minimal, schema-valid-enough `Cargo.gen.lock` for the tie check.
+        // (The full struct requires target_resolves; the offline confirm only
+        // consults `cargo_lock_sha256`, so a minimal doc is the honest fixture.)
+        let body = format!(r#"{{ "schema_version": 1, "cargo_lock_sha256": "{sha}" }}"#);
+        std::fs::write(dir.join("Cargo.gen.lock"), body).unwrap();
+    }
+
+    #[test]
+    fn confirm_fresh_when_sha_matches() {
+        let dir = confirm_tmpdir();
+        let lock = b"# fresh lock\n[[package]]\nname = \"x\"\n";
+        std::fs::write(dir.join("Cargo.lock"), lock).unwrap();
+        write_gen_lock(&dir, &sha256_hex(lock));
+        let v = confirm_freshness(&dir);
+        assert_eq!(v, DeltaFreshness::Fresh { cargo_lock_sha256: sha256_hex(lock) });
+        assert!(!v.is_stale());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn confirm_stale_when_lock_edited_without_regen() {
+        let dir = confirm_tmpdir();
+        let old_lock = b"# old lock\n";
+        // Cargo.gen.lock records the OLD lock's sha ...
+        write_gen_lock(&dir, &sha256_hex(old_lock));
+        // ... but Cargo.lock has since changed (a `cargo update` with no
+        // `gen build`): the delta is now stale.
+        let new_lock = b"# new lock after cargo update\n";
+        std::fs::write(dir.join("Cargo.lock"), new_lock).unwrap();
+        let v = confirm_freshness(&dir);
+        assert_eq!(
+            v,
+            DeltaFreshness::Stale {
+                expected: sha256_hex(old_lock),
+                actual: sha256_hex(new_lock),
+            }
+        );
+        assert!(v.is_stale());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn confirm_missing_delta_is_stale() {
+        let dir = confirm_tmpdir();
+        std::fs::write(dir.join("Cargo.lock"), b"# lock\n").unwrap();
+        // no Cargo.gen.lock
+        let v = confirm_freshness(&dir);
+        assert!(matches!(v, DeltaFreshness::MissingDelta { .. }));
+        assert!(v.is_stale());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn confirm_untied_delta_is_stale() {
+        let dir = confirm_tmpdir();
+        std::fs::write(dir.join("Cargo.lock"), b"# lock\n").unwrap();
+        // A Cargo.gen.lock with no cargo_lock_sha256 tie.
+        std::fs::write(dir.join("Cargo.gen.lock"), r#"{ "schema_version": 1 }"#).unwrap();
+        let v = confirm_freshness(&dir);
+        assert!(matches!(v, DeltaFreshness::UntiedDelta { .. }));
+        assert!(v.is_stale());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn confirm_missing_lock() {
+        let dir = confirm_tmpdir();
+        // no Cargo.lock at all
+        write_gen_lock(&dir, "deadbeef");
+        assert_eq!(confirm_freshness(&dir), DeltaFreshness::MissingLock);
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

@@ -214,6 +214,23 @@ enum Cmd {
         /// Path to a workspace root (defaults to CWD).
         path: Option<PathBuf>,
     },
+    /// `gen confirm` — pure OFFLINE delta-freshness gate. Reads ONLY
+    /// `Cargo.lock` + the committed `Cargo.gen.lock`: recomputes
+    /// `sha256(Cargo.lock)` and compares it to the delta's recorded
+    /// `cargo_lock_sha256` (the D2 freshness tie). Exit code is non-zero
+    /// when the delta is STALE (Cargo.lock changed without a `gen build`),
+    /// missing, or untied. No `cargo metadata`, no network, no `~/.cargo`
+    /// — safe inside a Nix `nix flake check` sandbox.
+    ///
+    /// This is the offline DESTINATION of substrate's `gen-confirm` check:
+    /// `gen check` proves the workspace PARSES; `gen confirm` proves the
+    /// committed delta is FRESH against its lock. (Distinct from the
+    /// `Adapter::confirm` trait method, which regenerates the spec via
+    /// `cargo metadata` and cannot run offline.)
+    Confirm {
+        /// Path to a workspace root (defaults to CWD).
+        path: Option<PathBuf>,
+    },
     /// `gen fleet-check` — recursively report freshness for every
     /// workspace under <path>. Same shape as `gen fleet-sweep` but
     /// read-only: emits typed `Freshness` per repo without
@@ -756,6 +773,30 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                     // shell pipelines branch cheaply: `gen
                     // check-spec && echo fresh || gen build`.
                     if needs_regen {
+                        std::process::exit(1);
+                    }
+                    Ok(())
+                }
+                other => {
+                    return Err(CliError::RenderNotImplementedForAdapter(other.to_string()));
+                }
+            }
+        }
+        Cmd::Confirm { path } => {
+            let root = resolve_root(path, cfg);
+            let adapter = pick_adapter(&root, cfg)?;
+            match adapter.as_str() {
+                "cargo" => {
+                    // PURE offline check: reads only Cargo.lock +
+                    // Cargo.gen.lock. Never `Adapter::confirm` (that
+                    // regenerates the spec via `cargo metadata` — no cargo,
+                    // no network in the check sandbox).
+                    let freshness = gen_cargo::gen_delta::confirm_freshness(&root);
+                    let is_stale = freshness.is_stale();
+                    emit(&freshness, cli.format)?;
+                    // Non-zero exit when the committed delta is stale/missing
+                    // so `nix flake check` (and shell pipelines) gate on it.
+                    if is_stale {
                         std::process::exit(1);
                     }
                     Ok(())

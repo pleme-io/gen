@@ -230,6 +230,14 @@ enum Cmd {
     Confirm {
         /// Path to a workspace root (defaults to CWD).
         path: Option<PathBuf>,
+        /// Gate only a delta that EXISTS but is stale/untied; TOLERATE a
+        /// repo that commits no `Cargo.gen.lock` (the substrate IFD
+        /// reconstruction path). This is the mode substrate's `gen-confirm`
+        /// nix-flake-check uses, so consumers not on the delta-only
+        /// doctrine are not regressed. Default (unset) is strict: a missing
+        /// delta also fails.
+        #[arg(long)]
+        if_present: bool,
     },
     /// `gen fleet-check` — recursively report freshness for every
     /// workspace under <path>. Same shape as `gen fleet-sweep` but
@@ -782,7 +790,7 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                 }
             }
         }
-        Cmd::Confirm { path } => {
+        Cmd::Confirm { path, if_present } => {
             let root = resolve_root(path, cfg);
             let adapter = pick_adapter(&root, cfg)?;
             match adapter.as_str() {
@@ -792,11 +800,12 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                     // regenerates the spec via `cargo metadata` — no cargo,
                     // no network in the check sandbox).
                     let freshness = gen_cargo::gen_delta::confirm_freshness(&root);
-                    let is_stale = freshness.is_stale();
+                    // Default = strict (a missing delta fails); `--if-present`
+                    // = gate only an existing-but-stale delta (no regression
+                    // for IFD-path consumers committing no delta).
+                    let gate = freshness.gates_failure(!*if_present);
                     emit(&freshness, cli.format)?;
-                    // Non-zero exit when the committed delta is stale/missing
-                    // so `nix flake check` (and shell pipelines) gate on it.
-                    if is_stale {
+                    if gate {
                         std::process::exit(1);
                     }
                     Ok(())

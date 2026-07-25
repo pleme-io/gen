@@ -288,11 +288,36 @@ pub enum DeltaFreshness {
 
 impl DeltaFreshness {
     /// True unless the committed delta is PROVEN fresh against its lock.
-    /// Drives the non-zero exit code of `gen confirm` — a missing / untied /
-    /// mismatched delta all gate the build, never silently pass.
+    /// Drives the non-zero exit code of the default `gen confirm` — a
+    /// missing / untied / mismatched delta all gate the build, never
+    /// silently pass.
     #[must_use]
     pub fn is_stale(&self) -> bool {
         !matches!(self, DeltaFreshness::Fresh { .. })
+    }
+
+    /// Whether this verdict should FAIL the gate, parameterized by whether
+    /// a committed delta is REQUIRED.
+    ///
+    /// * `require_delta = true` (the default `gen confirm`): the strict
+    ///   contract — a missing delta (or missing lock) fails, exactly like
+    ///   `is_stale`.
+    /// * `require_delta = false` (`gen confirm --if-present`): the CHECK
+    ///   mode — gate only a delta that EXISTS but cannot prove freshness
+    ///   (`Stale` / `UntiedDelta`), and TOLERATE a repo that legitimately
+    ///   commits no delta (the substrate IFD reconstruction path). This is
+    ///   what keeps the fleet's `gen-confirm` nix-flake-check regression-free
+    ///   for consumers not (yet) on the delta-only doctrine while still
+    ///   catching a stale committed delta everywhere it exists.
+    #[must_use]
+    pub fn gates_failure(&self, require_delta: bool) -> bool {
+        match self {
+            DeltaFreshness::Fresh { .. } => false,
+            // Present-but-mismatched / present-but-unverifiable → always gate.
+            DeltaFreshness::Stale { .. } | DeltaFreshness::UntiedDelta { .. } => true,
+            // Absent inputs: strict mode gates; `--if-present` tolerates.
+            DeltaFreshness::MissingDelta { .. } | DeltaFreshness::MissingLock => require_delta,
+        }
     }
 
     /// One-line operator summary.
@@ -611,5 +636,25 @@ mod tests {
         write_gen_lock(&dir, "deadbeef");
         assert_eq!(confirm_freshness(&dir), DeltaFreshness::MissingLock);
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn gates_failure_strict_vs_if_present() {
+        let fresh = DeltaFreshness::Fresh { cargo_lock_sha256: "a".into() };
+        let stale = DeltaFreshness::Stale { expected: "a".into(), actual: "b".into() };
+        let untied = DeltaFreshness::UntiedDelta { actual: "b".into() };
+        let missing = DeltaFreshness::MissingDelta { actual: "b".into() };
+        let nolock = DeltaFreshness::MissingLock;
+
+        // Fresh never gates, either mode.
+        assert!(!fresh.gates_failure(true));
+        assert!(!fresh.gates_failure(false));
+        // A PRESENT stale/untied delta gates in BOTH modes (the real gate).
+        assert!(stale.gates_failure(true) && stale.gates_failure(false));
+        assert!(untied.gates_failure(true) && untied.gates_failure(false));
+        // Absent inputs: strict gates, --if-present tolerates (no regression
+        // for IFD-path consumers that commit no delta).
+        assert!(missing.gates_failure(true) && !missing.gates_failure(false));
+        assert!(nolock.gates_failure(true) && !nolock.gates_failure(false));
     }
 }

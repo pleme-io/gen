@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "cargo_lock_sha256": "4a0b497abd8d5ed9848969f482379d9f6a5ccd3865412d44745c9dcfafb06b52",
+  "cargo_lock_sha256": "e2ae28204e5a7a34adb0d83a09a13237ae4bc288ad651660708cb0d643999396",
   "target_resolves": {
     "base": {
       "anstream-1.0.0": {
@@ -2875,6 +2875,44 @@
             "package_key": "serde_json-1.0.150",
             "kind": "normal",
             "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
+            "name": "thiserror",
+            "package_key": "thiserror-2.0.18",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          }
+        ],
+        "build_dependencies": [],
+        "features": []
+      },
+      "gen-verdict-0.1.26": {
+        "runtime_dependencies": [
+          {
+            "name": "gen_macros",
+            "package_key": "gen-macros-0.1.26",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "host"
+          },
+          {
+            "name": "serde",
+            "package_key": "serde-1.0.228",
+            "kind": "normal",
+            "features": [
+              "derive"
+            ],
             "uses_default_features": true,
             "optional": false,
             "target": null,
@@ -8704,6 +8742,13 @@
       "edition": "2024",
       "lib_target": {
         "name": "gen_types",
+        "path": "src/lib.rs"
+      }
+    },
+    "gen-verdict-0.1.26": {
+      "edition": "2024",
+      "lib_target": {
+        "name": "gen_verdict",
         "path": "src/lib.rs"
       }
     },

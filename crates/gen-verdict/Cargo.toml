@@ -1,0 +1,34 @@
+[package]
+name = "gen-verdict"
+description = "gen — the DERIVED-VERDICT law as a type. A verdict is derived from the subject set it claims about, and CARRIES THE WITNESS of that derivation: `NonEmpty<T>` (head+tail, so empty is a compile error, not a smart-constructor Err), `Domain<T>` (emptiness is a named arm, never `Option`), `Verdict<S,F>` whose `Held` arm cannot be NAMED without a non-empty subject-set witness and whose `Vacuous`/`Unreached` are distinct no-claim arms, one `judge` classifier, a re-deriving `#[serde(try_from)]` wire border that REJECTS a forged pass, and a move-only `Permit<S>` capability that binds the witness to the guarded action's input. Deliberately tiny (serde + thiserror + gen-macros) so every gate, linter, reconciler observation and status field in the fleet can afford it. See theory/UNREPRESENTABILITY.md §II.4."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_verdict"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+# Deliberately THREE dependencies and no more. The whole value of this crate
+# is being cheap enough that a linter, a CI gate, a controller and a codegen
+# backend can all take it without inheriting a dependency tree. `gen-macros`
+# is a proc-macro crate whose `Discriminant`/`IsVariant` output is a pair of
+# self-contained inherent impls — it pulls no runtime dependency of its own.
+serde = { workspace = true }
+thiserror = { workspace = true }
+gen-macros = { version = "0.1.0", path = "../gen-macros" }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+# The compile-fail corpus. A crate about non-constructibility whose tests
+# only ever exercise what DOES compile would be grading itself on the easy
+# half — the load-bearing proofs here are the ones that must NOT build.
+trybuild = "1"

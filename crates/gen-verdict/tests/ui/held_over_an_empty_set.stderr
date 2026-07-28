@@ -1,0 +1,47 @@
+error[E0639]: cannot create non-exhaustive variant using struct expression
+  --> tests/ui/held_over_an_empty_set.rs:18:19
+   |
+18 |       let _sealed = Verdict::<u8, u8>::Held {
+   |  ___________________^
+19 | |         subjects: Subjects::one(1),
+20 | |     };
+   | |_____^
+
+error[E0639]: cannot create non-exhaustive variant using struct expression
+  --> tests/ui/held_over_an_empty_set.rs:23:21
+   |
+23 |       let _mistyped = Verdict::<u8, u8>::Held {
+   |  _____________________^
+24 | |         subjects: Vec::<u8>::new(),
+25 | |     };
+   | |_____^
+
+error[E0308]: mismatched types
+  --> tests/ui/held_over_an_empty_set.rs:24:19
+   |
+24 |         subjects: Vec::<u8>::new(),
+   |                   ^^^^^^^^^^^^^^^^ expected `NonEmpty<u8>`, found `Vec<u8>`
+   |
+   = note: expected struct `NonEmpty<u8>`
+              found struct `Vec<u8>`
+
+error[E0599]: no function or associated item named `empty` found for struct `NonEmpty<T>` in the current scope
+  --> tests/ui/held_over_an_empty_set.rs:28:53
+   |
+28 |     let _no_empty_witness: Subjects<u8> = Subjects::empty();
+   |                                                     ^^^^^ function or associated item not found in `NonEmpty<_>`
+   |
+note: if you're trying to build a new `NonEmpty<_>` consider using one of the following associated functions:
+      NonEmpty::<T>::one
+      NonEmpty::<T>::from_parts
+      NonEmpty::<T>::try_from_vec
+  --> src/subjects.rs
+   |
+   |     pub fn one(head: T) -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+   |     pub fn from_parts(head: T, tail: Vec<T>) -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+   |     pub fn try_from_vec(items: Vec<T>) -> Result<Self, EmptyWitness> {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

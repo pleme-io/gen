@@ -1,0 +1,9 @@
+error[E0639]: cannot create non-exhaustive variant using struct expression
+  --> tests/ui/falsified_arm_is_sealed.rs:12:19
+   |
+12 |       let _sealed = Verdict::<u8, u8>::Falsified {
+   |  ___________________^
+13 | |         subjects: Subjects::one(1),
+14 | |         findings: Findings::one(9),
+15 | |     };
+   | |_____^

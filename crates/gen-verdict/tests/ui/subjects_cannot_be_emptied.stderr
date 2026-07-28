@@ -1,0 +1,41 @@
+error[E0599]: no method named `pop` found for struct `NonEmpty<T>` in the current scope
+  --> tests/ui/subjects_cannot_be_emptied.rs:22:22
+   |
+22 |     let _ = subjects.pop();
+   |                      ^^^ method not found in `NonEmpty<u8>`
+
+error[E0599]: no method named `clear` found for struct `NonEmpty<T>` in the current scope
+  --> tests/ui/subjects_cannot_be_emptied.rs:23:14
+   |
+23 |     subjects.clear();
+   |              ^^^^^ method not found in `NonEmpty<u8>`
+
+error[E0599]: no method named `drain` found for struct `NonEmpty<T>` in the current scope
+  --> tests/ui/subjects_cannot_be_emptied.rs:24:22
+   |
+24 |     let _ = subjects.drain(..);
+   |                      ^^^^^ method not found in `NonEmpty<u8>`
+
+error[E0599]: no method named `truncate` found for struct `NonEmpty<T>` in the current scope
+  --> tests/ui/subjects_cannot_be_emptied.rs:25:14
+   |
+25 |     subjects.truncate(0);
+   |              ^^^^^^^^ method not found in `NonEmpty<u8>`
+
+error[E0599]: no method named `remove` found for struct `NonEmpty<T>` in the current scope
+  --> tests/ui/subjects_cannot_be_emptied.rs:26:14
+   |
+26 |     subjects.remove(0);
+   |              ^^^^^^ method not found in `NonEmpty<u8>`
+
+error[E0599]: no method named `retain` found for struct `NonEmpty<T>` in the current scope
+  --> tests/ui/subjects_cannot_be_emptied.rs:27:14
+   |
+27 |     subjects.retain(|_| false);
+   |              ^^^^^^ method not found in `NonEmpty<u8>`
+
+error[E0599]: no method named `as_mut_vec` found for struct `NonEmpty<T>` in the current scope
+  --> tests/ui/subjects_cannot_be_emptied.rs:28:14
+   |
+28 |     subjects.as_mut_vec().clear();
+   |              ^^^^^^^^^^ method not found in `NonEmpty<u8>`

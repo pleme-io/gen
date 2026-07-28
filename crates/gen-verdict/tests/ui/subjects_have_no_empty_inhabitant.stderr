@@ -1,0 +1,33 @@
+error[E0599]: no function or associated item named `default` found for struct `NonEmpty<T>` in the current scope
+  --> tests/ui/subjects_have_no_empty_inhabitant.rs:21:46
+   |
+21 |     let _defaulted: NonEmpty<u8> = NonEmpty::default();
+   |                                              ^^^^^^^ function or associated item not found in `NonEmpty<_>`
+   |
+note: if you're trying to build a new `NonEmpty<_>` consider using one of the following associated functions:
+      NonEmpty::<T>::one
+      NonEmpty::<T>::from_parts
+      NonEmpty::<T>::try_from_vec
+  --> src/subjects.rs
+   |
+   |     pub fn one(head: T) -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+   |     pub fn from_parts(head: T, tail: Vec<T>) -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+   |     pub fn try_from_vec(items: Vec<T>) -> Result<Self, EmptyWitness> {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0308]: mismatched types
+  --> tests/ui/subjects_have_no_empty_inhabitant.rs:22:52
+   |
+22 |     let _infallible: NonEmpty<u8> = NonEmpty::from(Vec::<u8>::new());
+   |                                     -------------- ^^^^^^^^^^^^^^^^ expected `NonEmpty<u8>`, found `Vec<u8>`
+   |                                     |
+   |                                     arguments to this function are incorrect
+   |
+   = note: expected struct `NonEmpty<u8>`
+              found struct `Vec<u8>`
+note: associated function defined here
+  --> /nix/var/nix/builds/nix-36689-2103234046/rustc-1.91.1-src/library/core/src/convert/mod.rs:592:8

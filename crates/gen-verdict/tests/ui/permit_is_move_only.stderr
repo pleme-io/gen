@@ -1,0 +1,23 @@
+error[E0599]: no method named `clone` found for struct `Permit<S>` in the current scope
+  --> tests/ui/permit_is_move_only.rs:26:24
+   |
+26 |     let _copy = permit.clone();
+   |                        ^^^^^ method not found in `Permit<u8>`
+
+error[E0382]: use of moved value: `permit`
+  --> tests/ui/permit_is_move_only.rs:19:19
+   |
+13 |     let permit = Verdict::<u8, u8>::judge(Subjects::scope(vec![1, 2]), Vec::new())
+   |         ------ move occurs because `permit` has type `Permit<u8>`, which does not implement the `Copy` trait
+...
+17 |     let _first = permit.authorize(|examined| examined.count());
+   |                         -------------------------------------- `permit` moved due to this method call
+18 |     // Spent.
+19 |     let _second = permit.authorize(|examined| examined.count());
+   |                   ^^^^^^ value used here after move
+   |
+note: `Permit::<S>::authorize` takes ownership of the receiver `self`, which moves `permit`
+  --> src/permit.rs
+   |
+   |     pub fn authorize<T>(self, action: impl FnOnce(Subjects<S>) -> T) -> T {
+   |                         ^^^^

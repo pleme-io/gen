@@ -1,0 +1,43 @@
+error[E0624]: associated function `mint` is private
+  --> tests/ui/permit_has_one_minter.rs:18:27
+   |
+18 |     let _minted = Permit::mint(Subjects::one(1_u8));
+   |                           ^^^^ private associated function
+   |
+  ::: src/permit.rs
+   |
+   |     pub(crate) fn mint(subjects: Subjects<S>) -> Self {
+   |     ------------------------------------------------- private associated function defined here
+
+error[E0599]: no function or associated item named `default` found for struct `Permit<S>` in the current scope
+  --> tests/ui/permit_has_one_minter.rs:19:42
+   |
+19 |     let _defaulted: Permit<u8> = Permit::default();
+   |                                          ^^^^^^^ function or associated item not found in `Permit<_>`
+
+error[E0277]: the trait bound `Permit<u8>: serde::Deserialize<'de>` is not satisfied
+  --> tests/ui/permit_has_one_minter.rs:20:31
+   |
+20 |     let _parsed: Permit<u8> = serde_json::from_str("[1]").unwrap();
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `serde_core::de::Deserialize<'_>` is not implemented for `Permit<u8>`
+   |
+   = note: for local types consider adding `#[derive(serde::Deserialize)]` to your `Permit<u8>` type
+   = note: for types from other crates check whether the crate offers a `serde` feature flag
+   = help: the following other types implement trait `serde_core::de::Deserialize<'de>`:
+             &'a Path
+             &'a [u8]
+             &'a str
+             ()
+             (T,)
+             (T0, T1)
+             (T0, T1, T2)
+             (T0, T1, T2, T3)
+           and $N others
+note: required by a bound in `serde_json::from_str`
+  --> $CARGO/serde_json-$VERSION/src/de.rs
+   |
+   | pub fn from_str<'a, T>(s: &'a str) -> Result<T>
+   |        -------- required by a bound in this function
+   | where
+   |     T: de::Deserialize<'a>,
+   |        ^^^^^^^^^^^^^^^^^^^ required by this bound in `from_str`

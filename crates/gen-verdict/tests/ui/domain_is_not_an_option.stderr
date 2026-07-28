@@ -1,0 +1,17 @@
+error[E0599]: no method named `unwrap_or_default` found for enum `Domain<T>` in the current scope
+  --> tests/ui/domain_is_not_an_option.rs:17:30
+   |
+17 |     let _rounded_up = scoped.unwrap_or_default();
+   |                              ^^^^^^^^^^^^^^^^^ method not found in `Domain<u8>`
+
+error[E0599]: no method named `unwrap` found for enum `Domain<T>` in the current scope
+  --> tests/ui/domain_is_not_an_option.rs:18:56
+   |
+18 |     let _unwrapped = Subjects::scope(Vec::<u8>::new()).unwrap();
+   |                                                        ^^^^^^ method not found in `Domain<u8>`
+
+error[E0599]: no method named `unwrap_or` found for enum `Domain<T>` in the current scope
+  --> tests/ui/domain_is_not_an_option.rs:19:56
+   |
+19 |     let _defaulted = Subjects::scope(Vec::<u8>::new()).unwrap_or(Subjects::one(0));
+   |                                                        ^^^^^^^^^ method not found in `Domain<u8>`

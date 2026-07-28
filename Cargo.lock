@@ -792,6 +792,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "gen-verdict"
+version = "0.1.26"
+dependencies = [
+ "gen-macros",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "trybuild",
+]
+
+[[package]]
 name = "generic-array"
 version = "0.14.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"

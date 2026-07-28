@@ -1,0 +1,9 @@
+error[E0451]: fields `head` and `tail` of struct `NonEmpty` are private
+  --> tests/ui/subjects_literal_is_private.rs:21:9
+   |
+20 |     let _literal = NonEmpty {
+   |                    -------- in this type
+21 |         head: 1_u8,
+   |         ^^^^ private field
+22 |         tail: Vec::new(),
+   |         ^^^^ private field

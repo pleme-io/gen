@@ -464,7 +464,7 @@ dependencies = [
 
 [[package]]
 name = "gen-adapter-forge"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-types",
  "indexmap",
@@ -474,7 +474,7 @@ dependencies = [
 
 [[package]]
 name = "gen-ansible"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-macros",
  "gen-platform",
@@ -488,7 +488,7 @@ dependencies = [
 
 [[package]]
 name = "gen-bazel"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-types",
  "indexmap",
@@ -497,7 +497,7 @@ dependencies = [
 
 [[package]]
 name = "gen-buck"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-bazel",
  "gen-types",
@@ -507,7 +507,7 @@ dependencies = [
 
 [[package]]
 name = "gen-bundler"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-macros",
  "gen-platform",
@@ -521,7 +521,7 @@ dependencies = [
 
 [[package]]
 name = "gen-cache-attic"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-config",
  "gen-types",
@@ -532,7 +532,7 @@ dependencies = [
 
 [[package]]
 name = "gen-caixa-bridge"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-config",
  "gen-types",
@@ -543,7 +543,7 @@ dependencies = [
 
 [[package]]
 name = "gen-cargo"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "async-trait",
  "base64",
@@ -572,7 +572,7 @@ dependencies = [
 
 [[package]]
 name = "gen-cli"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "clap",
  "gen-ansible",
@@ -604,7 +604,7 @@ dependencies = [
 
 [[package]]
 name = "gen-config"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-types",
  "indexmap",
@@ -615,7 +615,7 @@ dependencies = [
 
 [[package]]
 name = "gen-gomod"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "blake3",
  "gen-macros",
@@ -631,7 +631,7 @@ dependencies = [
 
 [[package]]
 name = "gen-helm"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-macros",
  "gen-platform",
@@ -645,7 +645,7 @@ dependencies = [
 
 [[package]]
 name = "gen-macros"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -655,7 +655,7 @@ dependencies = [
 
 [[package]]
 name = "gen-nix"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-types",
  "indexmap",
@@ -664,7 +664,7 @@ dependencies = [
 
 [[package]]
 name = "gen-nix-bulk"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-nix",
  "gen-types",
@@ -674,7 +674,7 @@ dependencies = [
 
 [[package]]
 name = "gen-npm"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-macros",
  "gen-platform",
@@ -689,7 +689,7 @@ dependencies = [
 
 [[package]]
 name = "gen-pdc"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "blake3",
  "gen-types",
@@ -700,7 +700,7 @@ dependencies = [
 
 [[package]]
 name = "gen-pip"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-macros",
  "gen-platform",
@@ -714,7 +714,7 @@ dependencies = [
 
 [[package]]
 name = "gen-platform"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-cargo",
  "gen-macros",
@@ -728,7 +728,7 @@ dependencies = [
 
 [[package]]
 name = "gen-poetry"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-macros",
  "gen-platform",
@@ -742,7 +742,7 @@ dependencies = [
 
 [[package]]
 name = "gen-polyglot"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-bundler",
  "gen-cargo",
@@ -757,7 +757,7 @@ dependencies = [
 
 [[package]]
 name = "gen-secattest"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-pdc",
  "serde",
@@ -766,7 +766,7 @@ dependencies = [
 
 [[package]]
 name = "gen-swift"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-macros",
  "gen-platform",
@@ -780,7 +780,7 @@ dependencies = [
 
 [[package]]
 name = "gen-types"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "blake3",
  "chrono",
@@ -793,7 +793,7 @@ dependencies = [
 
 [[package]]
 name = "gen-verdict"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "gen-macros",
  "serde",
@@ -1492,8 +1492,8 @@ dependencies = [
 
 [[package]]
 name = "shigoto-budget"
-version = "0.1.10"
-source = "git+https://github.com/pleme-io/shigoto#c75c2af0c6cadb34721e10e570b58daac6c70a62"
+version = "0.1.11"
+source = "git+https://github.com/pleme-io/shigoto#50f18f530ae0caa1d08946a2680b407edfd30677"
 dependencies = [
  "serde",
  "shigoto-types",
@@ -1502,8 +1502,8 @@ dependencies = [
 
 [[package]]
 name = "shigoto-dag"
-version = "0.1.10"
-source = "git+https://github.com/pleme-io/shigoto#c75c2af0c6cadb34721e10e570b58daac6c70a62"
+version = "0.1.11"
+source = "git+https://github.com/pleme-io/shigoto#50f18f530ae0caa1d08946a2680b407edfd30677"
 dependencies = [
  "petgraph",
  "serde",
@@ -1513,8 +1513,8 @@ dependencies = [
 
 [[package]]
 name = "shigoto-emit"
-version = "0.1.10"
-source = "git+https://github.com/pleme-io/shigoto#c75c2af0c6cadb34721e10e570b58daac6c70a62"
+version = "0.1.11"
+source = "git+https://github.com/pleme-io/shigoto#50f18f530ae0caa1d08946a2680b407edfd30677"
 dependencies = [
  "async-trait",
  "serde",
@@ -1525,8 +1525,8 @@ dependencies = [
 
 [[package]]
 name = "shigoto-gate"
-version = "0.1.10"
-source = "git+https://github.com/pleme-io/shigoto#c75c2af0c6cadb34721e10e570b58daac6c70a62"
+version = "0.1.11"
+source = "git+https://github.com/pleme-io/shigoto#50f18f530ae0caa1d08946a2680b407edfd30677"
 dependencies = [
  "shigoto-dag",
  "shigoto-types",
@@ -1534,8 +1534,8 @@ dependencies = [
 
 [[package]]
 name = "shigoto-retry"
-version = "0.1.10"
-source = "git+https://github.com/pleme-io/shigoto#c75c2af0c6cadb34721e10e570b58daac6c70a62"
+version = "0.1.11"
+source = "git+https://github.com/pleme-io/shigoto#50f18f530ae0caa1d08946a2680b407edfd30677"
 dependencies = [
  "serde",
  "shigoto-types",
@@ -1543,8 +1543,8 @@ dependencies = [
 
 [[package]]
 name = "shigoto-scheduler"
-version = "0.1.10"
-source = "git+https://github.com/pleme-io/shigoto#c75c2af0c6cadb34721e10e570b58daac6c70a62"
+version = "0.1.11"
+source = "git+https://github.com/pleme-io/shigoto#50f18f530ae0caa1d08946a2680b407edfd30677"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1564,8 +1564,8 @@ dependencies = [
 
 [[package]]
 name = "shigoto-types"
-version = "0.1.10"
-source = "git+https://github.com/pleme-io/shigoto#c75c2af0c6cadb34721e10e570b58daac6c70a62"
+version = "0.1.11"
+source = "git+https://github.com/pleme-io/shigoto#50f18f530ae0caa1d08946a2680b407edfd30677"
 dependencies = [
  "async-trait",
  "blake3",

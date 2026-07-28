@@ -1,24 +1,42 @@
-# Auto-commit + verify spec freshness on push.
+# Verify the committed build input is current, and keep it that way.
 #
-# Gen is a bootstrap exception under the operator-surface doctrine —
-# it legitimately commits Cargo.build-spec.json because gen IS the
-# spec generator. Per the aligned primitive (substrate trusts
-# committed, gen owns freshness), this workflow is the load-bearing
-# mechanism that keeps the committed spec in sync with operator-
-# driven Cargo.toml / Cargo.lock changes.
+# THE TRACKED ARTIFACT IS `Cargo.gen.lock`, NOT `Cargo.build-spec.json`.
+# Gen is on the delta-only doctrine: `gen build --commit`
+# (gen-cli/src/main.rs:commit_spec_if_drifted) deliberately RETIRES the
+# full spec — `git rm --cached` + ensure-gitignored — and stages the slim
+# `Cargo.gen.lock`, from which substrate reconstructs the full spec in
+# pure Nix (substrate/lib/build/rust/lockfile-delta.nix). gen's own
+# flake.nix consumes that delta path, so the full spec is a local build
+# product here, not a committed input.
 #
-# Conditional logic lives in Rust: `gen build . --commit` regenerates
-# the spec AND atomically commits if drifted (no-op when unchanged).
-# Push uses the typed `pleme-io/actions/git-push-with-token`. The
-# workflow itself is thin glue — no shell conditionals, no for-loops.
+# This header previously claimed the opposite ("gen legitimately commits
+# Cargo.build-spec.json"), and the drift gate below diffed that
+# gitignored path accordingly. `git diff` over an untracked file reports
+# nothing and exits 0, so the gate could not fail: verified 2026-07-27 by
+# replacing the spec with literal garbage and watching the gate report
+# GREEN. It was a Tier-⊥ vacuous guard (UNREPRESENTABILITY §II.3 subclass
+# A — a check over an empty subject set). Both the claim and the gate
+# named the wrong artifact; both now name `Cargo.gen.lock`.
+#
+# Two complementary gates, and the ORDER is load-bearing:
+#   1. `gen confirm .` runs BEFORE any regeneration, so it judges what
+#      the author actually committed. Run after `gen build` it would read
+#      the freshly-written delta and pass unconditionally — the same
+#      vacuity in a new place. Strict mode (no --if-present) is required:
+#      a missing delta is a distinct failing arm (DeltaFreshness::
+#      MissingDelta), so "no subject" FAILS rather than passing as
+#      "no diff".
+#   2. `git diff --exit-code -- Cargo.gen.lock` runs AFTER regeneration
+#      and catches drift that leaves Cargo.lock's hash untouched — e.g. a
+#      `[features]` edit in a Cargo.toml, which changes the delta but not
+#      the lock, and which gate 1 alone would call Fresh.
 #
 # Behavior:
-#   - On pull request: regenerate the spec, fail PR if drifted.
-#     Author runs `gen build . --commit` locally + includes the
-#     regen commit in their PR.
-#   - On push to main: regenerate the spec, atomically commit via
-#     gen's --commit (gen-spec-bot identity), push back via the
-#     typed git-push-with-token action.
+#   - On pull request: confirm the committed delta, regenerate, fail the
+#     PR if regeneration changed it.
+#   - On push to main: regenerate + atomically commit via gen's --commit
+#     (gen-spec-bot identity), push back via the typed
+#     git-push-with-token action.
 
 name: gen-spec-verify
 
@@ -30,6 +48,9 @@ on:
       - "**/Cargo.lock"
       - "Cargo.toml"
       - "Cargo.lock"
+      # The gate's own subject: a commit touching only the delta (a hand
+      # edit, a bad merge resolution) must not slip past unexamined.
+      - "Cargo.gen.lock"
       - ".github/workflows/gen-spec-verify.yml"
   pull_request:
     paths:
@@ -37,6 +58,8 @@ on:
       - "**/Cargo.lock"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "Cargo.gen.lock"
+      - ".github/workflows/gen-spec-verify.yml"
 
 concurrency:
   group: gen-spec-verify-${{ github.ref }}
@@ -70,6 +93,14 @@ jobs:
       - name: Build gen-cli
         run: cargo build --release -p gen-cli
 
+      # GATE 1 — judge the COMMITTED tree, before anything regenerates it.
+      # Strict (no --if-present): a missing Cargo.gen.lock fails here
+      # rather than being tolerated, so this cannot go green by examining
+      # nothing. Must stay ahead of the regen step below.
+      - name: Confirm the committed delta is fresh (PR)
+        if: github.event_name == 'pull_request'
+        run: ./target/release/gen confirm .
+
       # On main: regen + atomically commit if drifted (gen-spec-bot
       # identity is baked into the --commit flag). On PR: regen
       # without committing so the next step can detect drift and
@@ -85,16 +116,15 @@ jobs:
       - name: Sanity-check spec content
         run: ./target/release/gen check-spec
 
-      # Drift = PR didn't include a fresh regen. Surface the diff +
-      # fail so the author re-runs locally and pushes.
+      # GATE 2 — drift the lock-hash tie cannot see (a Cargo.toml
+      # `[features]` edit changes the delta but not Cargo.lock). Diffs
+      # `Cargo.gen.lock`, which IS tracked, so the subject set is real and
+      # `--exit-code` fails on any difference while printing it.
       - name: Fail PR if author didn't include the regen
         if: github.event_name == 'pull_request'
         run: |
-          if ! git diff --quiet -- Cargo.build-spec.json; then
-            echo "::error::Cargo.build-spec.json is stale. Run \`gen build . --commit\` locally and include the regen commit in this PR."
-            git --no-pager diff -- Cargo.build-spec.json | head -200
-            exit 1
-          fi
+          git --no-pager diff --exit-code -- Cargo.gen.lock \
+            || { echo "::error::Cargo.gen.lock is stale. Run \`gen build . --commit\` locally and include the regen commit in this PR."; exit 1; }
 
       # Push the gen-spec-bot commit back to main via the typed
       # action — no inline shell URL rewriting.

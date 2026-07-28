@@ -41,7 +41,20 @@ use crate::error::{CargoError, Result};
 ///     `base // overrides[triple]`. Collapses the ~41% of the spec spent
 ///     restating byte-identical per-crate edges across all six fleet
 ///     targets — only cfg/platform-gated crates land in `overrides`.
-pub const SCHEMA_VERSION: u32 = 10;
+/// v11: drop `workspace.root` — an ABSOLUTE host path, and the last
+///     machine-specific byte in the spec. Same source tree emitted three
+///     different values across the fleet (`/private/tmp/conv-<repo>`,
+///     `/Users/<user-a>/…`, `/Users/<user-b>/…`), so two correct machines
+///     disagreed about identical source and every real dependency change
+///     arrived buried in that noise. Nothing ever read it: substrate's
+///     complete read-set is `crates` / `root_crate` / `workspace_members`
+///     / `flake_metadata` / `target_resolves` / `cargo_lock_sha256` /
+///     `version`, and `lockfile-delta.nix` SYNTHESIZES its own
+///     `workspace.root` when reconstructing a spec from the delta — a
+///     writer, never a reader. Same disposition as v9's `dependencies`
+///     union: reconstructable, never read, therefore gone rather than
+///     merely relativized (an absent field cannot drift back).
+pub const SCHEMA_VERSION: u32 = 11;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BuildSpec {
@@ -351,9 +364,16 @@ pub struct ModuleTrioSpec {
     pub with_system_daemon: bool,
 }
 
+/// Workspace shape as the spec records it.
+///
+/// Deliberately carries NO absolute path. A build spec is a
+/// content-addressed *build input*: it describes a source tree, and where
+/// that tree happens to sit on one operator's disk is the consumer's
+/// business, never the artifact's. The retired v11 `root` field is a plain
+/// unknown key on an old spec — serde ignores it (no `deny_unknown_fields`
+/// anywhere in this crate), so every committed pre-v11 spec still parses.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WorkspaceSpec {
-    pub root: String,
     #[serde(default)]
     pub members: Vec<WorkspaceMemberSpec>,
 }
@@ -1840,8 +1860,11 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
 
     Ok(BuildSpec {
         version: SCHEMA_VERSION,
+        // `workspace_root_str` stays a LOCAL: it is the base for the
+        // relative-path math above (member `relative_path`, path-dep
+        // resolution). It is used to DERIVE relative values and never
+        // itself emitted — that asymmetry is the whole of v11.
         workspace: WorkspaceSpec {
-            root: workspace_root_str,
             members: workspace_members,
         },
         crates,

@@ -497,10 +497,7 @@ mod tests {
     fn empty_spec(version: u32) -> BuildSpec {
         BuildSpec {
             version,
-            workspace: WorkspaceSpec {
-                root: "/x".into(),
-                members: vec![],
-            },
+            workspace: WorkspaceSpec { members: vec![] },
             crates: BTreeMap::new(),
             root_crate: String::new(),
             workspace_members: vec![],

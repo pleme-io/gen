@@ -100,7 +100,7 @@ fn fixture() -> BuildSpec {
 
     BuildSpec {
         version: gen_cargo::build_spec::SCHEMA_VERSION,
-        workspace: WorkspaceSpec { root: "/x".to_string(), members: Vec::new() },
+        workspace: WorkspaceSpec { members: Vec::new() },
         crates,
         root_crate: "zcrate-1.0.0".to_string(),
         workspace_members: vec!["zcrate-1.0.0".to_string()],

@@ -20,7 +20,12 @@
 //! prove the v10 compaction is itself lossless (`compact_is_lossless`),
 //! prove `base` holds only universal-identical edges
 //! (`base_holds_only_universal_identical`), and pin the schema version on
-//! both the const and a freshly-generated spec (`schema_is_v10`).
+//! both the const and a freshly-generated spec (`schema_is_v11`).
+//!
+//! v11 dropped `workspace.root` (an absolute host path — the last
+//! machine-specific byte in the artifact). Its own regression coverage
+//! lives in `spec_carries_no_host_path.rs`, which asserts the class (no
+//! host path anywhere) rather than only the one retired field.
 //!
 //! Two spec sources are used:
 //!   - A freshly-generated fixture spec (tiny single-crate workspace) —
@@ -293,26 +298,32 @@ fn lossless_split_union_equals_runtime_plus_build() {
 }
 
 // ---------------------------------------------------------------------
-// Task B.4 — schema_is_v10
+// Task B.4 — schema_is_v11
+//
+// The literal below is deliberate and must stay a literal: it is the
+// forcing function that makes a schema bump an explicit, reviewed act
+// rather than something that rides along in a diff. Comparing only
+// against `SCHEMA_VERSION` would make this test tautological.
 // ---------------------------------------------------------------------
 
 #[test]
-fn schema_is_v10_const() {
+fn schema_is_v11_const() {
     assert_eq!(
         build_spec::SCHEMA_VERSION,
-        10,
-        "SCHEMA_VERSION must be 10 for the decided model"
+        11,
+        "SCHEMA_VERSION must be 11 for the decided model (v11 drops \
+         `workspace.root`, the last machine-specific byte in the spec)"
     );
 }
 
 #[test]
-fn schema_is_v10_on_freshly_generated_spec() {
+fn schema_is_v11_on_freshly_generated_spec() {
     let Some((_dir, spec)) = generate_fixture_spec() else {
         return;
     };
     assert_eq!(
-        spec.version, 10,
-        "a freshly generated spec's `version` must equal 10"
+        spec.version, 11,
+        "a freshly generated spec's `version` must equal 11"
     );
     assert_eq!(
         spec.version,
@@ -365,7 +376,6 @@ fn minimal_empty_spec_roundtrips_without_network() {
     let spec = BuildSpec {
         version: build_spec::SCHEMA_VERSION,
         workspace: WorkspaceSpec {
-            root: "/tmp/x".to_string(),
             members: Vec::new(),
         },
         crates,

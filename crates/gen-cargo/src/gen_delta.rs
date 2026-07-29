@@ -29,7 +29,16 @@ use crate::quirks::CrateQuirk;
 /// Schema version of the slim delta artifact. Distinct from
 /// `build_spec::SCHEMA_VERSION` (the full spec's version) — the consumer
 /// gates decode on this.
-pub const DELTA_SCHEMA_VERSION: u32 = 1;
+///
+/// # Schema history
+///
+/// **v2** — added `manifest_sha256`. The D2 tie was `sha256(Cargo.lock)`
+/// alone: an UNDER-SCOPED subject set, so a change that altered the resolved
+/// feature set without moving the lock left the tie unchanged and
+/// `gen confirm` passed GREEN over a delta that no longer described the
+/// build. The tie is now the pair `sha256(Cargo.lock)` ⊕ the workspace-local
+/// manifest digest map. See [`crate::manifest_tie`].
+pub const DELTA_SCHEMA_VERSION: u32 = 2;
 
 #[derive(Debug, Error)]
 pub enum GenDeltaError {
@@ -45,6 +54,13 @@ pub enum GenDeltaError {
     NoLockSha,
     #[error("gen-delta: refusing to emit a delta with zero crates (D4)")]
     EmptyCrates,
+    #[error(
+        "gen-delta: BuildSpec has no manifest_sha256 — half the D2 freshness \
+         tie is missing, so the delta could not prove itself fresh against a \
+         feature-set change that leaves Cargo.lock byte-identical; re-run \
+         `gen build` on a schema-v12+ spec"
+    )]
+    NoManifestDigests,
     #[error("gen-delta: serialize Cargo.gen.lock: {0}")]
     Serialize(#[from] serde_json::Error),
     #[error("gen-delta: write {path}: {source}")]
@@ -121,8 +137,26 @@ pub struct MemberDelta {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GenDelta {
     pub schema_version: u32,
-    /// D2 freshness tie. Lowercase hex SHA-256 of `Cargo.lock`.
+    /// D2 freshness tie, half 1 — the RESOLUTION pin. Lowercase hex SHA-256
+    /// of `Cargo.lock`.
     pub cargo_lock_sha256: String,
+    /// D2 freshness tie, half 2 (schema v2+) — the DECLARATION pin.
+    /// Workspace-root-relative manifest path → `sha256` of that file's bytes,
+    /// for the workspace root `Cargo.toml` and every path-source package's
+    /// `Cargo.toml`.
+    ///
+    /// Half 1 alone cannot support the tie's claim: `Cargo.lock` pins which
+    /// packages at which versions from which sources and pins NOTHING about
+    /// the resolver facts this delta exists to carry. Both halves are
+    /// required, and they compose — half 1 fixes the MEMBERSHIP of the local
+    /// manifest set (every member and path dep has a `[[package]]` entry), so
+    /// half 2 need only cover CONTENT drift. See [`crate::manifest_tie`].
+    ///
+    /// Non-empty by construction: [`GenDelta::distill`] refuses a spec that
+    /// carries none, and the workspace root `Cargo.toml` always exists, so a
+    /// v2 delta with an empty map cannot be produced by this encoder.
+    #[serde(default)]
+    pub manifest_sha256: crate::manifest_tie::ManifestDigests,
     /// The per-target resolver edges + features — carried VERBATIM from the
     /// full spec (already compacted as base // overrides[triple]). This is
     /// the bulk of the delta and the whole reason it can't be empty.
@@ -161,6 +195,15 @@ impl GenDeltaArtifact for GenDelta {
             .cargo_lock_sha256
             .clone()
             .ok_or(GenDeltaError::NoLockSha)?;
+        // Both halves of the tie are mandatory. A pre-v12 spec has only the
+        // lock half; emitting a v2 delta from it would ship an artifact that
+        // ADVERTISES the widened tie while carrying an empty subject set for
+        // half of it — a guard over zero subjects, which is the exact
+        // failure mode this change exists to remove. Refuse instead.
+        let manifest_sha256 = spec.manifest_sha256.clone();
+        if manifest_sha256.is_empty() {
+            return Err(GenDeltaError::NoManifestDigests);
+        }
 
         let per_crate: BTreeMap<String, PerCrateScalars> = spec
             .crates
@@ -215,6 +258,7 @@ impl GenDeltaArtifact for GenDelta {
         Ok(GenDelta {
             schema_version: DELTA_SCHEMA_VERSION,
             cargo_lock_sha256,
+            manifest_sha256,
             target_resolves,
             per_crate,
             git_nar_sha256,
@@ -263,6 +307,13 @@ pub fn write_gen_delta(root: &Path, spec: &BuildSpec) -> Result<(), GenDeltaErro
 struct DeltaShaHeader {
     #[serde(default)]
     cargo_lock_sha256: Option<String>,
+    /// Schema v2+: the manifest half of the tie. `#[serde(default)]` — not
+    /// required-on-decode — deliberately, so a v1 delta reads as a typed
+    /// "regenerate required" verdict ([`DeltaFreshness::UntiedManifests`])
+    /// rather than as a parse failure that would present to an operator as
+    /// corruption.
+    #[serde(default)]
+    manifest_sha256: crate::manifest_tie::ManifestDigests,
 }
 
 /// The offline delta-freshness verdict. Computed by reading ONLY `Cargo.lock`
@@ -272,11 +323,37 @@ struct DeltaShaHeader {
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "status", rename_all = "kebab-case")]
 pub enum DeltaFreshness {
-    /// `sha256(Cargo.lock)` matches the delta's recorded `cargo_lock_sha256`.
-    Fresh { cargo_lock_sha256: String },
+    /// BOTH halves of the D2 tie hold: `sha256(Cargo.lock)` matches the
+    /// delta's `cargo_lock_sha256`, AND every recorded workspace-local
+    /// manifest re-hashes to its recorded digest.
+    ///
+    /// `manifests_verified` is the **witness of the derivation** — the size
+    /// of the subject set this verdict is actually about. A verdict that
+    /// cannot say what it checked is indistinguishable from an assertion
+    /// (`UNREPRESENTABILITY.md` §II.3); this field is what tells them apart,
+    /// and it is never 0 (zero recorded manifests yields
+    /// [`DeltaFreshness::UntiedManifests`], never `Fresh`).
+    Fresh {
+        cargo_lock_sha256: String,
+        manifests_verified: usize,
+    },
     /// The delta's recorded sha differs from the current `Cargo.lock` — the
     /// lock changed without regenerating `Cargo.gen.lock` (`gen build`).
     Stale { expected: String, actual: String },
+    /// The lock half holds but a recorded **manifest** moved: a workspace
+    /// `Cargo.toml` changed (or vanished) without a `gen build`. This is the
+    /// class the pre-v2 tie could not see at all — a feature flip, a
+    /// `default-features` change, an `edition`/`links`/`[[bin]]` edit, any of
+    /// which changes the delta while leaving `Cargo.lock` byte-identical.
+    ManifestDrift {
+        cargo_lock_sha256: String,
+        changed: Vec<crate::manifest_tie::ManifestDrift>,
+    },
+    /// The lock half holds but the delta records NO manifest digests — a
+    /// schema-v1 artifact. The resolver facts cannot be proven fresh, which
+    /// is a third thing, distinct from both "fresh" and "stale": the artifact
+    /// predates the widened subject set and must be regenerated.
+    UntiedManifests { cargo_lock_sha256: String },
     /// No `Cargo.gen.lock` at the workspace root (never generated, or lost).
     MissingDelta { actual: String },
     /// `Cargo.gen.lock` exists but carries no `cargo_lock_sha256` tie
@@ -309,35 +386,100 @@ impl DeltaFreshness {
     ///   what keeps the fleet's `gen-confirm` nix-flake-check regression-free
     ///   for consumers not (yet) on the delta-only doctrine while still
     ///   catching a stale committed delta everywhere it exists.
+    ///
+    /// No `_ =>` arm, deliberately: a new verdict must be classified here
+    /// explicitly or the crate does not compile. Adding a failure mode
+    /// without deciding whether it gates is the way a guard silently
+    /// degrades.
     #[must_use]
+    // `UntiedManifests` and the absent-input arms share a boolean today but
+    // are different classifications — merging them would let a future change
+    // to one silently change the others, which is precisely how a guard
+    // degrades without anyone deciding to degrade it.
+    #[allow(clippy::match_same_arms)]
     pub fn gates_failure(&self, require_delta: bool) -> bool {
         match self {
             DeltaFreshness::Fresh { .. } => false,
             // Present-but-mismatched / present-but-unverifiable → always gate.
-            DeltaFreshness::Stale { .. } | DeltaFreshness::UntiedDelta { .. } => true,
+            DeltaFreshness::Stale { .. }
+            | DeltaFreshness::ManifestDrift { .. }
+            | DeltaFreshness::UntiedDelta { .. } => true,
+            // MIGRATION BASELINE. A v1 delta is present and internally
+            // consistent; it simply predates half the subject set. Gating it
+            // in `--if-present` mode would turn the fleet's `gen-confirm`
+            // nix-flake-check red in every repo with a committed v1
+            // `Cargo.gen.lock` the day this lands — 413 artifacts across 406
+            // repos, measured. Instead it follows the fleet's baseline-debt
+            // shape (fluxlint / action-shell-lint): strict `gen confirm`
+            // reports it, `--if-present` tolerates it, and the debt shrinks
+            // monotonically because `check_freshness` classifies a pre-v12
+            // spec as `UnhashedSpec` → `needs_regen()`, so the next
+            // `gen build --if-stale` in each repo regenerates a v2 delta.
+            // NOT a claim that such a delta is fresh — the verdict says
+            // exactly what it cannot prove.
+            DeltaFreshness::UntiedManifests { .. } => require_delta,
             // Absent inputs: strict mode gates; `--if-present` tolerates.
             DeltaFreshness::MissingDelta { .. } | DeltaFreshness::MissingLock => require_delta,
         }
     }
 
-    /// One-line operator summary.
+    /// One-line operator summary. Rendered through the `Display` impl below
+    /// — the typed emission surface — rather than `format!()`, which is
+    /// banned fleet-wide (★★ TYPED EMISSION).
     #[must_use]
     pub fn summary(&self) -> String {
+        self.to_string()
+    }
+}
+
+impl std::fmt::Display for DeltaFreshness {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            DeltaFreshness::Fresh { .. } => {
-                "fresh: Cargo.gen.lock matches Cargo.lock".to_string()
-            }
-            DeltaFreshness::Stale { expected, actual } => format!(
+            DeltaFreshness::Fresh {
+                manifests_verified, ..
+            } => write!(
+                f,
+                "fresh: Cargo.gen.lock matches Cargo.lock and all {manifests_verified} \
+                 workspace manifests"
+            ),
+            DeltaFreshness::Stale { expected, actual } => write!(
+                f,
                 "STALE: Cargo.lock changed without `gen build` — \
                  Cargo.gen.lock records {expected}, Cargo.lock is {actual}"
             ),
+            DeltaFreshness::ManifestDrift { changed, .. } => {
+                write!(
+                    f,
+                    "STALE: {} workspace manifest(s) changed without `gen build` \
+                     (Cargo.lock is unchanged — the resolved feature set may have \
+                     moved underneath it):",
+                    changed.len()
+                )?;
+                for d in changed {
+                    match &d.actual {
+                        Some(a) => write!(f, " {} (recorded {}, now {})", d.path, d.expected, a)?,
+                        None => write!(f, " {} (recorded {}, now MISSING)", d.path, d.expected)?,
+                    }
+                }
+                Ok(())
+            }
             DeltaFreshness::MissingDelta { .. } => {
-                "MISSING: no Cargo.gen.lock — run `gen build`".to_string()
+                write!(f, "MISSING: no Cargo.gen.lock — run `gen build`")
             }
             DeltaFreshness::UntiedDelta { .. } => {
-                "UNTIED: Cargo.gen.lock has no cargo_lock_sha256 — run `gen build`".to_string()
+                write!(
+                    f,
+                    "UNTIED: Cargo.gen.lock has no cargo_lock_sha256 — run `gen build`"
+                )
             }
-            DeltaFreshness::MissingLock => "MISSING: no Cargo.lock".to_string(),
+            DeltaFreshness::UntiedManifests { .. } => write!(
+                f,
+                "UNTIED: Cargo.gen.lock is schema v1 — it records no manifest \
+                 digests, so a feature-set change that leaves Cargo.lock \
+                 unchanged cannot be detected. Run `gen build` to regenerate a \
+                 v{DELTA_SCHEMA_VERSION} delta."
+            ),
+            DeltaFreshness::MissingLock => write!(f, "MISSING: no Cargo.lock"),
         }
     }
 }
@@ -371,11 +513,29 @@ pub fn confirm_freshness(root: &Path) -> DeltaFreshness {
         Err(_) => return DeltaFreshness::UntiedDelta { actual },
     };
     match header.cargo_lock_sha256 {
-        Some(expected) if expected == actual => {
-            DeltaFreshness::Fresh { cargo_lock_sha256: actual }
+        None => return DeltaFreshness::UntiedDelta { actual },
+        Some(expected) if expected != actual => {
+            return DeltaFreshness::Stale { expected, actual };
         }
-        Some(expected) => DeltaFreshness::Stale { expected, actual },
-        None => DeltaFreshness::UntiedDelta { actual },
+        Some(_) => {}
+    }
+    // Half 1 (the resolution pin) holds. Half 2 — the DECLARATION pin — is
+    // what catches a change that never moved `Cargo.lock`: a feature flip, a
+    // `default-features` edit, an `edition`/`links`/`[[bin]]`/`proc-macro`
+    // change. Without this, the gate passed green over a delta whose
+    // `target_resolves[*].features` no longer described the build.
+    match crate::manifest_tie::verify(root, &header.manifest_sha256) {
+        crate::manifest_tie::ManifestTie::Match { verified } => DeltaFreshness::Fresh {
+            cargo_lock_sha256: actual,
+            manifests_verified: verified,
+        },
+        crate::manifest_tie::ManifestTie::Drifted { changed } => DeltaFreshness::ManifestDrift {
+            cargo_lock_sha256: actual,
+            changed,
+        },
+        crate::manifest_tie::ManifestTie::Unrecorded => DeltaFreshness::UntiedManifests {
+            cargo_lock_sha256: actual,
+        },
     }
 }
 
@@ -390,7 +550,19 @@ mod tests {
     // doctrine (gitignored, reconstructed from Cargo.gen.lock).
     fn fixture() -> BuildSpec {
         let raw = include_str!("testdata/v10-build-spec.json");
-        serde_json::from_str(raw).expect("fixture v10-build-spec.json parses")
+        let mut spec: BuildSpec =
+            serde_json::from_str(raw).expect("fixture v10-build-spec.json parses");
+        // The committed fixture is a genuine v10 spec and therefore predates
+        // the manifest half of the D2 tie. Supply it here rather than
+        // rewriting 624 KB of fixture into a v10/v12 hybrid — the fixture
+        // stays honestly v10, and the REFUSAL path for a spec that carries no
+        // manifest digests is covered as its own case in
+        // `tests/d2_tie_widened_subject_set.rs`.
+        spec.manifest_sha256.insert(
+            "Cargo.toml".to_string(),
+            "0000000000000000000000000000000000000000000000000000000000000000".to_string(),
+        );
+        spec
     }
 
     fn delta() -> GenDelta {
@@ -564,11 +736,24 @@ mod tests {
         format!("{:x}", h.finalize())
     }
 
+    /// A schema-v1 `Cargo.gen.lock` — the lock half of the tie only. This is
+    /// the exact shape of every artifact committed across the fleet before
+    /// the subject set was widened, so it stays as a fixture for the
+    /// migration arm rather than being upgraded away.
     fn write_gen_lock(dir: &Path, sha: &str) {
-        // A minimal, schema-valid-enough `Cargo.gen.lock` for the tie check.
-        // (The full struct requires target_resolves; the offline confirm only
-        // consults `cargo_lock_sha256`, so a minimal doc is the honest fixture.)
-        let body = format!(r#"{{ "schema_version": 1, "cargo_lock_sha256": "{sha}" }}"#);
+        let mut body = String::from(r#"{ "schema_version": 1, "cargo_lock_sha256": ""#);
+        body.push_str(sha);
+        body.push_str(r#"" }"#);
+        std::fs::write(dir.join("Cargo.gen.lock"), body).unwrap();
+    }
+
+    /// A schema-v2 `Cargo.gen.lock` — both halves of the tie, one manifest.
+    fn write_gen_lock_v2(dir: &Path, lock_sha: &str, root_manifest_sha: &str) {
+        let mut body = String::from(r#"{ "schema_version": 2, "cargo_lock_sha256": ""#);
+        body.push_str(lock_sha);
+        body.push_str(r#"", "manifest_sha256": { "Cargo.toml": ""#);
+        body.push_str(root_manifest_sha);
+        body.push_str(r#"" } }"#);
         std::fs::write(dir.join("Cargo.gen.lock"), body).unwrap();
     }
 
@@ -576,10 +761,20 @@ mod tests {
     fn confirm_fresh_when_sha_matches() {
         let dir = confirm_tmpdir();
         let lock = b"# fresh lock\n[[package]]\nname = \"x\"\n";
+        let manifest = b"[workspace]\nmembers = []\n";
         std::fs::write(dir.join("Cargo.lock"), lock).unwrap();
-        write_gen_lock(&dir, &sha256_hex(lock));
+        std::fs::write(dir.join("Cargo.toml"), manifest).unwrap();
+        // BOTH halves of the tie must hold for `Fresh` — the lock half alone
+        // is what this whole change exists to stop being sufficient.
+        write_gen_lock_v2(&dir, &sha256_hex(lock), &sha256_hex(manifest));
         let v = confirm_freshness(&dir);
-        assert_eq!(v, DeltaFreshness::Fresh { cargo_lock_sha256: sha256_hex(lock) });
+        assert_eq!(
+            v,
+            DeltaFreshness::Fresh {
+                cargo_lock_sha256: sha256_hex(lock),
+                manifests_verified: 1,
+            }
+        );
         assert!(!v.is_stale());
         let _ = std::fs::remove_dir_all(&dir);
     }
@@ -640,21 +835,58 @@ mod tests {
 
     #[test]
     fn gates_failure_strict_vs_if_present() {
-        let fresh = DeltaFreshness::Fresh { cargo_lock_sha256: "a".into() };
+        let fresh = DeltaFreshness::Fresh {
+            cargo_lock_sha256: "a".into(),
+            manifests_verified: 3,
+        };
         let stale = DeltaFreshness::Stale { expected: "a".into(), actual: "b".into() };
+        let drift = DeltaFreshness::ManifestDrift {
+            cargo_lock_sha256: "a".into(),
+            changed: vec![crate::manifest_tie::ManifestDrift {
+                path: "Cargo.toml".into(),
+                expected: "a".into(),
+                actual: Some("b".into()),
+            }],
+        };
         let untied = DeltaFreshness::UntiedDelta { actual: "b".into() };
+        let untied_manifests = DeltaFreshness::UntiedManifests { cargo_lock_sha256: "a".into() };
         let missing = DeltaFreshness::MissingDelta { actual: "b".into() };
         let nolock = DeltaFreshness::MissingLock;
 
         // Fresh never gates, either mode.
         assert!(!fresh.gates_failure(true));
         assert!(!fresh.gates_failure(false));
-        // A PRESENT stale/untied delta gates in BOTH modes (the real gate).
+        // A PRESENT stale/drifted/untied delta gates in BOTH modes (the real gate).
         assert!(stale.gates_failure(true) && stale.gates_failure(false));
+        assert!(drift.gates_failure(true) && drift.gates_failure(false));
         assert!(untied.gates_failure(true) && untied.gates_failure(false));
+        // Pre-widening BASELINE: a v1 delta is reported strictly and
+        // tolerated by `--if-present`, so the widened gate is adoptable the
+        // day it lands and the debt shrinks monotonically as repos regenerate.
+        assert!(untied_manifests.gates_failure(true));
+        assert!(!untied_manifests.gates_failure(false));
         // Absent inputs: strict gates, --if-present tolerates (no regression
         // for IFD-path consumers that commit no delta).
         assert!(missing.gates_failure(true) && !missing.gates_failure(false));
         assert!(nolock.gates_failure(true) && !nolock.gates_failure(false));
+    }
+
+    /// Every non-`Fresh` verdict is stale. Guards the arm-addition footgun:
+    /// a new failure mode inherits "not proven fresh ⇒ stale" for free.
+    #[test]
+    fn every_non_fresh_verdict_is_stale() {
+        for v in [
+            DeltaFreshness::Stale { expected: "a".into(), actual: "b".into() },
+            DeltaFreshness::ManifestDrift {
+                cargo_lock_sha256: "a".into(),
+                changed: vec![],
+            },
+            DeltaFreshness::UntiedManifests { cargo_lock_sha256: "a".into() },
+            DeltaFreshness::UntiedDelta { actual: "b".into() },
+            DeltaFreshness::MissingDelta { actual: "b".into() },
+            DeltaFreshness::MissingLock,
+        ] {
+            assert!(v.is_stale(), "{v:?} must be stale");
+        }
     }
 }

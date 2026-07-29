@@ -11,7 +11,7 @@
 //! conditions); Nix owns dispatch (one JSON read, per-crate
 //! buildRustCrate calls, attrset assembly).
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use cargo_metadata::MetadataCommand;
 use indexmap::IndexMap;
@@ -54,7 +54,17 @@ use crate::error::{CargoError, Result};
 ///     writer, never a reader. Same disposition as v9's `dependencies`
 ///     union: reconstructable, never read, therefore gone rather than
 ///     merely relativized (an absent field cannot drift back).
-pub const SCHEMA_VERSION: u32 = 11;
+/// v12: + `manifest_sha256` — WIDEN THE D2 FRESHNESS TIE'S SUBJECT SET.
+///     Through v11 the tie hashed ONLY `Cargo.lock`, so any change that
+///     altered the resolved FEATURE SET without moving the lock left the
+///     tie unchanged and the staleness gate passed green over a spec that
+///     no longer described the build. Measured, not theorized: flipping
+///     `default = ["extra"]` → `default = []` leaves `Cargo.lock`
+///     byte-identical and changes `target_resolves[*].features`.
+///     The tie is now the PAIR `sha256(Cargo.lock)` ⊕ the per-manifest
+///     digest map; see [`crate::manifest_tie`] for the subject set, the
+///     composition argument, and the deliberate exclusions.
+pub const SCHEMA_VERSION: u32 = 12;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BuildSpec {
@@ -121,6 +131,30 @@ pub struct BuildSpec {
     /// mechanically.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cargo_lock_sha256: Option<String>,
+    /// Schema v12+: the OTHER half of the D2 freshness tie —
+    /// workspace-root-relative manifest path → `sha256` of that file's
+    /// bytes, for the workspace root `Cargo.toml` and every path-source
+    /// package's `Cargo.toml`.
+    ///
+    /// `cargo_lock_sha256` alone is an UNDER-SCOPED subject set: the lock
+    /// pins which packages at which versions from which sources, and pins
+    /// nothing about the facts this spec exists to carry (resolved
+    /// features, `default-features`/`optional` per edge, `edition`,
+    /// `links`, `build`, `[lib]`/`[[bin]]`, `proc-macro`,
+    /// `[package.metadata.pleme]`). All of those are declared in a
+    /// workspace-local manifest and all of them can change while
+    /// `Cargo.lock` stays byte-identical.
+    ///
+    /// Each entry equals `builtins.hashFile "sha256"` of the same path, so
+    /// the Nix consumer verifies it with the primitive D2 already uses.
+    /// See [`crate::manifest_tie`] for the composition argument (why a
+    /// recorded map is sound here) and the named exclusions.
+    ///
+    /// Empty on schema < 12 specs; `check_freshness` reports those as
+    /// `UnhashedSpec` so `gen build --if-stale` regenerates rather than
+    /// fast-pathing over an unprovable spec.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub manifest_sha256: crate::manifest_tie::ManifestDigests,
 }
 
 /// Per-target resolved dep edges for every crate in the workspace's
@@ -1876,6 +1910,14 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         // leaves it absent so substrate falls back to per-crate edges.
         target_resolves: None,
         cargo_lock_sha256: hash_cargo_lock(root),
+        // The other half of the D2 tie (v12+). Derived from the SAME
+        // `cargo metadata` resolve that produced every field above, so the
+        // recorded subject set is exactly the set of manifests this spec
+        // was read out of — never a hand-kept list that can drift from it.
+        manifest_sha256: crate::manifest_tie::collect(
+            root,
+            local_manifest_paths(root, &meta).iter().map(PathBuf::as_path),
+        ),
     })
 }
 
@@ -1902,6 +1944,31 @@ pub fn hash_cargo_lock(root: &Path) -> Option<String> {
     let mut hasher = Sha256::new();
     hasher.update(&bytes);
     Some(format!("{:x}", hasher.finalize()))
+}
+
+/// Every **workspace-local** manifest in the resolve graph: the workspace
+/// root's own `Cargo.toml` plus the `Cargo.toml` of every path-source package
+/// (`package.source == None` in cargo-metadata is exactly "resolved from a
+/// path", i.e. a workspace member or a path dependency).
+///
+/// This is the enumeration half of the D2 tie's second subject. It is derived
+/// from the same `Metadata` the spec is built from, so the recorded set can
+/// never disagree with the set the spec was actually read out of.
+///
+/// The root manifest is included unconditionally: a *virtual* workspace root
+/// is not a package and would otherwise be absent, yet it carries
+/// `[workspace.dependencies]` (feature lists!) and `[workspace.package]`
+/// (edition) that every member inherits.
+fn local_manifest_paths(root: &Path, meta: &cargo_metadata::Metadata) -> Vec<PathBuf> {
+    let mut out: Vec<PathBuf> = vec![root.join("Cargo.toml")];
+    for pkg in &meta.packages {
+        if pkg.source.is_none() {
+            out.push(PathBuf::from(pkg.manifest_path.as_std_path()));
+        }
+    }
+    out.sort();
+    out.dedup();
+    out
 }
 
 /// Parse `owner/repo` out of a GitHub-style URL. Accepts both `.git`
@@ -2024,6 +2091,11 @@ struct SpecHeader {
     version: Option<u32>,
     #[serde(default)]
     cargo_lock_sha256: Option<String>,
+    /// v12+: the manifest half of the D2 tie. Absent on older specs, which
+    /// `check_freshness` reports as `UnhashedSpec` — the tie cannot be
+    /// PROVEN, so the fast path must not skip the regen.
+    #[serde(default)]
+    manifest_sha256: crate::manifest_tie::ManifestDigests,
 }
 
 /// Compute the spec's freshness without touching the spec or
@@ -2046,12 +2118,33 @@ pub fn check_freshness(root: &Path) -> Freshness {
         Ok(h) => h,
         Err(_) => return Freshness::MissingSpec { lock_hash },
     };
-    match header.cargo_lock_sha256 {
-        None => Freshness::UnhashedSpec { lock_hash },
-        Some(spec_hash) if spec_hash == lock_hash => {
-            Freshness::Fresh { spec_hash, lock_hash }
+    let spec_hash = match header.cargo_lock_sha256 {
+        None => return Freshness::UnhashedSpec { lock_hash },
+        Some(h) if h != lock_hash => return Freshness::Drifted { spec_hash: h, lock_hash },
+        Some(h) => h,
+    };
+    // The lock half of the tie matches. Now the MANIFEST half — without it
+    // this fast path skips the regen for exactly the change class the widened
+    // tie exists to catch (a feature flip that leaves `Cargo.lock` byte-
+    // identical), which would make `gen confirm`'s red verdict unreachable
+    // through `gen build --if-stale`: a permanently red gate no fast path can
+    // satisfy. Widening the gate without widening the producer is worse than
+    // not widening at all.
+    match crate::manifest_tie::verify(root, &header.manifest_sha256) {
+        crate::manifest_tie::ManifestTie::Match { .. } => Freshness::Fresh { spec_hash, lock_hash },
+        // A pre-v12 spec records no manifest digests: freshness is not
+        // provable, so it is treated as the same class as a pre-hash spec —
+        // `needs_regen()`, which is what makes the fleet migration
+        // self-executing on the next `gen build --if-stale`.
+        crate::manifest_tie::ManifestTie::Unrecorded => Freshness::UnhashedSpec { lock_hash },
+        // A manifest moved while the lock stood still. This IS drift; the
+        // itemized witness (which manifest, expected vs actual) lives on
+        // `gen confirm`'s `DeltaFreshness::ManifestDrift`, since `Freshness`
+        // is a fixed-variant typed-dispatcher catalog member and the
+        // regenerate/skip decision needs only the classification.
+        crate::manifest_tie::ManifestTie::Drifted { .. } => {
+            Freshness::Drifted { spec_hash, lock_hash }
         }
-        Some(spec_hash) => Freshness::Drifted { spec_hash, lock_hash },
     }
 }
 
@@ -3132,21 +3225,74 @@ mod path_helper_tests {
         format!("{:x}", h.finalize())
     }
 
+    /// Write a v12 `Cargo.build-spec.json` header carrying BOTH halves of the
+    /// D2 tie. Built by string append rather than `format!()` — banned
+    /// fleet-wide (★★ TYPED EMISSION).
+    fn write_spec_header(dir: &std::path::Path, lock_hash: &str, root_manifest_hash: Option<&str>) {
+        let mut body = String::from(r#"{"version": 12, "cargo_lock_sha256": ""#);
+        body.push_str(lock_hash);
+        body.push('"');
+        if let Some(m) = root_manifest_hash {
+            body.push_str(r#", "manifest_sha256": {"Cargo.toml": ""#);
+            body.push_str(m);
+            body.push_str(r#""}"#);
+        }
+        body.push('}');
+        std::fs::write(dir.join("Cargo.build-spec.json"), body.as_bytes()).unwrap();
+    }
+
     #[test]
-    fn check_freshness_fresh_when_hashes_match() {
+    fn check_freshness_fresh_when_both_tie_halves_match() {
         let dir = freshness_tmpdir();
         let lock_body: &[u8] = b"# lock\nfresh test\n";
+        let manifest_body: &[u8] = b"[workspace]\nmembers = []\n";
         std::fs::write(dir.join("Cargo.lock"), lock_body).unwrap();
-        let hash = sha256_hex(lock_body);
-        std::fs::write(
-            dir.join("Cargo.build-spec.json"),
-            format!(r#"{{"version": 7, "cargo_lock_sha256": "{hash}"}}"#).as_bytes(),
-        )
-        .unwrap();
+        std::fs::write(dir.join("Cargo.toml"), manifest_body).unwrap();
+        write_spec_header(
+            &dir,
+            &sha256_hex(lock_body),
+            Some(&sha256_hex(manifest_body)),
+        );
         let f = super::check_freshness(&dir);
         assert_eq!(f.summary(), "fresh");
         assert!(f.is_fresh());
         assert!(!f.needs_regen());
+    }
+
+    /// The producer half of the widened tie. Without this, `gen build
+    /// --if-stale` would fast-path over a manifest-only change and the
+    /// `gen confirm` gate would be permanently unsatisfiable through it.
+    #[test]
+    fn check_freshness_drifts_when_only_a_manifest_moved() {
+        let dir = freshness_tmpdir();
+        let lock_body: &[u8] = b"# lock\nunmoved\n";
+        std::fs::write(dir.join("Cargo.lock"), lock_body).unwrap();
+        std::fs::write(dir.join("Cargo.toml"), b"[features]\ndefault = [\"a\"]\n").unwrap();
+        write_spec_header(
+            &dir,
+            &sha256_hex(lock_body),
+            Some(&sha256_hex(b"[features]\ndefault = [\"a\"]\n")),
+        );
+        // Feature flip. The lock is untouched — the pre-widening tie saw
+        // nothing here and reported "fresh".
+        std::fs::write(dir.join("Cargo.toml"), b"[features]\ndefault = []\n").unwrap();
+        let f = super::check_freshness(&dir);
+        assert_eq!(f.summary(), "drifted");
+        assert!(f.needs_regen(), "gen build --if-stale must regenerate");
+    }
+
+    /// A pre-v12 spec records no manifest digests: unprovable, therefore
+    /// regenerate. This is what makes the fleet migration self-executing.
+    #[test]
+    fn check_freshness_unhashed_when_spec_predates_the_manifest_half() {
+        let dir = freshness_tmpdir();
+        let lock_body: &[u8] = b"# lock\npre-v12\n";
+        std::fs::write(dir.join("Cargo.lock"), lock_body).unwrap();
+        std::fs::write(dir.join("Cargo.toml"), b"[workspace]\n").unwrap();
+        write_spec_header(&dir, &sha256_hex(lock_body), None);
+        let f = super::check_freshness(&dir);
+        assert_eq!(f.summary(), "unhashed-spec");
+        assert!(f.needs_regen());
     }
 
     #[test]

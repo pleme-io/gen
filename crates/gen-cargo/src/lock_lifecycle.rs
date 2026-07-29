@@ -504,6 +504,7 @@ mod tests {
             flake_metadata: BTreeMap::new(),
             target_resolves: None,
             cargo_lock_sha256: None,
+            manifest_sha256: crate::manifest_tie::ManifestDigests::new(),
         }
     }
 

@@ -107,6 +107,15 @@ fn fixture() -> BuildSpec {
         flake_metadata: BTreeMap::new(),
         target_resolves: Some(gen_cargo::build_spec::CompactTargetResolves::from_full(full)),
         cargo_lock_sha256: Some("a".repeat(64)),
+        // Deliberately reverse-sorted on insert: the emitted map must come
+        // out canonical (BTreeMap key order) regardless, same discipline as
+        // every other keyed map in the spec.
+        manifest_sha256: [
+            ("crates/z/Cargo.toml".to_string(), "b".repeat(64)),
+            ("Cargo.toml".to_string(), "c".repeat(64)),
+        ]
+        .into_iter()
+        .collect(),
     }
 }
 

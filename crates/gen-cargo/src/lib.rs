@@ -27,6 +27,7 @@ pub mod gen_delta;
 pub mod git_prefetcher;
 pub mod invariants;
 pub mod lock_lifecycle;
+pub mod manifest_tie;
 pub mod path_resolver;
 pub mod platform_features;
 pub mod quirks;

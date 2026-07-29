@@ -52,8 +52,12 @@ Not in `Cargo.lock`, not derivable, required at **eval** time for per-crate emit
 - **git-source NAR sha256** (the lock has the rev; the fixed-output hash is gen's
   gix+NAR prefetch)
 - `flake_metadata.module_trio` (from `[package.metadata.pleme]`)
-- `cargo_lock_sha256` — the **freshness tie**, computed over `Cargo.lock`
-  (recomputable in Nix via `builtins.hashFile`)
+- `cargo_lock_sha256` — the **freshness tie, half 1 (resolution)**, computed
+  over `Cargo.lock` (recomputable in Nix via `builtins.hashFile`)
+- `manifest_sha256` — the **freshness tie, half 2 (declaration)**: a
+  `workspace-root-relative path → sha256` map over the workspace root
+  `Cargo.toml` plus every path-source package's `Cargo.toml`. Each entry is
+  `builtins.hashFile "sha256"` of the same path
 
 ### Size
 `Cargo.lock` (~56 KB) + gen-delta (~404 KB) ≈ **460 KB compact**, vs the current
@@ -66,9 +70,56 @@ same IFD-free purity, same per-crate fleet dedup.
   "owned by `Cargo.lock`" list. A property test in gen-cargo asserts the delta
   has none of {source, registry sha256, dep closure, build_rust_crate_args,
   crate_renames, name/version}. If it does, the encoder regressed.
-- **D2 — Freshness tie.** `cargo_lock_sha256` in the gen-delta MUST equal
-  `builtins.hashFile Cargo.lock` at consume time. Mismatch ⇒ **hard eval error**
-  (stale delta is a CI failure, never a runtime fetch — GEN TYPED-SPEC CONTRACT).
+- **D2 — Freshness tie (TWO halves; both mandatory).** The tie's subject set is
+  the pair `sha256(Cargo.lock)` ⊕ `{path → sha256}` over every workspace-local
+  manifest. `cargo_lock_sha256` MUST equal `builtins.hashFile Cargo.lock`, and
+  every `manifest_sha256` entry MUST equal `builtins.hashFile` of that path, at
+  consume time. Mismatch ⇒ **hard eval error** (stale delta is a CI failure,
+  never a runtime fetch — GEN TYPED-SPEC CONTRACT).
+
+  **Why two halves — this was a real, measured hole, not a hypothetical.**
+  Through delta schema v1 the tie hashed `Cargo.lock` alone. `Cargo.lock` pins
+  *which packages, at which versions, from which sources* and pins **nothing**
+  about the resolver facts the delta exists to carry. So a change that altered
+  the resolved feature set without moving the lock left the tie **unchanged**
+  and the staleness gate passed **green over a delta that no longer described
+  the build**. Reproduced end-to-end: flipping `default = ["extra"]` →
+  `default = []` leaves `Cargo.lock` byte-identical and changes
+  `target_resolves[*].features`. The same shape covers `default-features`,
+  `optional`, `edition`, `links`, `build`, `[lib]`, `[[bin]]`, `proc-macro` and
+  `[package.metadata.pleme]` — every one declared in a workspace `Cargo.toml`.
+
+  **The composition (why a recorded map is sound).** Half 1 already pins the
+  *membership* of the local-manifest set — every workspace member and path dep
+  has a `[[package]]` entry in `Cargo.lock`, so adding or removing one moves the
+  lock and half 1 goes red before half 2 is consulted. Half 2 therefore only
+  needs to cover *content* drift, which is exactly what the lock cannot express.
+
+  **Deliberate exclusions** (an over-wide tie churns on unrelated edits and
+  trains operators to regenerate blindly, which destroys the gate as surely as
+  under-scoping): Rust sources; registry/git dependency manifests (pinned
+  transitively by `checksum`/`#rev`); gen's own version and `FLEET_TARGETS`
+  (carried by `schema_version`, and folding it in would invalidate every
+  committed delta on every gen release). **Named residual risks:**
+  `rust-toolchain.toml` / the cargo binary, `.cargo/config.toml`, and manifests
+  outside the workspace root directory. Canonical statement, with the full
+  reasoning per exclusion: `crates/gen-cargo/src/manifest_tie.rs`.
+
+  **Migration.** Delta schema v1 → **v2**; spec schema v11 → **v12**. A v1 delta
+  reads as the typed verdict `untied-manifests` — never as corruption and never
+  rounded up to `fresh`. It gates strict `gen confirm` and is **tolerated by
+  `gen confirm --if-present`** (the mode substrate's `gen-confirm` check uses),
+  following the fleet's baseline-debt shape: the gate is adoptable the day it
+  lands, and the debt shrinks monotonically because a pre-v12 spec classifies as
+  `unhashed-spec` ⇒ `needs_regen()`, so the next `gen build --if-stale`
+  regenerates a v2 delta. Measured migration surface at the time of the change:
+  **413 committed `Cargo.gen.lock` across 406 repos, all at `schema_version: 1`.**
+
+  **Consumer-side follow-up (NOT yet done — the tie is only as wide as its
+  narrowest verifier).** `substrate/lib/build/rust/lockfile-builder.nix` still
+  verifies only `cargo_lock_sha256`. Until it also walks `manifest_sha256`, the
+  widened subject set is enforced by `gen confirm` (CI + the `gen-confirm`
+  flake check), **not** at Nix eval.
 - **D3 — Pure reconstruction.** lockfile-builder MUST reconstruct every
   lock-owned field via `fromTOML`, never `fromJSON` of restated lock data, and
   never IFD / `cargo metadata` / network at eval.

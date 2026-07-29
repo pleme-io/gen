@@ -1,6 +1,34 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "cargo_lock_sha256": "6ad631bff7819aeb20199a77524ed2186268521c7750f89b9c7f17c163551c3e",
+  "manifest_sha256": {
+    "Cargo.toml": "d3d51ad10db3faedd312674b6e09909b12c11b6895332a621cb6f3a1b3ec95d7",
+    "crates/gen-adapter-forge/Cargo.toml": "1359ec9f06a1488542500be7550234a60c18190d5e8f3d82cf99555371d62096",
+    "crates/gen-ansible/Cargo.toml": "e9c485308b93e1947ed16cf8001841f66de263cdc8fdfb33b7f487924559d6ca",
+    "crates/gen-bazel/Cargo.toml": "a947cdbedb9f78ac0a2f693dfee1f39cbd933b5c14f228cd3db7f67029839e2f",
+    "crates/gen-buck/Cargo.toml": "343473919765fc10f436b5c4aa72f2673b603e51e838ae20131990b2d16477a6",
+    "crates/gen-bundler/Cargo.toml": "16d8d5f957a2e5d91dd363bdbb1aa48978b6274e9082e4955f22ed5b54df1d02",
+    "crates/gen-cache-attic/Cargo.toml": "bb8b9de74f6858d9b776086293918b7b97fb0631b7ccb458798b369624735271",
+    "crates/gen-caixa-bridge/Cargo.toml": "7f4376465f66635b97b695b2adfce063da525d0a34689272d66b100ae2b47573",
+    "crates/gen-cargo/Cargo.toml": "cb702a0b82e053960ce897275f13f0c4cd1dc6e842ba3a088fb34223a8d4d545",
+    "crates/gen-cli/Cargo.toml": "d4e1f6ef07e75e21dca773debb76fd22d1209e2f142180d47c4d8edb5374fb39",
+    "crates/gen-config/Cargo.toml": "b2849f1592b692bd50023a83cbdd8269b5f8518be0f57eea933c3768f5b37609",
+    "crates/gen-gomod/Cargo.toml": "eddb9947df15d1fd2b54daaef6d774fda455508154955aa711a23a72d94ca446",
+    "crates/gen-helm/Cargo.toml": "9214aba26cf52e42271c96c35ba42bafc12fff15727773d253948438858f0233",
+    "crates/gen-macros/Cargo.toml": "8242e6771de1aae800386a0f2bb41cf6afc34606eac5245a940543217a2e99b6",
+    "crates/gen-nix-bulk/Cargo.toml": "58cc29b5e464cd39bcd5d491efc79e5334c489199bbd5832254ed64d1500907a",
+    "crates/gen-nix/Cargo.toml": "9ad7980d7ab946d7c85964f7ce9ecdaa6c1a68f1a7af76c9de707d954f395a26",
+    "crates/gen-npm/Cargo.toml": "759383fcbad44e9ec44df992835932bc2e414e01306e89b3ef8d14257ad7e382",
+    "crates/gen-pdc/Cargo.toml": "b806df798ac4d3b92f2dccdfe25aa7faf25cd678953561094a5eab2e0fa150cc",
+    "crates/gen-pip/Cargo.toml": "a5af25cb02f35c12837ddc38a5001ec596e4c81ed8a339aee1902a39453e9142",
+    "crates/gen-platform/Cargo.toml": "2256b8d43e272d41c745961aa2d54d6d381ffcddde5451da3c0e6750c3ccf9c0",
+    "crates/gen-poetry/Cargo.toml": "26b23c209dd0713f00c1a92d2d3460f8f15003f891316ab75974c594364d0523",
+    "crates/gen-polyglot/Cargo.toml": "99478071d48c6996fe919434c78c313a3dc2c97923a1029c28201523d09bcd08",
+    "crates/gen-secattest/Cargo.toml": "98a474f81d565e35591979e5440e03e8da8aa324ed332db82ddb30d20c9dad74",
+    "crates/gen-swift/Cargo.toml": "48a264cc936f1bbafe2c893bc9c46dcbe77a49c7fb75af116d9791102266f778",
+    "crates/gen-types/Cargo.toml": "e470012d00bdba99742c2ebccc9b80d2c64695904092a886442dc70969b96795",
+    "crates/gen-verdict/Cargo.toml": "24d263e0823637777236b0cd26b53a7247f73b91d0de9670f8a1c64f74c1cf4a"
+  },
   "target_resolves": {
     "base": {
       "anstream-1.0.0": {

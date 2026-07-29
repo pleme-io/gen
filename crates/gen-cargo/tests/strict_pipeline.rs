@@ -298,7 +298,7 @@ fn lossless_split_union_equals_runtime_plus_build() {
 }
 
 // ---------------------------------------------------------------------
-// Task B.4 — schema_is_v11
+// Task B.4 — schema_is_v12
 //
 // The literal below is deliberate and must stay a literal: it is the
 // forcing function that makes a schema bump an explicit, reviewed act
@@ -307,23 +307,29 @@ fn lossless_split_union_equals_runtime_plus_build() {
 // ---------------------------------------------------------------------
 
 #[test]
-fn schema_is_v11_const() {
+fn schema_is_v12_const() {
     assert_eq!(
         build_spec::SCHEMA_VERSION,
-        11,
-        "SCHEMA_VERSION must be 11 for the decided model (v11 drops \
-         `workspace.root`, the last machine-specific byte in the spec)"
+        12,
+        "SCHEMA_VERSION must be 12 for the decided model (v12 widens the D2 \
+         freshness tie's subject set with `manifest_sha256`, so a change to \
+         the resolved feature set can no longer leave the tie unchanged)"
     );
 }
 
 #[test]
-fn schema_is_v11_on_freshly_generated_spec() {
+fn schema_is_v12_on_freshly_generated_spec() {
     let Some((_dir, spec)) = generate_fixture_spec() else {
         return;
     };
     assert_eq!(
-        spec.version, 11,
-        "a freshly generated spec's `version` must equal 11"
+        spec.version, 12,
+        "a freshly generated spec's `version` must equal 12"
+    );
+    assert!(
+        !spec.manifest_sha256.is_empty(),
+        "a v12 spec must carry the manifest half of the D2 tie — an empty map \
+         is a guard over zero subjects"
     );
     assert_eq!(
         spec.version,
@@ -384,6 +390,7 @@ fn minimal_empty_spec_roundtrips_without_network() {
         flake_metadata: BTreeMap::new(),
         target_resolves: None,
         cargo_lock_sha256: None,
+        manifest_sha256: gen_cargo::manifest_tie::ManifestDigests::new(),
     };
 
     assert_roundtrip_lossless(&spec, "minimal-empty");

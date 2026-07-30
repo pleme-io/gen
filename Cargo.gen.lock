@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "cargo_lock_sha256": "8e4bea2580413bb3bc10743b9cc4d1556e4a1492f05159bda74fe7d8eb0f04f1",
+  "cargo_lock_sha256": "c95cf307abd2901892d3854ff2f632d1d3129bcc44cd7e9dec3369663c571ad7",
   "manifest_sha256": {
     "Cargo.toml": "086b0be28436300d5b8b230dd88e1f2edb4b93f59510478befa702970c59b8ea",
     "crates/gen-adapter-forge/Cargo.toml": "1359ec9f06a1488542500be7550234a60c18190d5e8f3d82cf99555371d62096",
@@ -11,7 +11,7 @@
     "crates/gen-cache-attic/Cargo.toml": "bb8b9de74f6858d9b776086293918b7b97fb0631b7ccb458798b369624735271",
     "crates/gen-caixa-bridge/Cargo.toml": "7f4376465f66635b97b695b2adfce063da525d0a34689272d66b100ae2b47573",
     "crates/gen-cargo/Cargo.toml": "cb702a0b82e053960ce897275f13f0c4cd1dc6e842ba3a088fb34223a8d4d545",
-    "crates/gen-cli/Cargo.toml": "d4e1f6ef07e75e21dca773debb76fd22d1209e2f142180d47c4d8edb5374fb39",
+    "crates/gen-cli/Cargo.toml": "5b45e7d7cce53d1fc0bb8b237945bba0129f2b1373aff436925e5435203f46bd",
     "crates/gen-config/Cargo.toml": "b2849f1592b692bd50023a83cbdd8269b5f8518be0f57eea933c3768f5b37609",
     "crates/gen-gomod/Cargo.toml": "eddb9947df15d1fd2b54daaef6d774fda455508154955aa711a23a72d94ca446",
     "crates/gen-helm/Cargo.toml": "9214aba26cf52e42271c96c35ba42bafc12fff15727773d253948438858f0233",
@@ -1802,7 +1802,7 @@
           },
           {
             "name": "tatara_lisp",
-            "package_key": "tatara-lisp-0.2.2-7921493d76632785906a0eabffa38f688cb2c3b0",
+            "package_key": "tatara-lisp-0.3.4",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -5253,7 +5253,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "tatara-lisp-0.2.2-7921493d76632785906a0eabffa38f688cb2c3b0": {
+      "tatara-lisp-0.3.4": {
         "runtime_dependencies": [
           {
             "name": "blake3",
@@ -5289,7 +5289,7 @@
           },
           {
             "name": "tatara_lisp_derive",
-            "package_key": "tatara-lisp-derive-0.2.2-7921493d76632785906a0eabffa38f688cb2c3b0",
+            "package_key": "tatara-lisp-derive-0.3.4",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -5313,7 +5313,7 @@
           "default"
         ]
       },
-      "tatara-lisp-derive-0.2.2-7921493d76632785906a0eabffa38f688cb2c3b0": {
+      "tatara-lisp-derive-0.3.4": {
         "runtime_dependencies": [
           {
             "name": "proc_macro2",
@@ -9040,10 +9040,10 @@
       "edition": "2021",
       "build_script": "build.rs"
     },
-    "tatara-lisp-0.2.2-7921493d76632785906a0eabffa38f688cb2c3b0": {
+    "tatara-lisp-0.3.4": {
       "edition": "2021"
     },
-    "tatara-lisp-derive-0.2.2-7921493d76632785906a0eabffa38f688cb2c3b0": {
+    "tatara-lisp-derive-0.3.4": {
       "edition": "2021",
       "proc_macro": true
     },
@@ -9193,9 +9193,7 @@
     "shigoto-retry-0.1.11-50f18f530ae0caa1d08946a2680b407edfd30677": "sha256-M5qyHTKV24C7ERiXV7Njg+Y+UzzI4VM2kP3m0IxV+c8=",
     "shigoto-scheduler-0.1.11-50f18f530ae0caa1d08946a2680b407edfd30677": "sha256-M5qyHTKV24C7ERiXV7Njg+Y+UzzI4VM2kP3m0IxV+c8=",
     "shigoto-types-0.1.11-50f18f530ae0caa1d08946a2680b407edfd30677": "sha256-M5qyHTKV24C7ERiXV7Njg+Y+UzzI4VM2kP3m0IxV+c8=",
-    "shikumi-0.1.0-3913d35559a65bc64a870f5633cc3130371b412e": "sha256-EUqsHsttbM9Pp9efTfvl6WFwOzb31khczPA+mYyhJVM=",
-    "tatara-lisp-0.2.2-7921493d76632785906a0eabffa38f688cb2c3b0": "sha256-1At3hMYAavEcebNDWmuBp0Gbc40Sz6qfjp1Z4mj1iUw=",
-    "tatara-lisp-derive-0.2.2-7921493d76632785906a0eabffa38f688cb2c3b0": "sha256-1At3hMYAavEcebNDWmuBp0Gbc40Sz6qfjp1Z4mj1iUw="
+    "shikumi-0.1.0-3913d35559a65bc64a870f5633cc3130371b412e": "sha256-EUqsHsttbM9Pp9efTfvl6WFwOzb31khczPA+mYyhJVM="
   },
   "flake_metadata": {}
 }

@@ -50,9 +50,10 @@ kanshou = { version = "0.1", git = "https://github.com/pleme-io/kanshou" }
 tokio = { version = "1", features = ["rt", "macros", "net", "io-util"] }
 # tatara-lisp — homoiconic S-expression authoring surface. Powers
 # `gen fleet-migrate`: the FleetMigrationPlan is authored as a typed
-# `.tatara.lisp` and compiled via `#[derive(TataraDomain)]`. Standalone
-# repo with no git deps of its own; pinned by rev.
-tatara-lisp = { version = "0.2", git = "https://github.com/pleme-io/tatara-lisp.git", rev = "7921493d76632785906a0eabffa38f688cb2c3b0" }
+# `.tatara.lisp` and compiled via `#[derive(DeriveTataraDomain)]` (the
+# lib re-exports the derive macro under that name; `TataraDomain` is the
+# trait). Canonical crates.io release — no git pin.
+tatara-lisp = "0.3.3"
 
 [dev-dependencies]
 # Cross-adapter catalog sweep test pulls every adapter so its

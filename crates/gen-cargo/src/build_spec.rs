@@ -2165,6 +2165,17 @@ pub fn generate_and_write_if_stale(root: &Path) -> Result<(Freshness, std::path:
 /// Multi-target emission: write a spec that covers every fleet target
 /// (FLEET_TARGETS). One committed spec, every target's resolves
 /// available — gen-bootstrap chicken-and-egg permanently resolved.
+/// Print every diagnostic the spec carries to stderr, one per line.
+///
+/// stderr, not stdout, because `gen`'s structured output goes to stdout and
+/// must stay machine-parseable. Advisory by design: nothing here changes an
+/// exit code.
+fn emit_diagnostics(spec: &BuildSpec) {
+    for d in crate::diagnostics::diagnose(spec) {
+        eprintln!("gen build: diagnostic: {}", d.summary());
+    }
+}
+
 pub fn generate_multi_target_and_write(root: &Path) -> Result<std::path::PathBuf> {
     let mut spec = generate_multi_target(root)?;
     // Canonicalize BEFORE both the full-spec write AND the delta distill so
@@ -2183,6 +2194,18 @@ pub fn generate_multi_target_and_write(root: &Path) -> Result<std::path::PathBuf
             ),
         });
     }
+    // Surface diagnostics on the default write path.
+    //
+    // These are advisory — they never fail the build, which is precisely the
+    // difference between a Diagnostic and the Violation check above — but
+    // they must actually be EMITTED. Until 2026-07-31 `diagnose` had no
+    // production call site at all: the diagnostics module doc claimed
+    // `gen confirm` surfaced them, but `gen confirm` is a pure offline
+    // delta-freshness check with no BuildSpec in scope and never called it.
+    // The entire diagnostic surface was declared and unreferenced — the exact
+    // shape of a gate nobody has ever seen fail. Emitting here covers every
+    // default `gen build`, which is what CI and every operator actually runs.
+    emit_diagnostics(&spec);
     let out = root.join("Cargo.build-spec.json");
     let body = serde_json::to_string_pretty(&spec).map_err(|e| CargoError::Io {
         path: out.clone(),

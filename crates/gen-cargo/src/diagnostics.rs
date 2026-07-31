@@ -22,8 +22,22 @@
 //!
 //! Run `diagnose(&spec)` after `generate_multi_target` — returns
 //! `Vec<Diagnostic>` (empty when no leaks). Pure walk, no I/O,
-//! deterministic output. `gen confirm` includes the diagnostics in
-//! its output without elevating them to errors.
+//! deterministic output.
+//!
+//! ★ Corrected 2026-07-31. This doc used to claim "`gen confirm` includes the
+//! diagnostics in its output without elevating them to errors." That was
+//! false, and load-bearingly so: `gen confirm` is a pure OFFLINE
+//! delta-freshness check that reads only `Cargo.lock` + `Cargo.gen.lock`, has
+//! no `BuildSpec` in scope, and cannot call `diagnose` as written. An audit
+//! found `diagnose` had ZERO production call sites — the type was referenced
+//! nowhere outside this module and its own tests. The whole surface was
+//! declared and unreferenced while its doc asserted it was wired, which is
+//! strictly worse than an honest TODO: it reads as covered.
+//!
+//! It is now emitted from `build_spec::generate_multi_target_and_write`, the
+//! default `gen build` path, as advisory stderr lines. Still non-fatal by
+//! design — elevating it to an exit code is a separate, deliberate decision
+//! that should follow observing it fire on real specs first.
 
 use crate::build_spec::BuildSpec;
 use crate::platform_features::{lookup, PlatformTag};
@@ -108,6 +122,41 @@ const DEGRADED_BACKENDS: &[(&str, &str, &str, &str)] = &[(
      is additive and cannot be un-enabled by a consumer, so a single crate \
      enabling it degrades every macOS consumer of notify in the graph.",
 )];
+
+impl Diagnostic {
+    /// One-line operator-facing summary, for emitting during a build.
+    ///
+    /// Deliberately names the concrete cost rather than the rule that fired.
+    /// "notify activates macos_kqueue" tells a reader nothing; "one open file
+    /// descriptor per watched path" tells them why they should care enough to
+    /// go look.
+    #[must_use]
+    pub fn summary(&self) -> String {
+        match self {
+            Self::PlatformFeatureLeakAcrossTargets {
+                name,
+                feature,
+                triples,
+                ..
+            } => format!(
+                "{name}: platform feature `{feature}` leaked onto {} non-matching target(s): {}",
+                triples.len(),
+                triples.join(", ")
+            ),
+            Self::DegradedBackendFeatureSelected {
+                name,
+                feature,
+                prefer,
+                triples,
+                cost,
+                ..
+            } => format!(
+                "{name}: `{feature}` is active on {} — prefer `{prefer}`. {cost}",
+                triples.join(", ")
+            ),
+        }
+    }
+}
 
 /// Run every diagnostic against the spec. Empty `Vec` when no
 /// diagnostics fire. Pure function — same inputs always produce the

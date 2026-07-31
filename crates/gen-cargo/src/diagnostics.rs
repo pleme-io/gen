@@ -60,7 +60,54 @@ pub enum Diagnostic {
         triples: Vec<String>,
         upstream_fix_hint: String,
     },
+
+    /// A feature that is on the RIGHT platform but selects a strictly
+    /// worse implementation than the one available beside it.
+    ///
+    /// This is a different failure class from the leak above and the
+    /// reason it exists: a leak breaks the build, so it is discovered
+    /// immediately. A degraded backend **builds and runs perfectly** —
+    /// it just costs orders of magnitude more of some resource, silently,
+    /// forever. Nothing fails, so nothing surfaces it.
+    ///
+    /// Founding instance (2026-07-31): `notify`'s `macos_kqueue`. On
+    /// macOS notify picks its backend as
+    /// `#[cfg(all(target_os = "macos", not(feature = "macos_kqueue")))] →
+    /// FsEventWatcher`, so the feature is *poison*: Cargo features are
+    /// additive and unify across the graph, so ONE crate enabling it flips
+    /// EVERY macOS consumer to kqueue, and a consumer cannot un-enable it.
+    /// kqueue holds one open file descriptor per WATCHED PATH; FSEvents
+    /// holds none. Measured: the seki prompt daemon, watching one repo
+    /// recursively, held 26,517 open FDs across 3,014 paths. Seven repos
+    /// carried the declaration — shikumi first, then six more by copy,
+    /// because gen's own fix-hint recommended it.
+    DegradedBackendFeatureSelected {
+        crate_key: String,
+        name: String,
+        feature: String,
+        prefer: String,
+        triples: Vec<String>,
+        cost: String,
+        upstream_fix_hint: String,
+    },
 }
+
+/// Features that are platform-correct but select a strictly worse
+/// implementation than a sibling feature of the same crate.
+///
+/// `(crate, poison_feature, prefer_feature, cost)`. Deliberately a table
+/// and not an `if name == "notify"`: the class is "a backend feature you
+/// can turn on but not off, whose cost is invisible at build time", and
+/// notify is simply the first member we paid for. A new member is one row.
+const DEGRADED_BACKENDS: &[(&str, &str, &str, &str)] = &[(
+    "notify",
+    "macos_kqueue",
+    "macos_fsevent",
+    "kqueue holds one open file descriptor per watched path; FSEvents holds \
+     none. A recursive watch of one repo measured 26,517 open FDs. The feature \
+     is additive and cannot be un-enabled by a consumer, so a single crate \
+     enabling it degrades every macOS consumer of notify in the graph.",
+)];
 
 /// Run every diagnostic against the spec. Empty `Vec` when no
 /// diagnostics fire. Pure function — same inputs always produce the
@@ -75,7 +122,75 @@ pub enum Diagnostic {
 pub fn diagnose(spec: &BuildSpec) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     diagnose_platform_feature_leaks(spec, &mut out);
+    diagnose_degraded_backends(spec, &mut out);
     out
+}
+
+/// Flag every (crate, feature, triple) where a [`DEGRADED_BACKENDS`] row is
+/// active **on the platform it belongs to**.
+///
+/// The two walks partition the space rather than overlap: a platform feature
+/// on the WRONG triple is a leak (it breaks the build, and
+/// `diagnose_platform_feature_leaks` already reports it); the same feature on
+/// its RIGHT triple is this diagnostic. That split is deliberate — the
+/// right-platform case is the dangerous one precisely because it builds
+/// clean and only shows up as runtime cost nobody is measuring.
+fn diagnose_degraded_backends(spec: &BuildSpec, out: &mut Vec<Diagnostic>) {
+    let Some(compact) = spec.target_resolves.as_ref() else {
+        return;
+    };
+    let target_resolves = compact.expand();
+
+    let mut grouped: indexmap::IndexMap<(String, String, String, String, String), Vec<String>> =
+        indexmap::IndexMap::new();
+
+    for (triple, resolve) in &target_resolves {
+        for (key, edges) in &resolve.crates {
+            let Some(crate_spec) = spec.crates.get(key) else {
+                continue;
+            };
+            for feature in &edges.features {
+                let Some((_, _, prefer, cost)) = DEGRADED_BACKENDS
+                    .iter()
+                    .find(|(c, f, _, _)| *c == crate_spec.name && f == feature)
+                else {
+                    continue;
+                };
+                // Only on the platform the feature belongs to — the
+                // wrong-platform case is a leak and is reported there.
+                if !lookup(&crate_spec.name, feature)
+                    .is_some_and(|entry| entry.tag.matches_triple(triple))
+                {
+                    continue;
+                }
+                grouped
+                    .entry((
+                        key.clone(),
+                        crate_spec.name.clone(),
+                        feature.clone(),
+                        (*prefer).to_string(),
+                        (*cost).to_string(),
+                    ))
+                    .or_default()
+                    .push(triple.clone());
+            }
+        }
+    }
+
+    for ((crate_key, name, feature, prefer, cost), mut triples) in grouped {
+        triples.sort();
+        triples.dedup();
+        let upstream_fix_hint = upstream_fix_hint_for(&name, &feature);
+        out.push(Diagnostic::DegradedBackendFeatureSelected {
+            crate_key,
+            name,
+            feature,
+            prefer,
+            triples,
+            cost,
+            upstream_fix_hint,
+        });
+    }
 }
 
 /// Walk `target_resolves[triple].crates[key].features` and flag any
@@ -154,6 +269,28 @@ fn diagnose_platform_feature_leaks(spec: &BuildSpec, out: &mut Vec<Diagnostic>) 
 /// previously recommended `features = ["macos_kqueue"]` claiming it
 /// was portable; that advice produced shikumi 5139dd2's Linux-breaking
 /// lockfile and was corrected to the target-gated form in 3913d35.
+///
+/// ★ Corrected again 2026-07-31, and this one was the expensive mistake:
+/// the target-gated form was right, but the FEATURE NAMED IN IT WAS NOT.
+/// The hint said `macos_kqueue`, and seven repos adopted it verbatim —
+/// shikumi first, then six more by copy. On macOS notify selects its
+/// backend as:
+///
+/// ```ignore
+/// #[cfg(all(target_os = "macos", not(feature = "macos_kqueue")))]
+/// pub type RecommendedWatcher = FsEventWatcher;
+/// ```
+///
+/// so `macos_kqueue` is a POISON feature: additive unification means one
+/// crate enabling it flips EVERY macOS consumer to the kqueue backend, and
+/// a consumer cannot un-enable it. kqueue holds one open file descriptor
+/// per watched path; FSEvents holds none. Measured on cid: one prompt
+/// daemon watching a single repo recursively held 26,517 open FDs.
+///
+/// `macos_fsevent` is the correct backend AND is Linux-safe for exactly the
+/// same reason the target-gate exists: notify declares `fsevent-sys` under
+/// `[target.'cfg(target_os="macos")']`, so it is unreachable off macOS. The
+/// Linux breakage that motivated kqueue was never a property of fsevent.
 fn upstream_fix_hint_for(crate_name: &str, _feature: &str) -> String {
     match crate_name {
         "notify" => "In the consumer's Cargo.toml, set the bare notify dep with no \
@@ -163,12 +300,19 @@ fn upstream_fix_hint_for(crate_name: &str, _feature: &str) -> String {
                      notify = { version = \"<v>\", default-features = false }\n\n  \
                      [target.'cfg(target_os = \"macos\")'.dependencies]\n  \
                      notify = { version = \"<v>\", default-features = false, \
-                     features = [\"macos_kqueue\"] }\n\n  \
+                     features = [\"macos_fsevent\"] }\n\n  \
                      Linux falls back to inotify (notify's only Linux backend) \
                      with no macOS-side dep activation. The target-gate is required \
-                     because Cargo features unify globally per-target — putting \
-                     `features = [\"macos_kqueue\"]` in [dependencies] would still \
-                     activate kqueue → kqueue-sys on every Linux build."
+                     because Cargo features unify globally per-target — putting a \
+                     macOS backend feature in [dependencies] activates its dep \
+                     chain on every Linux build.\n\n  \
+                     Use macos_fsevent, NOT macos_kqueue. `macos_kqueue` is a \
+                     poison feature: notify picks FsEventWatcher only under \
+                     `not(feature = \"macos_kqueue\")`, so ONE crate enabling it \
+                     flips every macOS consumer to kqueue — which holds one open \
+                     file descriptor per WATCHED PATH (measured: 26,517 FDs in a \
+                     single daemon) where FSEvents holds none. Features are \
+                     additive; a consumer cannot un-enable it."
             .to_string(),
         _ => format!(
             "In the consumer's Cargo.toml, set `default-features = false` on \
@@ -313,6 +457,7 @@ mod tests {
                 assert_eq!(*feature_platform, PlatformTag::Apple);
                 assert_eq!(triples, &vec!["x86_64-unknown-linux-musl".to_string()]);
             }
+            other => panic!("expected a leak diagnostic, got {other:?}"),
         }
     }
 
@@ -367,6 +512,7 @@ mod tests {
                 assert_eq!(*feature_platform, PlatformTag::Apple);
                 assert_eq!(triples, &vec!["x86_64-unknown-linux-musl".to_string()]);
             }
+            other => panic!("expected a leak diagnostic, got {other:?}"),
         }
     }
 
@@ -421,16 +567,29 @@ mod tests {
                     ]
                 );
             }
+            other => panic!("expected a leak diagnostic, got {other:?}"),
         }
     }
 
     #[test]
-    fn fix_hint_for_notify_recommends_target_gated_macos_kqueue() {
+    fn fix_hint_for_notify_recommends_target_gated_macos_fsevent() {
         // The hint must steer the operator to the cfg-gated form —
-        // putting `features = ["macos_kqueue"]` in plain [dependencies]
-        // is the trap that produced shikumi 5139dd2's Linux-breaking
-        // lockfile. The hint must call out both halves: bare notify in
+        // putting a macOS backend feature in plain [dependencies] is the
+        // trap that produced shikumi 5139dd2's Linux-breaking lockfile.
+        // The hint must call out both halves: bare notify in
         // [dependencies] AND the target-gated opt-in block.
+        //
+        // ★ And the feature it names must be macos_fsevent. Until
+        // 2026-07-31 this hint recommended macos_kqueue and seven repos
+        // adopted it, putting every macOS notify consumer on a backend
+        // that holds one open FD per watched path (26,517 in one daemon).
+        //
+        // Note the assertions below check the RECOMMENDED BLOCK
+        // (`features = ["..."]`), not a bare substring. The hint legitimately
+        // mentions macos_kqueue when warning against it, so a
+        // `contains("macos_kqueue")` assertion — which is what this test used
+        // to make — passes for both the right and the wrong hint and would
+        // not have caught the defect it was supposedly guarding.
         let mut s = empty_spec();
         let (k, c) = registry_crate("notify", "8.2.0", vec!["macos_fsevent".into()]);
         s.crates.insert(k.clone(), c);
@@ -454,14 +613,75 @@ mod tests {
                     "hint must steer to the cfg(target_os = \"macos\") target-gate, got: {upstream_fix_hint}"
                 );
                 assert!(
-                    upstream_fix_hint.contains("macos_kqueue"),
-                    "hint must name a concrete macOS backend (macos_kqueue), got: {upstream_fix_hint}"
+                    upstream_fix_hint.contains("features = [\"macos_fsevent\"]"),
+                    "hint must RECOMMEND the macos_fsevent backend block, got: {upstream_fix_hint}"
+                );
+                assert!(
+                    !upstream_fix_hint.contains("features = [\"macos_kqueue\"]"),
+                    "hint must NEVER recommend a macos_kqueue block — it is a poison \
+                     feature that puts every macOS notify consumer on one open FD per \
+                     watched path, got: {upstream_fix_hint}"
                 );
                 assert!(
                     upstream_fix_hint.contains("inotify"),
                     "hint must explain Linux falls back to inotify, got: {upstream_fix_hint}"
                 );
             }
+            other => panic!("expected a leak diagnostic, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn macos_kqueue_on_an_apple_triple_fires_the_degraded_backend_diagnostic() {
+        // The case that cost us: macos_kqueue on its CORRECT platform. The
+        // leak walk stays silent (nothing is mis-targeted), the build is
+        // clean, and every macOS consumer of notify quietly moves to a
+        // backend holding one FD per watched path. Nothing was watching for
+        // it, which is why it ran for as long as it did.
+        let mut s = empty_spec();
+        let (k, c) = registry_crate("notify", "8.2.0", vec!["macos_kqueue".into()]);
+        s.crates.insert(k.clone(), c);
+        let mut tr = IndexMap::new();
+        tr.insert(
+            "aarch64-apple-darwin".to_string(),
+            target_resolve_for(&k, vec!["macos_kqueue".into()]),
+        );
+        s.target_resolves = Some(CompactTargetResolves::from_full(tr));
+        let d = diagnose(&s);
+        assert_eq!(d.len(), 1, "degraded backend on apple must flag");
+        match &d[0] {
+            Diagnostic::DegradedBackendFeatureSelected {
+                name,
+                feature,
+                prefer,
+                triples,
+                ..
+            } => {
+                assert_eq!(name, "notify");
+                assert_eq!(feature, "macos_kqueue");
+                assert_eq!(prefer, "macos_fsevent");
+                assert_eq!(triples, &vec!["aarch64-apple-darwin".to_string()]);
+            }
+            other => panic!("expected a degraded-backend diagnostic, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn preferred_backend_on_an_apple_triple_is_silent() {
+        // The fixed state must produce NO diagnostic — otherwise the new
+        // rule is noise the fleet learns to scroll past.
+        let mut s = empty_spec();
+        let (k, c) = registry_crate("notify", "8.2.0", vec!["macos_fsevent".into()]);
+        s.crates.insert(k.clone(), c);
+        let mut tr = IndexMap::new();
+        tr.insert(
+            "aarch64-apple-darwin".to_string(),
+            target_resolve_for(&k, vec!["macos_fsevent".into()]),
+        );
+        s.target_resolves = Some(CompactTargetResolves::from_full(tr));
+        assert!(
+            diagnose(&s).is_empty(),
+            "macos_fsevent on apple is the correct state and must be silent"
+        );
     }
 }

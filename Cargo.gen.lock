@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "cargo_lock_sha256": "d3bdc2cf09f8e54ec3fdfaf28d1b88a856e3bfb1e9fb46b59e13931ad40b08e5",
+  "cargo_lock_sha256": "1ea9edca7c9bd70f902eaf3ff0e3c294ac76565e3ad1c4054668dca319799680",
   "manifest_sha256": {
-    "Cargo.toml": "d199090ac80f040c00b661ce2e274d4f067b5aee13da360f143e26f83190f471",
+    "Cargo.toml": "51c78e837d4da97dd6410d11dfe495a5f2e07332abdddcd36741255b7283f0aa",
     "crates/gen-adapter-forge/Cargo.toml": "1359ec9f06a1488542500be7550234a60c18190d5e8f3d82cf99555371d62096",
     "crates/gen-ansible/Cargo.toml": "e9c485308b93e1947ed16cf8001841f66de263cdc8fdfb33b7f487924559d6ca",
     "crates/gen-bazel/Cargo.toml": "a947cdbedb9f78ac0a2f693dfee1f39cbd933b5c14f228cd3db7f67029839e2f",
@@ -25,6 +25,7 @@
     "crates/gen-poetry/Cargo.toml": "26b23c209dd0713f00c1a92d2d3460f8f15003f891316ab75974c594364d0523",
     "crates/gen-polyglot/Cargo.toml": "99478071d48c6996fe919434c78c313a3dc2c97923a1029c28201523d09bcd08",
     "crates/gen-secattest/Cargo.toml": "98a474f81d565e35591979e5440e03e8da8aa324ed332db82ddb30d20c9dad74",
+    "crates/gen-solve/Cargo.toml": "72abf546c7efd5a6ead523f336a7c1e88327981741cb125c1bd948e7d11b8201",
     "crates/gen-swift/Cargo.toml": "48a264cc936f1bbafe2c893bc9c46dcbe77a49c7fb75af116d9791102266f778",
     "crates/gen-types/Cargo.toml": "e470012d00bdba99742c2ebccc9b80d2c64695904092a886442dc70969b96795",
     "crates/gen-verdict/Cargo.toml": "24d263e0823637777236b0cd26b53a7247f73b91d0de9670f8a1c64f74c1cf4a"
@@ -2741,6 +2742,32 @@
             "features": [
               "derive"
             ],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          }
+        ],
+        "build_dependencies": [],
+        "features": []
+      },
+      "gen-solve-0.1.32": {
+        "runtime_dependencies": [
+          {
+            "name": "gen_types",
+            "package_key": "gen-types-0.1.32",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
+            "name": "thiserror",
+            "package_key": "thiserror-2.0.18",
+            "kind": "normal",
+            "features": [],
             "uses_default_features": true,
             "optional": false,
             "target": null,
@@ -8756,6 +8783,13 @@
       "edition": "2024",
       "lib_target": {
         "name": "gen_secattest",
+        "path": "src/lib.rs"
+      }
+    },
+    "gen-solve-0.1.32": {
+      "edition": "2024",
+      "lib_target": {
+        "name": "gen_solve",
         "path": "src/lib.rs"
       }
     },

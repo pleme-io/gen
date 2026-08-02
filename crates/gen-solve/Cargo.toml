@@ -1,0 +1,31 @@
+[package]
+name = "gen-solve"
+description = "gen — the fleet's version solver. Newest-first backtracking over `gen_types::Dependency` with requirement-chain conflict attribution (a `Conflict` names both sides and the coordinate, as typed `PackageAt` fields rather than a message to parse), sound assignment-level incompatibility learning, and a finite step bound so a pathological graph reports instead of hanging. Carries `VersionSet`, the union-of-disjoint-intervals algebra that `ConstraintSpec` is lowered into — closed under intersection and union, with emptiness exact, because a constraint *syntax* is not a constraint *algebra*. Not PubGrub, and says so."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "gen_solve"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+# gen-types owns the vocabulary — `Version`, `ConstraintSpec`, `Dependency`.
+# This crate deliberately defines none of them again; the whole point of the
+# extraction is that the solver and the types it solves over live in one
+# dependency tree.
+gen-types = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+# The load-bearing gates here are properties over generated graphs, not
+# hand-picked fixtures: a resolver's interesting failures are the ones nobody
+# thought to write down.
+proptest = "1"

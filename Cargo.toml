@@ -3,6 +3,7 @@ resolver = "3"
 members = [
     "crates/gen-types",
     "crates/gen-macros",
+    "crates/gen-solve",
     "crates/gen-platform",
     "crates/gen-cargo",
     "crates/gen-helm",
@@ -40,6 +41,7 @@ authors = ["pleme-io"]
 [workspace.dependencies]
 # Workspace crates
 gen-types = { path = "crates/gen-types", version = "0.1.32" }
+gen-solve = { path = "crates/gen-solve", version = "0.1.32" }
 gen-pdc = { path = "crates/gen-pdc", version = "0.1.32" }
 gen-secattest = { path = "crates/gen-secattest", version = "0.1.32" }
 gen-verdict = { path = "crates/gen-verdict", version = "0.1.32" }

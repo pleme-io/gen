@@ -765,6 +765,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "gen-solve"
+version = "0.1.32"
+dependencies = [
+ "gen-types",
+ "proptest",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "gen-swift"
 version = "0.1.32"
 dependencies = [

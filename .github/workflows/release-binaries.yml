@@ -1,0 +1,35 @@
+name: release-binaries
+
+# WHY gen, of all tools, needs a published binary.
+#
+# `pleme-io/substrate/.github/workflows/reusable-gen-spec.yml` — the delta
+# freshness gate adopted by 414 fleet repos — obtains gen with
+# `nix run github:pleme-io/gen`. gen's flake publishes no binary and there is
+# no substituter that can serve it (no nixConfig, no extra-substituters, no
+# cachix/attic in gen's or substrate's flake), so every one of those repos
+# COMPILES gen from source — 242 packages plus the rust toolchain closure —
+# on every Actions-cache eviction. The magic-nix-cache is scoped per
+# repository, so that is 414 independent cold compiles rather than one.
+#
+# Measured consequence, 2026-08-05: the freshness CHECK is milliseconds
+# (`gen confirm` is pure offline sha256), while OBTAINING gen is minutes. A
+# gate whose cost is dominated by fetching the checker is a gate people turn
+# off — which is exactly how engenho ended up with `continue-on-error: true`
+# and drifted three times in one evening, taking four machines down.
+#
+# Publishing the binary makes the fleet-wide gate near-instant. The consumer
+# switch (reusable-gen-spec preferring a released binary over `nix run`) is
+# deliberately NOT in this commit: no release exists yet, and pointing 414
+# repos at a missing artifact would break every one of them. Land this, cut a
+# tag, verify the artifact, then switch the consumer.
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  binaries:
+    uses: pleme-io/substrate/.github/workflows/rust-binary-release.yml@main
+    with:
+      binary-name: gen
+    secrets: inherit

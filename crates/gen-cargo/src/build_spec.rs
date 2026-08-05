@@ -2098,6 +2098,40 @@ struct SpecHeader {
     manifest_sha256: crate::manifest_tie::ManifestDigests,
 }
 
+/// Read the D2 tie's two halves from whichever artifact this workspace
+/// actually commits — the full spec if present, otherwise the delta.
+///
+/// Both encode the halves under identical field names, and [`SpecHeader`]'s
+/// parse is permissive (`#[serde(default)]` on every field, unknown fields
+/// ignored), so one type reads either artifact with no conversion. `None`
+/// means neither exists or neither parses — the caller reports that as
+/// `MissingSpec`, which stays accurate: the tie is unprovable either way.
+/// ── ★ THE DELTA IS CONSULTED FIRST, AND THE ORDER IS THE WHOLE POINT ────
+/// The first cut of this preferred the full spec, on the reasoning that it is
+/// the richer artifact. MEASURED, that is backwards and produces FALSE
+/// POSITIVES: `Cargo.build-spec.json` is gitignored in ~406 fleet repos, so a
+/// present one is usually a STALE LOCAL BUILD OUTPUT, while `Cargo.gen.lock`
+/// is the committed artifact. tsunagu at v0.1.5 has both — the spec recorded
+/// 46f0ddd9, the delta and the real lock both 0ae5aa8d — and spec-first
+/// reported a clean workspace as `drifted`.
+///
+/// The rule that settles it: **read what the ENFORCER reads.** D2's Nix side
+/// (substrate/lib/build/rust/lockfile-delta.nix) compares against
+/// `Cargo.gen.lock`'s `cargo_lock_sha256`, so a checker that consults a
+/// different artifact is answering a different question than the gate that
+/// will actually fail the build.
+fn read_tie_header(root: &Path) -> Option<SpecHeader> {
+    for artifact in ["Cargo.gen.lock", "Cargo.build-spec.json"] {
+        let Ok(bytes) = std::fs::read(root.join(artifact)) else {
+            continue;
+        };
+        if let Ok(header) = serde_json::from_slice::<SpecHeader>(&bytes) {
+            return Some(header);
+        }
+    }
+    None
+}
+
 /// Compute the spec's freshness without touching the spec or
 /// invoking cargo. Pure file I/O + two SHA-256 hashes.
 #[must_use]
@@ -2106,17 +2140,29 @@ pub fn check_freshness(root: &Path) -> Freshness {
         Some(h) => h,
         None => return Freshness::MissingLock,
     };
-    let spec_path = root.join("Cargo.build-spec.json");
-    let spec_bytes = match std::fs::read(&spec_path) {
-        Ok(b) => b,
-        Err(_) => return Freshness::MissingSpec { lock_hash },
-    };
-    // Permissive parse: only the two fields we actually need.
-    // Any other field's evolution must not block the freshness
-    // signal — the regen below will overwrite anyway.
-    let header: SpecHeader = match serde_json::from_slice(&spec_bytes) {
-        Ok(h) => h,
-        Err(_) => return Freshness::MissingSpec { lock_hash },
+    // ── ★ THE TIE IS READ FROM WHICHEVER ARTIFACT THE REPO COMMITS ───────
+    // This used to read `Cargo.build-spec.json` and nothing else, which made
+    // `gen fleet-check` structurally blind to the delta-only fleet. The
+    // committed build-spec was retired on 2026-06-03 in favour of the delta;
+    // MEASURED 2026-08-05: 413 repos commit `Cargo.gen.lock`, only ~115 still
+    // commit a spec. So the scan reported `missing-spec` for 483 of 638
+    // workspaces — correctly-configured ones — and exited 1 every time.
+    //
+    // A checker that is ~80% false-red is not a checker anyone wires into CI,
+    // and nobody did: `grep -rl fleet-check */.github/workflows/` returns zero
+    // across the fleet. Meanwhile the D2 error message tells operators to run
+    // exactly this command to find drift, so the one instruction we hand them
+    // pointed at a dead end while three separate workspaces broke `nix run
+    // .#rebuild` in a single night.
+    //
+    // The delta carries BOTH halves of the tie under the same field names
+    // (`gen_delta.rs:142` cargo_lock_sha256, `:159` manifest_sha256), so the
+    // permissive `SpecHeader` parse below deserializes a delta unchanged. The
+    // DELTA is preferred — see `read_tie_header` for why the reverse order
+    // produced false positives.
+    let header: SpecHeader = match read_tie_header(root) {
+        Some(h) => h,
+        None => return Freshness::MissingSpec { lock_hash },
     };
     let spec_hash = match header.cargo_lock_sha256 {
         None => return Freshness::UnhashedSpec { lock_hash },

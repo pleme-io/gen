@@ -68,12 +68,25 @@ impl GoBuildEnv for RealGoBuildEnv {
             cmd.arg("-tags").arg(tuple.tags.join(","));
         }
         cmd.arg("./...");
+        // `-mod=vendor` + `GOPROXY=off` is the M1 hermetic contract, and it is
+        // right whenever the tree really is vendored. Asserting it
+        // unconditionally is not: on a module with deps and no vendor/ dir,
+        // `go list` fails "inconsistent vendoring … not marked as explicit in
+        // vendor/modules.txt", which is every fleet Go repo that does not
+        // track vendor/. Decide from the tree instead of assuming — vendored
+        // stays hermetic, non-vendored resolves through the proxy.
+        //
+        // Vendoring in the CALLER is not a fix: it makes this succeed but
+        // records the module as vendored, so vendorHash resolves null and
+        // buildGoModule then fails the identical error one layer later.
+        let vendored = root.join("vendor").join("modules.txt").is_file();
+        let mod_mode = if vendored { self.mod_mode.as_str() } else { "mod" };
         cmd.current_dir(root)
             .env("GOOS", &tuple.goos)
             .env("GOARCH", &tuple.goarch)
             .env("CGO_ENABLED", "0")
-            .env("GOFLAGS", format!("-mod={}", self.mod_mode))
-            .env("GOPROXY", "off")
+            .env("GOFLAGS", format!("-mod={mod_mode}"))
+            .env("GOPROXY", if vendored { "off" } else { "https://proxy.golang.org,direct" })
             // No interactive prompts, ever.
             .env("GIT_TERMINAL_PROMPT", "0");
         let out = cmd

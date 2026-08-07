@@ -46,7 +46,7 @@ thiserror = { workspace = true }
 # Kanshou — live process introspection. `gen kanshou list/query/schema`
 # is the operator-facing reflection over every introspectable process
 # on this host. See pleme-io/kanshou.
-kanshou = { version = "0.1", git = "https://github.com/pleme-io/kanshou" }
+kanshou = "0.1"
 tokio = { version = "1", features = ["rt", "macros", "net", "io-util"] }
 # tatara-lisp — homoiconic S-expression authoring surface. Powers
 # `gen fleet-migrate`: the FleetMigrationPlan is authored as a typed

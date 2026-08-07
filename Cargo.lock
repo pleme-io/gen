@@ -439,6 +439,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
 
 [[package]]
+name = "fsevent-sys"
+version = "4.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "76ee7a02da4d231650c7cea31349b889be2f45ddb3ef3032d2ec8185f6313fd2"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "futures-core"
 version = "0.3.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -991,8 +1000,9 @@ dependencies = [
 
 [[package]]
 name = "kanshou"
-version = "0.1.0"
-source = "git+https://github.com/pleme-io/kanshou#cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24ed2265e015af5635b03d0f9c89021cc401339a74a8688d28385375596e39af"
 dependencies = [
  "kanshou-derive",
  "serde",
@@ -1004,8 +1014,9 @@ dependencies = [
 
 [[package]]
 name = "kanshou-derive"
-version = "0.1.0"
-source = "git+https://github.com/pleme-io/kanshou#cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba2bbc188a38b2267df18b56ad3b378ce6a5454c693b886d273e01c8c8580a53"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1093,6 +1104,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4d3d07927151ff8575b7087f245456e549fea62edf0ec4e565a5ee50c8402bc3"
 dependencies = [
  "bitflags",
+ "fsevent-sys",
  "inotify",
  "kqueue",
  "libc",
@@ -1502,7 +1514,8 @@ dependencies = [
 [[package]]
 name = "shigoto-budget"
 version = "0.1.14"
-source = "git+https://github.com/pleme-io/shigoto#adb37daf549f7b874fc1d0a032fabb9c75f7525e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2dd7c678a16b740d8b615855601b88c9b1a2e9611595b2b03ea22573fccc288e"
 dependencies = [
  "serde",
  "shigoto-types",
@@ -1512,7 +1525,8 @@ dependencies = [
 [[package]]
 name = "shigoto-dag"
 version = "0.1.14"
-source = "git+https://github.com/pleme-io/shigoto#adb37daf549f7b874fc1d0a032fabb9c75f7525e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b85f8bdcc6395b7e0a0a6f2ae2f278363366640f55e2b1fde99f091504f89496"
 dependencies = [
  "petgraph",
  "serde",
@@ -1523,7 +1537,8 @@ dependencies = [
 [[package]]
 name = "shigoto-emit"
 version = "0.1.14"
-source = "git+https://github.com/pleme-io/shigoto#adb37daf549f7b874fc1d0a032fabb9c75f7525e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad06443bee0c3e566525be28127fab894f78444a7f4b806a6702bb55083b3c24"
 dependencies = [
  "async-trait",
  "serde",
@@ -1535,7 +1550,8 @@ dependencies = [
 [[package]]
 name = "shigoto-gate"
 version = "0.1.14"
-source = "git+https://github.com/pleme-io/shigoto#adb37daf549f7b874fc1d0a032fabb9c75f7525e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6861edaee79e70afd48da1fcf164184cde5bc21fc2a128f9b85f1eadc60d09e3"
 dependencies = [
  "shigoto-dag",
  "shigoto-types",
@@ -1544,7 +1560,8 @@ dependencies = [
 [[package]]
 name = "shigoto-retry"
 version = "0.1.14"
-source = "git+https://github.com/pleme-io/shigoto#adb37daf549f7b874fc1d0a032fabb9c75f7525e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee15451e16def17f442796e6c22ff547d40035f4471f04fc63c165ceb45a8c76"
 dependencies = [
  "serde",
  "shigoto-types",
@@ -1553,7 +1570,8 @@ dependencies = [
 [[package]]
 name = "shigoto-scheduler"
 version = "0.1.14"
-source = "git+https://github.com/pleme-io/shigoto#adb37daf549f7b874fc1d0a032fabb9c75f7525e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f49a1ae63fdfb10fa7b7fa11a153502130d57cd82121230bfc1500956fc26174"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1574,7 +1592,8 @@ dependencies = [
 [[package]]
 name = "shigoto-types"
 version = "0.1.14"
-source = "git+https://github.com/pleme-io/shigoto#adb37daf549f7b874fc1d0a032fabb9c75f7525e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef2261b8c50b892ba86926f41e8155d68bb68f7a32de7d85bd3f249a3da8dfd1"
 dependencies = [
  "async-trait",
  "blake3",
@@ -1590,8 +1609,9 @@ dependencies = [
 
 [[package]]
 name = "shikumi"
-version = "0.1.0"
-source = "git+https://github.com/pleme-io/shikumi.git?rev=3913d35559a65bc64a870f5633cc3130371b412e#3913d35559a65bc64a870f5633cc3130371b412e"
+version = "0.1.496"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "de145934a9ccb306460220a3cd6068240dea61c139a34846b030bdb3d7b6af41"
 dependencies = [
  "arc-swap",
  "async-trait",

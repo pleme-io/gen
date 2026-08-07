@@ -72,7 +72,7 @@ chrono = { version = "0.4", features = ["serde"] }
 toml = "0.8"
 cargo_metadata = "0.18"
 clap = { version = "4", features = ["derive"] }
-shikumi = { version = "0.1", git = "https://github.com/pleme-io/shikumi.git", rev = "3913d35559a65bc64a870f5633cc3130371b412e" }
+shikumi = "0.1"
 
 [workspace.lints.clippy]
 pedantic = { level = "warn", priority = -1 }
@@ -86,17 +86,20 @@ lto = true
 opt-level = "z"
 strip = true
 
-# ★ GEN SELF-REFERENCE PATCH — gen depends on shikumi/shigoto (git),
-# which in turn depend on gen-types/gen-macros/gen-platform via the
-# gen git URL. Without this patch cargo resolves those three from
-# git+https://github.com/pleme-io/gen instead of the local workspace
-# members, so gen-cargo sees is_path_dep=false → omits lib_target →
-# the workspace-member-missing-lib-target invariant trips and gen
-# cannot emit a clean v10 build-spec FOR ITSELF (the one repo the
-# delta migration could not reach). Redirecting the git URL to the
-# path members closes the transitive self-reference. See
-# [[project_gen_delta_migration]].
-[patch."https://github.com/pleme-io/gen"]
+# ★ GEN SELF-REFERENCE PATCH — gen depends on shikumi/shigoto, which in
+# turn depend on gen-types/gen-macros/gen-platform. Without this patch
+# cargo resolves those three from the registry instead of the local
+# workspace members, so gen-cargo sees is_path_dep=false → omits
+# lib_target → the workspace-member-missing-lib-target invariant trips
+# and gen cannot emit a clean v10 build-spec FOR ITSELF (the one repo the
+# delta migration could not reach). Redirecting closes the transitive
+# self-reference. See [[project_gen_delta_migration]].
+#
+# The source moved from the pleme-io/gen git URL to crates-io along with
+# the dep migration: shikumi and shigoto now come from the registry, so
+# their transitive gen-* deps are registry deps and a git-URL patch would
+# no longer match anything.
+[patch.crates-io]
 gen-types = { path = "crates/gen-types" }
 gen-macros = { path = "crates/gen-macros" }
 gen-platform = { path = "crates/gen-platform" }

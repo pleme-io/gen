@@ -52,11 +52,11 @@ tempfile = "3"
 # per-repo recording sinks. The canonical model is tend's
 # StatusRepoJob / PullRepoJob pattern; gen.build-spec is the
 # fourth kind in the fleet to land on the substrate.
-shigoto-types = { version = "0.1", git = "https://github.com/pleme-io/shigoto" }
-shigoto-scheduler = { version = "0.1", git = "https://github.com/pleme-io/shigoto" }
-shigoto-emit = { version = "0.1", git = "https://github.com/pleme-io/shigoto" }
-shigoto-budget = { version = "0.1", git = "https://github.com/pleme-io/shigoto" }
-shigoto-dag = { version = "0.1", git = "https://github.com/pleme-io/shigoto" }
+shigoto-types = "0.1"
+shigoto-scheduler = "0.1"
+shigoto-emit = "0.1"
+shigoto-budget = "0.1"
+shigoto-dag = "0.1"
 async-trait = "0.1"
 tokio = { version = "1.40", features = ["rt-multi-thread", "macros", "sync"] }
 

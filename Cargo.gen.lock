@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "cargo_lock_sha256": "a97debc30e1077a13708da787c222059788b1b84cc89dd95430f9298059ff921",
+  "cargo_lock_sha256": "e1a4cab6e524a19aed4f0946a82770ff5cca997efd5b6b8bf951704c0b002e50",
   "manifest_sha256": {
-    "Cargo.toml": "fbe15e5a4115da6b12119e506daf096a10fea8a575d47dff5e5371f171fcef54",
+    "Cargo.toml": "1b8639b7f4295f733d266c9e6d203beceadb6d775976fe931332b583e2003d96",
     "crates/gen-adapter-forge/Cargo.toml": "1359ec9f06a1488542500be7550234a60c18190d5e8f3d82cf99555371d62096",
     "crates/gen-ansible/Cargo.toml": "e9c485308b93e1947ed16cf8001841f66de263cdc8fdfb33b7f487924559d6ca",
     "crates/gen-bazel/Cargo.toml": "a947cdbedb9f78ac0a2f693dfee1f39cbd933b5c14f228cd3db7f67029839e2f",
@@ -10,8 +10,8 @@
     "crates/gen-bundler/Cargo.toml": "16d8d5f957a2e5d91dd363bdbb1aa48978b6274e9082e4955f22ed5b54df1d02",
     "crates/gen-cache-attic/Cargo.toml": "bb8b9de74f6858d9b776086293918b7b97fb0631b7ccb458798b369624735271",
     "crates/gen-caixa-bridge/Cargo.toml": "7f4376465f66635b97b695b2adfce063da525d0a34689272d66b100ae2b47573",
-    "crates/gen-cargo/Cargo.toml": "cb702a0b82e053960ce897275f13f0c4cd1dc6e842ba3a088fb34223a8d4d545",
-    "crates/gen-cli/Cargo.toml": "5b45e7d7cce53d1fc0bb8b237945bba0129f2b1373aff436925e5435203f46bd",
+    "crates/gen-cargo/Cargo.toml": "3f38d9b1c3629dfc69805abcca6ccc2d3bc597be0a239b59365157d7f086ce7d",
+    "crates/gen-cli/Cargo.toml": "775a96e1c619a99464676e7124fb5b4aaf99563b5afbff29cb93f9e1a5fb296e",
     "crates/gen-config/Cargo.toml": "b2849f1592b692bd50023a83cbdd8269b5f8518be0f57eea933c3768f5b37609",
     "crates/gen-gomod/Cargo.toml": "eddb9947df15d1fd2b54daaef6d774fda455508154955aa711a23a72d94ca446",
     "crates/gen-helm/Cargo.toml": "9214aba26cf52e42271c96c35ba42bafc12fff15727773d253948438858f0233",
@@ -1477,7 +1477,7 @@
           },
           {
             "name": "shigoto_budget",
-            "package_key": "shigoto-budget-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-budget-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1487,7 +1487,7 @@
           },
           {
             "name": "shigoto_dag",
-            "package_key": "shigoto-dag-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-dag-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1497,7 +1497,7 @@
           },
           {
             "name": "shigoto_emit",
-            "package_key": "shigoto-emit-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-emit-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1507,7 +1507,7 @@
           },
           {
             "name": "shigoto_scheduler",
-            "package_key": "shigoto-scheduler-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-scheduler-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1517,7 +1517,7 @@
           },
           {
             "name": "shigoto_types",
-            "package_key": "shigoto-types-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-types-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1751,7 +1751,7 @@
           },
           {
             "name": "kanshou",
-            "package_key": "kanshou-0.1.0-cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f",
+            "package_key": "kanshou-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1793,7 +1793,7 @@
           },
           {
             "name": "shikumi",
-            "package_key": "shikumi-0.1.0-3913d35559a65bc64a870f5633cc3130371b412e",
+            "package_key": "shikumi-0.1.496",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1888,7 +1888,7 @@
           },
           {
             "name": "shikumi",
-            "package_key": "shikumi-0.1.0-3913d35559a65bc64a870f5633cc3130371b412e",
+            "package_key": "shikumi-0.1.496",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -3301,11 +3301,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "kanshou-0.1.0-cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f": {
+      "kanshou-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "kanshou_derive",
-            "package_key": "kanshou-derive-0.1.0-cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f",
+            "package_key": "kanshou-derive-0.1.3",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -3379,7 +3379,7 @@
           "derive"
         ]
       },
-      "kanshou-derive-0.1.0-cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f": {
+      "kanshou-derive-0.1.3": {
         "runtime_dependencies": [
           {
             "name": "proc_macro2",
@@ -4591,7 +4591,7 @@
           "std"
         ]
       },
-      "shigoto-budget-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": {
+      "shigoto-budget-0.1.14": {
         "runtime_dependencies": [
           {
             "name": "serde",
@@ -4607,7 +4607,7 @@
           },
           {
             "name": "shigoto_types",
-            "package_key": "shigoto-types-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-types-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4629,7 +4629,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "shigoto-dag-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": {
+      "shigoto-dag-0.1.14": {
         "runtime_dependencies": [
           {
             "name": "petgraph",
@@ -4655,7 +4655,7 @@
           },
           {
             "name": "shigoto_types",
-            "package_key": "shigoto-types-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-types-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4677,7 +4677,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "shigoto-emit-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": {
+      "shigoto-emit-0.1.14": {
         "runtime_dependencies": [
           {
             "name": "async_trait",
@@ -4713,7 +4713,7 @@
           },
           {
             "name": "shigoto_types",
-            "package_key": "shigoto-types-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-types-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4735,11 +4735,11 @@
         "build_dependencies": [],
         "features": []
       },
-      "shigoto-gate-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": {
+      "shigoto-gate-0.1.14": {
         "runtime_dependencies": [
           {
             "name": "shigoto_dag",
-            "package_key": "shigoto-dag-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-dag-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4749,7 +4749,7 @@
           },
           {
             "name": "shigoto_types",
-            "package_key": "shigoto-types-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-types-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4761,7 +4761,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "shigoto-retry-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": {
+      "shigoto-retry-0.1.14": {
         "runtime_dependencies": [
           {
             "name": "serde",
@@ -4777,7 +4777,7 @@
           },
           {
             "name": "shigoto_types",
-            "package_key": "shigoto-types-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-types-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4789,7 +4789,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "shigoto-scheduler-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": {
+      "shigoto-scheduler-0.1.14": {
         "runtime_dependencies": [
           {
             "name": "anyhow",
@@ -4847,7 +4847,7 @@
           },
           {
             "name": "shigoto_budget",
-            "package_key": "shigoto-budget-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-budget-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4857,7 +4857,7 @@
           },
           {
             "name": "shigoto_dag",
-            "package_key": "shigoto-dag-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-dag-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4867,7 +4867,7 @@
           },
           {
             "name": "shigoto_emit",
-            "package_key": "shigoto-emit-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-emit-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4877,7 +4877,7 @@
           },
           {
             "name": "shigoto_gate",
-            "package_key": "shigoto-gate-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-gate-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4887,7 +4887,7 @@
           },
           {
             "name": "shigoto_retry",
-            "package_key": "shigoto-retry-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-retry-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4897,7 +4897,7 @@
           },
           {
             "name": "shigoto_types",
-            "package_key": "shigoto-types-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e",
+            "package_key": "shigoto-types-0.1.14",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4944,7 +4944,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "shigoto-types-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": {
+      "shigoto-types-0.1.14": {
         "runtime_dependencies": [
           {
             "name": "async_trait",
@@ -5056,7 +5056,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "shikumi-0.1.0-3913d35559a65bc64a870f5633cc3130371b412e": {
+      "shikumi-0.1.496": {
         "runtime_dependencies": [
           {
             "name": "arc_swap",
@@ -5127,7 +5127,7 @@
             "package_key": "notify-8.2.0",
             "kind": "normal",
             "features": [
-              "macos_kqueue"
+              "macos_fsevent"
             ],
             "uses_default_features": false,
             "optional": false,
@@ -6399,6 +6399,22 @@
             "build_dependencies": [],
             "features": []
           },
+          "fsevent-sys-4.1.0": {
+            "runtime_dependencies": [
+              {
+                "name": "libc",
+                "package_key": "libc-0.2.186",
+                "kind": "normal",
+                "features": [],
+                "uses_default_features": true,
+                "optional": false,
+                "target": null,
+                "tree": "target"
+              }
+            ],
+            "build_dependencies": [],
+            "features": []
+          },
           "iana-time-zone-0.1.65": {
             "runtime_dependencies": [
               {
@@ -6417,58 +6433,6 @@
               "fallback"
             ]
           },
-          "kqueue-1.1.1": {
-            "runtime_dependencies": [
-              {
-                "name": "kqueue_sys",
-                "package_key": "kqueue-sys-1.1.2",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
-                "optional": false,
-                "target": null,
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
-                "optional": false,
-                "target": null,
-                "tree": "target"
-              }
-            ],
-            "build_dependencies": [],
-            "features": []
-          },
-          "kqueue-sys-1.1.2": {
-            "runtime_dependencies": [
-              {
-                "name": "bitflags",
-                "package_key": "bitflags-2.11.1",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": false,
-                "target": null,
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
-                "optional": false,
-                "target": null,
-                "tree": "target"
-              }
-            ],
-            "build_dependencies": [],
-            "features": []
-          },
           "notify-8.2.0": {
             "runtime_dependencies": [
               {
@@ -6482,18 +6446,8 @@
                 "tree": "target"
               },
               {
-                "name": "kqueue",
-                "package_key": "kqueue-1.1.1",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
-                "optional": false,
-                "target": "cfg(any(target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\", target_os = \"dragonflybsd\", target_os = \"ios\"))",
-                "tree": "target"
-              },
-              {
-                "name": "kqueue",
-                "package_key": "kqueue-1.1.1",
+                "name": "fsevent_sys",
+                "package_key": "fsevent-sys-4.1.0",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -6522,42 +6476,6 @@
                 "tree": "target"
               },
               {
-                "name": "mio",
-                "package_key": "mio-1.2.1",
-                "kind": "normal",
-                "features": [
-                  "os-ext"
-                ],
-                "uses_default_features": true,
-                "optional": false,
-                "target": "cfg(any(target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\", target_os = \"dragonflybsd\", target_os = \"ios\"))",
-                "tree": "target"
-              },
-              {
-                "name": "mio",
-                "package_key": "mio-1.2.1",
-                "kind": "normal",
-                "features": [
-                  "os-ext"
-                ],
-                "uses_default_features": true,
-                "optional": false,
-                "target": "cfg(any(target_os = \"linux\", target_os = \"android\"))",
-                "tree": "target"
-              },
-              {
-                "name": "mio",
-                "package_key": "mio-1.2.1",
-                "kind": "normal",
-                "features": [
-                  "os-ext"
-                ],
-                "uses_default_features": true,
-                "optional": true,
-                "target": "cfg(target_os = \"macos\")",
-                "tree": "target"
-              },
-              {
                 "name": "notify_types",
                 "package_key": "notify-types-2.1.0",
                 "kind": "normal",
@@ -6580,9 +6498,8 @@
             ],
             "build_dependencies": [],
             "features": [
-              "kqueue",
-              "macos_kqueue",
-              "mio"
+              "fsevent-sys",
+              "macos_fsevent"
             ]
           },
           "rustix-1.1.4": {
@@ -6894,18 +6811,6 @@
                 "tree": "target"
               },
               {
-                "name": "mio",
-                "package_key": "mio-1.2.1",
-                "kind": "normal",
-                "features": [
-                  "os-ext"
-                ],
-                "uses_default_features": true,
-                "optional": true,
-                "target": "cfg(target_os = \"macos\")",
-                "tree": "target"
-              },
-              {
                 "name": "notify_types",
                 "package_key": "notify-types-2.1.0",
                 "kind": "normal",
@@ -6928,9 +6833,8 @@
             ],
             "build_dependencies": [],
             "features": [
-              "kqueue",
-              "macos_kqueue",
-              "mio"
+              "fsevent-sys",
+              "macos_fsevent"
             ]
           },
           "rustix-1.1.4": {
@@ -7273,18 +7177,6 @@
                 "tree": "target"
               },
               {
-                "name": "mio",
-                "package_key": "mio-1.2.1",
-                "kind": "normal",
-                "features": [
-                  "os-ext"
-                ],
-                "uses_default_features": true,
-                "optional": true,
-                "target": "cfg(target_os = \"macos\")",
-                "tree": "target"
-              },
-              {
                 "name": "notify_types",
                 "package_key": "notify-types-2.1.0",
                 "kind": "normal",
@@ -7307,9 +7199,8 @@
             ],
             "build_dependencies": [],
             "features": [
-              "kqueue",
-              "macos_kqueue",
-              "mio"
+              "fsevent-sys",
+              "macos_fsevent"
             ]
           },
           "rustix-1.1.4": {
@@ -7506,6 +7397,22 @@
             "build_dependencies": [],
             "features": []
           },
+          "fsevent-sys-4.1.0": {
+            "runtime_dependencies": [
+              {
+                "name": "libc",
+                "package_key": "libc-0.2.186",
+                "kind": "normal",
+                "features": [],
+                "uses_default_features": true,
+                "optional": false,
+                "target": null,
+                "tree": "target"
+              }
+            ],
+            "build_dependencies": [],
+            "features": []
+          },
           "iana-time-zone-0.1.65": {
             "runtime_dependencies": [
               {
@@ -7524,58 +7431,6 @@
               "fallback"
             ]
           },
-          "kqueue-1.1.1": {
-            "runtime_dependencies": [
-              {
-                "name": "kqueue_sys",
-                "package_key": "kqueue-sys-1.1.2",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
-                "optional": false,
-                "target": null,
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
-                "optional": false,
-                "target": null,
-                "tree": "target"
-              }
-            ],
-            "build_dependencies": [],
-            "features": []
-          },
-          "kqueue-sys-1.1.2": {
-            "runtime_dependencies": [
-              {
-                "name": "bitflags",
-                "package_key": "bitflags-2.11.1",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": false,
-                "optional": false,
-                "target": null,
-                "tree": "target"
-              },
-              {
-                "name": "libc",
-                "package_key": "libc-0.2.186",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
-                "optional": false,
-                "target": null,
-                "tree": "target"
-              }
-            ],
-            "build_dependencies": [],
-            "features": []
-          },
           "notify-8.2.0": {
             "runtime_dependencies": [
               {
@@ -7589,18 +7444,8 @@
                 "tree": "target"
               },
               {
-                "name": "kqueue",
-                "package_key": "kqueue-1.1.1",
-                "kind": "normal",
-                "features": [],
-                "uses_default_features": true,
-                "optional": false,
-                "target": "cfg(any(target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\", target_os = \"dragonflybsd\", target_os = \"ios\"))",
-                "tree": "target"
-              },
-              {
-                "name": "kqueue",
-                "package_key": "kqueue-1.1.1",
+                "name": "fsevent_sys",
+                "package_key": "fsevent-sys-4.1.0",
                 "kind": "normal",
                 "features": [],
                 "uses_default_features": true,
@@ -7629,42 +7474,6 @@
                 "tree": "target"
               },
               {
-                "name": "mio",
-                "package_key": "mio-1.2.1",
-                "kind": "normal",
-                "features": [
-                  "os-ext"
-                ],
-                "uses_default_features": true,
-                "optional": false,
-                "target": "cfg(any(target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\", target_os = \"dragonflybsd\", target_os = \"ios\"))",
-                "tree": "target"
-              },
-              {
-                "name": "mio",
-                "package_key": "mio-1.2.1",
-                "kind": "normal",
-                "features": [
-                  "os-ext"
-                ],
-                "uses_default_features": true,
-                "optional": false,
-                "target": "cfg(any(target_os = \"linux\", target_os = \"android\"))",
-                "tree": "target"
-              },
-              {
-                "name": "mio",
-                "package_key": "mio-1.2.1",
-                "kind": "normal",
-                "features": [
-                  "os-ext"
-                ],
-                "uses_default_features": true,
-                "optional": true,
-                "target": "cfg(target_os = \"macos\")",
-                "tree": "target"
-              },
-              {
                 "name": "notify_types",
                 "package_key": "notify-types-2.1.0",
                 "kind": "normal",
@@ -7687,9 +7496,8 @@
             ],
             "build_dependencies": [],
             "features": [
-              "kqueue",
-              "macos_kqueue",
-              "mio"
+              "fsevent-sys",
+              "macos_fsevent"
             ]
           },
           "rustix-1.1.4": {
@@ -7975,18 +7783,6 @@
                 "tree": "target"
               },
               {
-                "name": "mio",
-                "package_key": "mio-1.2.1",
-                "kind": "normal",
-                "features": [
-                  "os-ext"
-                ],
-                "uses_default_features": true,
-                "optional": true,
-                "target": "cfg(target_os = \"macos\")",
-                "tree": "target"
-              },
-              {
                 "name": "notify_types",
                 "package_key": "notify-types-2.1.0",
                 "kind": "normal",
@@ -8009,9 +7805,8 @@
             ],
             "build_dependencies": [],
             "features": [
-              "kqueue",
-              "macos_kqueue",
-              "mio"
+              "fsevent-sys",
+              "macos_fsevent"
             ]
           },
           "rustix-1.1.4": {
@@ -8328,18 +8123,6 @@
                 "tree": "target"
               },
               {
-                "name": "mio",
-                "package_key": "mio-1.2.1",
-                "kind": "normal",
-                "features": [
-                  "os-ext"
-                ],
-                "uses_default_features": true,
-                "optional": true,
-                "target": "cfg(target_os = \"macos\")",
-                "tree": "target"
-              },
-              {
                 "name": "notify_types",
                 "package_key": "notify-types-2.1.0",
                 "kind": "normal",
@@ -8362,9 +8145,8 @@
             ],
             "build_dependencies": [],
             "features": [
-              "kqueue",
-              "macos_kqueue",
-              "mio"
+              "fsevent-sys",
+              "macos_fsevent"
             ]
           },
           "rustix-1.1.4": {
@@ -8629,6 +8411,9 @@
         "path": "lib.rs"
       }
     },
+    "fsevent-sys-4.1.0": {
+      "edition": "2018"
+    },
     "gen-adapter-forge-0.1.35": {
       "edition": "2024",
       "lib_target": {
@@ -8865,18 +8650,12 @@
     "itoa-1.0.18": {
       "edition": "2021"
     },
-    "kanshou-0.1.0-cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f": {
+    "kanshou-0.1.3": {
       "edition": "2024"
     },
-    "kanshou-derive-0.1.0-cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f": {
+    "kanshou-derive-0.1.3": {
       "edition": "2024",
       "proc_macro": true
-    },
-    "kqueue-1.1.1": {
-      "edition": "2021"
-    },
-    "kqueue-sys-1.1.2": {
-      "edition": "2021"
     },
     "libc-0.2.186": {
       "edition": "2021",
@@ -9031,28 +8810,28 @@
     "sha2-0.10.9": {
       "edition": "2018"
     },
-    "shigoto-budget-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": {
+    "shigoto-budget-0.1.14": {
       "edition": "2024"
     },
-    "shigoto-dag-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": {
+    "shigoto-dag-0.1.14": {
       "edition": "2024"
     },
-    "shigoto-emit-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": {
+    "shigoto-emit-0.1.14": {
       "edition": "2024"
     },
-    "shigoto-gate-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": {
+    "shigoto-gate-0.1.14": {
       "edition": "2024"
     },
-    "shigoto-retry-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": {
+    "shigoto-retry-0.1.14": {
       "edition": "2024"
     },
-    "shigoto-scheduler-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": {
+    "shigoto-scheduler-0.1.14": {
       "edition": "2024"
     },
-    "shigoto-types-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": {
+    "shigoto-types-0.1.14": {
       "edition": "2024"
     },
-    "shikumi-0.1.0-3913d35559a65bc64a870f5633cc3130371b412e": {
+    "shikumi-0.1.496": {
       "edition": "2024"
     },
     "shlex-2.0.1": {
@@ -9217,17 +8996,6 @@
       "build_script": "build.rs"
     }
   },
-  "git_nar_sha256": {
-    "kanshou-0.1.0-cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f": "sha256-wmwL7P5fEEvsEGa7YW4v+Xh3aEamhcnMz3KVz2hE0f4=",
-    "kanshou-derive-0.1.0-cd7b34f4d8737d58b18e411fb8aeba0a25f1d28f": "sha256-wmwL7P5fEEvsEGa7YW4v+Xh3aEamhcnMz3KVz2hE0f4=",
-    "shigoto-budget-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": "sha256-N/Mgmbpkb2bpyo6z7itz6O8+7d7HHevp+H2vZaSwHwU=",
-    "shigoto-dag-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": "sha256-N/Mgmbpkb2bpyo6z7itz6O8+7d7HHevp+H2vZaSwHwU=",
-    "shigoto-emit-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": "sha256-N/Mgmbpkb2bpyo6z7itz6O8+7d7HHevp+H2vZaSwHwU=",
-    "shigoto-gate-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": "sha256-N/Mgmbpkb2bpyo6z7itz6O8+7d7HHevp+H2vZaSwHwU=",
-    "shigoto-retry-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": "sha256-N/Mgmbpkb2bpyo6z7itz6O8+7d7HHevp+H2vZaSwHwU=",
-    "shigoto-scheduler-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": "sha256-N/Mgmbpkb2bpyo6z7itz6O8+7d7HHevp+H2vZaSwHwU=",
-    "shigoto-types-0.1.14-adb37daf549f7b874fc1d0a032fabb9c75f7525e": "sha256-N/Mgmbpkb2bpyo6z7itz6O8+7d7HHevp+H2vZaSwHwU=",
-    "shikumi-0.1.0-3913d35559a65bc64a870f5633cc3130371b412e": "sha256-EUqsHsttbM9Pp9efTfvl6WFwOzb31khczPA+mYyhJVM="
-  },
+  "git_nar_sha256": {},
   "flake_metadata": {}
 }

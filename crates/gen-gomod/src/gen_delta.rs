@@ -81,10 +81,17 @@ impl GoGenDelta {
     pub const FILENAME: &'static str = "Go.gen.lock";
 }
 
-/// Distill + write `Go.gen.lock` next to the module's `go.mod`. Additive
-/// — call after the full build-spec write; a failed emit MUST fail
-/// `gen build` (never silently skipped).
-pub fn write_gen_delta(root: &Path, spec: &BuildSpec) -> Result<(), GenDeltaError> {
+/// Distill + write `Go.gen.lock` next to the module's `go.mod`.
+///
+/// RETIRED: requires an `ActiveDelta` witness, which `DeltaPolicy::activate`
+/// only mints when the declared mode is `Active`. The declaration ships as
+/// retired, so this is unreachable without changing `specs/go-delta.lisp`.
+/// Kept compiled and tested per MODULARIZE, DON'T DELETE.
+pub(crate) fn write_gen_delta(
+    _witness: &crate::delta_mode::ActiveDelta,
+    root: &Path,
+    spec: &BuildSpec,
+) -> Result<(), GenDeltaError> {
     let delta = GoGenDelta::distill(spec)?;
     let path = root.join(GoGenDelta::FILENAME);
     std::fs::write(&path, delta.to_json()? + "\n").map_err(|source| GenDeltaError::Write {

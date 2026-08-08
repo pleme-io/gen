@@ -11,7 +11,16 @@
 
   ;; Verb surface (gen_types::Adapter). Live in M1: build + confirm.
   :verbs
-  ((:name build   :status live        :hermetic t
+  ;; CORRECTED 2026-08-08: `:hermetic t` was FALSE, unconditionally stated for
+  ;; a verb that is hermetic only on one of its two branches. `interp.rs:82-89`
+  ;; probes for `vendor/modules.txt` and branches:
+  ;;     vendored   -> -mod=<configured>  GOPROXY=off              (hermetic)
+  ;;     otherwise  -> -mod=mod           GOPROXY=proxy.golang.org (NETWORK)
+  ;; Claiming hermeticity for the branch that reaches the public module proxy
+  ;; is backwards for anyone reasoning about sandboxing from this declaration —
+  ;; and substrate carried the mirror-image of the same falsehood until
+  ;; substrate@139248c.
+  ((:name build   :status live        :hermetic :when-vendored
     :doc "go.mod + vendored tree -> Go.build-spec.json (per-package incremental)")
    (:name confirm :status live
     :doc "run the typed invariants over the encoded spec")
@@ -20,6 +29,11 @@
    (:name plan    :status unsupported :milestone "M2")
    (:name diff    :status unsupported :milestone "M2")
    (:name sbom    :status unsupported :milestone "M2"))
+
+  ;; The `Go.gen.lock` producer, retired rather than deleted. The emitter is
+  ;; compiled and tested; it has no consumer, so emitting would create a
+  ;; freshness obligation nothing benefits from. See specs/go-delta.lisp.
+  :delta (:spec "go-delta.lisp" :mode retired)
 
   ;; The resolver seam. `go list` IS the offline resolver (the
   ;; cargo-metadata analogue); it resolves build constraints, replace/

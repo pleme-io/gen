@@ -16,7 +16,15 @@ pub mod adapter;
 pub mod build_spec;
 pub mod emit;
 pub mod error;
-pub mod gen_delta;
+/// RETIRED PRODUCER — `pub(crate)`, deliberately, since 2026-08-08.
+///
+/// `write_gen_delta` had ZERO call sites while being publicly reachable, and
+/// the consumer half defaulted 17 keys, so one added line would have shipped a
+/// zero-package build spec behind a green freshness verdict. Reaching the
+/// writer now requires an `ActiveDelta` witness from `delta_mode`, which the
+/// declared policy refuses to mint. See `delta_mode` for the full argument.
+pub(crate) mod gen_delta;
+pub mod delta_mode;
 pub mod golist;
 pub mod gomod;
 pub mod interp;

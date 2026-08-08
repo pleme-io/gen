@@ -28,7 +28,25 @@
     :doc "go mod vendor/tidy — the resolver invocation (network)")
    (:name plan    :status unsupported :milestone "M2")
    (:name diff    :status unsupported :milestone "M2")
-   (:name sbom    :status unsupported :milestone "M2"))
+   (:name sbom    :status unsupported :milestone "M2")
+
+   ;; The adoption census. Read-only BY CONSTRUCTION, not by convention:
+   ;; `--dry-run` is the only mode the CLI defines, so there is no write path
+   ;; to reach by accident. Declared here because "which modules can gen even
+   ;; take?" is part of this adapter's surface, not a side tool.
+   ;;
+   ;; MEASURED 2026-08-08 over ~/code/github, 429 module roots:
+   ;;   eligible              270
+   ;;   bare-minor-directive  157   <- the escalation predicate; must reach 0
+   ;;   no-directive            2   (akeyless-funnel, both copies)
+   ;;   above-fleet-toolchain   0   <- confirms the ONLY throwing arm ships
+   ;;                                  with nothing to break
+   ;; Re-measure, never infer: `gen adopt-go --dry-run --root <dir> --json`.
+   (:name adopt   :status live :read-only t
+    :doc "classify module roots against the fleet Go toolchain; measures, adopts nothing"
+    :predicate "gen_gomod::directive — the SAME predicate substrate evaluates
+                in Nix, bound to lib/build/go/directive-vectors.json so one byte
+                edited there turns BOTH suites red"))
 
   ;; The `Go.gen.lock` producer, retired rather than deleted. The emitter is
   ;; compiled and tested; it has no consumer, so emitting would create a

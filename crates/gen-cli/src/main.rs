@@ -16,6 +16,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 use gen_config::GenConfig;
 use shikumi::{ConfigTier, TieredConfig};
 
+mod adopt_cli;
 mod flake_lint;
 mod fleet_migrate_plan;
 
@@ -403,6 +404,32 @@ enum Cmd {
     /// consumers, dump their schema, and ship typed queries through
     /// the kanshou Unix socket. The substrate-side operator surface
     /// for the kanshou wave.
+    /// `gen adopt-go` — the Go adoption census. Scans module roots and
+    /// reports how many are ELIGIBLE for gen adoption, with every refusal
+    /// carrying a named reason.
+    ///
+    /// Measures; adopts nothing. `--dry-run` is the only mode that exists,
+    /// so there is no write path to reach by accident.
+    ///
+    /// The classification is `gen_gomod::directive` — byte-for-byte the same
+    /// predicate substrate evaluates in Nix at build time, bound to one
+    /// shared vector table. A census that disagreed with the build gate
+    /// about "eligible" would be worse than no census.
+    #[command(name = "adopt-go")]
+    AdoptGo {
+        /// Module roots to scan (recursively). Defaults to CWD.
+        #[arg(long = "root")]
+        roots: Vec<PathBuf>,
+        /// The fleet Go toolchain to classify against.
+        #[arg(long, default_value = adopt_cli::DEFAULT_FLEET_GO)]
+        fleet_go: String,
+        /// Required. The only mode that exists — see the module docs.
+        #[arg(long, required = true)]
+        dry_run: bool,
+        /// Emit JSON instead of the human report.
+        #[arg(long)]
+        json: bool,
+    },
     #[command(subcommand)]
     Kanshou(KanshouCmd),
 }
@@ -1042,6 +1069,23 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             println!(
                 "✓ gen-{name} scaffolded.\n  Next: add `\"crates/gen-{name}\",` to the gen workspace members in `Cargo.toml`, fill in adapter::Adapter::build, then `cargo build -p gen-{name}`."
             );
+            Ok(())
+        }
+        Cmd::AdoptGo { roots, fleet_go, dry_run, json } => {
+            // `required = true` already refuses the flagless form; this asserts
+            // the invariant at the point it is relied on rather than trusting a
+            // clap attribute to stay put.
+            debug_assert!(*dry_run, "adopt-go has no non-dry-run mode");
+            let roots = if roots.is_empty() { vec![PathBuf::from(".")] } else { roots.clone() };
+            let code = adopt_cli::run(&adopt_cli::AdoptGoArgs {
+                roots,
+                fleet_go: fleet_go.clone(),
+                json: *json,
+            })
+                .map_err(CliError::Other)?;
+            if code != 0 {
+                std::process::exit(code);
+            }
             Ok(())
         }
         Cmd::Kanshou(sub) => kanshou_dispatch(sub)

@@ -1,0 +1,8 @@
+Deliberately-broken go.mod files. Every arm of AdoptionRefusal has a fixture
+here BECAUSE the real fleet has 0 offenders in two of them — without these,
+those arms would be branches nothing ever exercises.
+
+They must not reach the census. The escalation predicate is
+`bare-minor-directive == 0`, and a committed bare-minor module makes 0
+unreachable: the fleet could be fully remediated and the number would still
+read 1. See adopt_cli.rs::IGNORE_MARKER.

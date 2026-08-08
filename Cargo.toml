@@ -30,7 +30,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.1.37"
+version = "0.1.38"
 edition = "2024"
 rust-version = "1.89.0"
 license = "MIT"
@@ -40,25 +40,25 @@ authors = ["pleme-io"]
 
 [workspace.dependencies]
 # Workspace crates
-gen-types = { path = "crates/gen-types", version = "0.1.37" }
-gen-solve = { path = "crates/gen-solve", version = "0.1.37" }
-gen-pdc = { path = "crates/gen-pdc", version = "0.1.37" }
-gen-secattest = { path = "crates/gen-secattest", version = "0.1.37" }
-gen-verdict = { path = "crates/gen-verdict", version = "0.1.37" }
-gen-platform = { path = "crates/gen-platform", version = "0.1.37" }
-gen-cargo = { path = "crates/gen-cargo", version = "0.1.37" }
-gen-npm = { path = "crates/gen-npm", version = "0.1.37" }
-gen-bundler = { path = "crates/gen-bundler", version = "0.1.37" }
-gen-adapter-forge = { path = "crates/gen-adapter-forge", version = "0.1.37" }
-gen-polyglot = { path = "crates/gen-polyglot", version = "0.1.37" }
-gen-config = { path = "crates/gen-config", version = "0.1.37" }
-gen-nix = { path = "crates/gen-nix", version = "0.1.37" }
-gen-nix-bulk = { path = "crates/gen-nix-bulk", version = "0.1.37" }
-gen-bazel = { path = "crates/gen-bazel", version = "0.1.37" }
-gen-buck = { path = "crates/gen-buck", version = "0.1.37" }
-gen-caixa-bridge = { path = "crates/gen-caixa-bridge", version = "0.1.37" }
-gen-cache-attic = { path = "crates/gen-cache-attic", version = "0.1.37" }
-gen-cli = { path = "crates/gen-cli", version = "0.1.37" }
+gen-types = { path = "crates/gen-types", version = "0.1.38" }
+gen-solve = { path = "crates/gen-solve", version = "0.1.38" }
+gen-pdc = { path = "crates/gen-pdc", version = "0.1.38" }
+gen-secattest = { path = "crates/gen-secattest", version = "0.1.38" }
+gen-verdict = { path = "crates/gen-verdict", version = "0.1.38" }
+gen-platform = { path = "crates/gen-platform", version = "0.1.38" }
+gen-cargo = { path = "crates/gen-cargo", version = "0.1.38" }
+gen-npm = { path = "crates/gen-npm", version = "0.1.38" }
+gen-bundler = { path = "crates/gen-bundler", version = "0.1.38" }
+gen-adapter-forge = { path = "crates/gen-adapter-forge", version = "0.1.38" }
+gen-polyglot = { path = "crates/gen-polyglot", version = "0.1.38" }
+gen-config = { path = "crates/gen-config", version = "0.1.38" }
+gen-nix = { path = "crates/gen-nix", version = "0.1.38" }
+gen-nix-bulk = { path = "crates/gen-nix-bulk", version = "0.1.38" }
+gen-bazel = { path = "crates/gen-bazel", version = "0.1.38" }
+gen-buck = { path = "crates/gen-buck", version = "0.1.38" }
+gen-caixa-bridge = { path = "crates/gen-caixa-bridge", version = "0.1.38" }
+gen-cache-attic = { path = "crates/gen-cache-attic", version = "0.1.38" }
+gen-cli = { path = "crates/gen-cli", version = "0.1.38" }
 
 # Third-party
 serde = { version = "1", features = ["derive"] }

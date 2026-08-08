@@ -25,6 +25,7 @@ pub mod error;
 /// declared policy refuses to mint. See `delta_mode` for the full argument.
 pub(crate) mod gen_delta;
 pub mod delta_mode;
+pub mod directive;
 pub mod golist;
 pub mod gomod;
 pub mod interp;

@@ -101,6 +101,101 @@ pub(crate) fn write_gen_delta(
 }
 
 #[cfg(test)]
+mod golden {
+    //! The BOTH-SIDES BINDING for `Go.gen.lock`.
+    //!
+    //! The GEN TYPED-SPEC CONTRACT requires every conditional emission rule to
+    //! be a typed invariant asserted on both sides. Its absence is not
+    //! hypothetical here: producer and consumer had already drifted to
+    //! disagreeing on 12 of 13 fields, and the consumer defaulted the
+    //! difference away with bare `or`.
+    //!
+    //! This pins the exact BYTES the producer emits. Its twin lives at
+    //! `substrate/lib/build/go/tests/fixtures/gen-lock-current-gen/Go.gen.lock`
+    //! and holds byte-identical content: substrate's suite asserts those bytes
+    //! are REFUSED by the closed reader (they carry no `per_package`); this one
+    //! asserts they are what the producer emits. One artifact, two claims,
+    //! neither able to move alone.
+    //!
+    //! WHY BYTES, NOT THE STRUCT. `to_json` is `to_string_pretty`, so key order
+    //! and indentation are part of the observable artifact. A struct-level
+    //! assertion passes while the file on disk changes shape — the exact class
+    //! of gap this milestone closes. Key order here is FIELD DECLARATION order
+    //! (serde's struct behaviour), which is NOT serde_json's `json!` macro
+    //! behaviour (alphabetical) — a first cut of this test used `json!` and
+    //! disagreed with the real serializer, which is why it asserts on
+    //! `GoGenDelta` itself.
+    //!
+    //! WHY IT LIVES IN THE CRATE. `gen_delta` is `pub(crate)` since the
+    //! producer's retirement, so an integration test cannot construct
+    //! `GoGenDelta`. That is the retirement working as intended; the golden
+    //! moved inward rather than the module being re-opened for a test.
+    //!
+    //! TIER: only-mitigated (C2 — cross-repository observation). The two files
+    //! cannot be diffed by one test runner; each side pins the same bytes and
+    //! the invariant is enforced by both suites failing on a shape change.
+    use super::*;
+
+    const GOLDEN: &str = include_str!("../tests/fixtures/go-gen-lock-v1.json");
+
+    fn golden_delta() -> GoGenDelta {
+        let mut source_hashes = BTreeMap::new();
+        source_hashes.insert("example.com/x/a#linux-amd64".to_string(), "aaaa".to_string());
+        GoGenDelta {
+            schema_version: 1,
+            go_sum_sha256:
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855".to_string(),
+            source_hashes,
+        }
+    }
+
+    #[test]
+    fn golden_is_exactly_what_the_producer_emits() {
+        assert_eq!(
+            golden_delta().to_json().expect("serialize").trim_end(),
+            GOLDEN.trim_end(),
+            "the golden no longer matches what the producer emits — regenerate \
+             BOTH this fixture and substrate's gen-lock-current-gen/Go.gen.lock, \
+             or revert the shape change"
+        );
+    }
+
+    #[test]
+    fn golden_carries_no_per_package() {
+        // The single fact substrate's reader keys on. If the shape ever gains
+        // `per_package`, substrate's "current gen shape is refused" case becomes
+        // wrong and must be updated in the same change.
+        let v: serde_json::Value = serde_json::from_str(GOLDEN).expect("golden parses");
+        assert!(
+            v.get("per_package").is_none(),
+            "golden gained `per_package`: substrate's refusal fixture is now stale"
+        );
+    }
+
+    #[test]
+    fn golden_top_level_keys_are_the_declared_three() {
+        let v: serde_json::Value = serde_json::from_str(GOLDEN).expect("golden parses");
+        let mut keys: Vec<&str> =
+            v.as_object().expect("object").keys().map(String::as_str).collect();
+        keys.sort_unstable();
+        assert_eq!(
+            keys,
+            vec!["go_sum_sha256", "schema_version", "source_hashes"],
+            "the wire shape changed; substrate's delta-schema.nix declares these \
+             three plus per_package and must be updated in lockstep"
+        );
+    }
+
+    #[test]
+    fn the_producer_that_would_write_this_is_retired() {
+        // Binds the golden to the retirement: these bytes describe an artifact
+        // nothing currently emits. If the policy is activated, this is the
+        // reminder that substrate's reader must accept the shape first.
+        assert!(crate::delta_mode::DeltaPolicy::RETIRED.is_retired());
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::build_spec::{

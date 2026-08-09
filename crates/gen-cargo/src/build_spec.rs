@@ -1322,6 +1322,43 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
             .cloned()
             .unwrap_or_default();
 
+        // ── Drop features whose ONLY effect is activating a dep this
+        //    target does not have. ────────────────────────────────────
+        //
+        // cargo filters the resolve's dep EDGES by target but does NOT
+        // filter the resolved FEATURE list. Measured on wgpu-hal 25.0.2,
+        // same workspace, same lock:
+        //
+        //   cargo metadata (unfiltered)                  39 deps, portable-atomic PRESENT
+        //   cargo metadata --filter-platform=aarch64-apple-darwin
+        //                                                27 deps, portable-atomic ABSENT
+        //   features, BOTH invocations                   [..., portable-atomic, ...]
+        //
+        // So cargo hands back an inconsistent pair, and emitting it
+        // verbatim produces a crate compiled WITH a feature but WITHOUT
+        // the dep that feature exists to pull in. wgpu-hal declares
+        //
+        //   portable-atomic = ["dep:portable-atomic"]                       # feature
+        //   [target.'cfg(not(target_has_atomic = "64"))'.dependencies.portable-atomic]
+        //
+        // and uses `portable_atomic::AtomicU64` whenever the feature is
+        // on. aarch64-apple-darwin HAS 64-bit atomics, so the edge is
+        // correctly filtered out while the feature stayed on — and the
+        // build died with `error[E0432]: unresolved import
+        // portable_atomic`, taking every wgpu/garasu/nami-core consumer
+        // with it (namimado's darwin build, hence `nix run .#rebuild`).
+        //
+        // The rule is narrow on purpose: a feature is dropped ONLY when
+        // every one of its expansions is a `dep:<name>` whose edge is
+        // absent from THIS target's resolve. A feature that also flips
+        // cfgs, enables other features, or references a dep that IS
+        // present is untouched — so this cannot silently disable real
+        // functionality. Sibling of the `dup_decl_target_nonoptional`
+        // and `target_cfg_optional_dep` fixes: same class, opposite
+        // side of the edge/feature pair.
+        // (applied below, once `edges_for_pkg` — this target's actual
+        // resolve edges — is in hand)
+
         // Build typed dep edges using the resolve graph (authoritative
         // for both "what's in the closure" AND "what kind each edge
         // is"). The graph's dep_kinds field carries the per-edge kind
@@ -1330,6 +1367,34 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
         // [dependencies] AND [dev-dependencies] in cargo's eyes;
         // dep_kinds enumerates each one.
         let edges_for_pkg = dep_edges.get(&pkg.id.repr).cloned().unwrap_or_default();
+
+        // Apply the dep-less-feature prune described above, now that this
+        // target's real edge set is known. `present` is keyed by the
+        // DEPENDENCY CRATE NAME (hyphenated, as `dep:` spells it), taken
+        // from the resolve rather than from Cargo.toml declarations — the
+        // resolve is what was actually filtered for this target.
+        let features: Vec<String> = {
+            let present: std::collections::HashSet<&str> = edges_for_pkg
+                .iter()
+                .filter_map(|(_, dep_pkg_id, _)| by_id.get(dep_pkg_id))
+                .map(|d| d.name.as_str())
+                .collect();
+            features
+                .into_iter()
+                .filter(|feat| {
+                    let Some(expansions) = pkg.features.get(feat) else {
+                        return true;
+                    };
+                    if expansions.is_empty() {
+                        return true;
+                    }
+                    !expansions.iter().all(|e| {
+                        e.strip_prefix("dep:")
+                            .is_some_and(|n| !present.contains(n))
+                    })
+                })
+                .collect()
+        };
 
         let mut dependencies: Vec<CrateDepSpec> = Vec::new();
         for (local_name, dep_pkg_id, dep_kinds) in &edges_for_pkg {

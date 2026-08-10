@@ -98,7 +98,8 @@
         "build_dependencies": [],
         "features": [
           "auto",
-          "default"
+          "default",
+          "wincon"
         ]
       },
       "anstyle-1.0.14": {
@@ -464,12 +465,15 @@
           "clock",
           "default",
           "iana-time-zone",
+          "js-sys",
           "now",
           "oldtime",
           "serde",
           "std",
+          "wasm-bindgen",
           "wasmbind",
-          "winapi"
+          "winapi",
+          "windows-link"
         ]
       },
       "clap-4.6.1": {
@@ -4267,6 +4271,7 @@
         "build_dependencies": [],
         "features": [
           "default",
+          "serde",
           "std"
         ]
       },
@@ -5650,7 +5655,8 @@
           "socket2",
           "sync",
           "time",
-          "tokio-macros"
+          "tokio-macros",
+          "windows-sys"
         ]
       },
       "tokio-macros-2.7.0": {
@@ -6827,6 +6833,7 @@
             ],
             "build_dependencies": [],
             "features": [
+              "fsevent-sys",
               "macos_fsevent"
             ]
           },
@@ -7192,6 +7199,7 @@
             ],
             "build_dependencies": [],
             "features": [
+              "fsevent-sys",
               "macos_fsevent"
             ]
           },
@@ -7797,6 +7805,7 @@
             ],
             "build_dependencies": [],
             "features": [
+              "fsevent-sys",
               "macos_fsevent"
             ]
           },
@@ -8136,6 +8145,7 @@
             ],
             "build_dependencies": [],
             "features": [
+              "fsevent-sys",
               "macos_fsevent"
             ]
           },

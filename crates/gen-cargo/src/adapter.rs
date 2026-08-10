@@ -180,6 +180,9 @@ fn violation_locus(v: &crate::invariants::Violation) -> (&'static str, Option<St
     use crate::invariants::Violation::*;
     match v {
         UnresolvedDep { from, .. } => ("unresolved-dep", Some(from.clone())),
+        UnhonouredFeatureRequest { from, .. } => {
+            ("unhonoured-feature-request", Some(from.clone()))
+        }
         RegistryWithoutSha256 { crate_key, .. } => {
             ("registry-without-sha256", Some(crate_key.clone()))
         }

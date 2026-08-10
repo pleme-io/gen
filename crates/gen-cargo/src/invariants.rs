@@ -24,6 +24,15 @@ pub enum Violation {
         dep_name: String,
         missing_key: String,
     },
+    /// A non-optional dep edge asked for features the resolved package does
+    /// not have. The request was DROPPED somewhere between resolution and
+    /// emission, which is a generator bug, not a manifest one.
+    UnhonouredFeatureRequest {
+        from: String,
+        dep_key: String,
+        missing: Vec<String>,
+        resolved: Vec<String>,
+    },
     /// A registry-source crate has no sha256 — substrate's fetchurl
     /// would 404. Catches v1-lockfile + general extraction bugs.
     RegistryWithoutSha256 { crate_key: String, name: String },
@@ -117,11 +126,67 @@ pub fn check(spec: &BuildSpec) -> Vec<Violation> {
     check_schema_version(spec, &mut out);
     check_workspace_member_lib_targets(spec, &mut out);
     check_quirks_registry_consistency(spec, &mut out);
+    check_features_honoured(spec, &mut out);
     // duplicate-key check: a sanity check on IndexMap usage.
     // (IndexMap dedupes on insert, so duplicates can only happen if
     // the source data already had them — we re-verify here for
     // future-proofing against schema changes.)
     out
+}
+
+/// **Every feature a dep edge asks for must survive into the resolved package.**
+///
+/// This is the invariant that would have caught the incident it was written
+/// for. `gen@8cff1af` pruned "features whose only effect is activating a dep
+/// this target lacks" and ate `semver/serde`; the v0.1.41 RELEASE regenerated
+/// the spec with that generator, and every consumer's build then died deep
+/// inside `cargo_metadata` on a missing `Deserialize` impl — a symptom several
+/// crates away from the cause, and only at BUILD time.
+///
+/// The spec alone is enough to see it:
+/// ```text
+/// cargo_metadata-0.18.1 -> semver-1.0.28  wants ["serde"]
+/// semver-1.0.28          resolved features ["default","std"]
+/// ```
+///
+/// OPTIONAL edges are skipped, and that exclusion is load-bearing rather than
+/// defensive: an optional dep's feature request is only honoured when the edge
+/// is actually activated, so enforcing it from the spec produces false
+/// positives. Measured one — rmcp asks schemars for `chrono04` behind an
+/// optional edge, and codesearch builds fine.
+fn check_features_honoured(spec: &BuildSpec, out: &mut Vec<Violation>) {
+    let Some(tr) = spec.target_resolves.as_ref() else {
+        return;
+    };
+    for (from, edges) in &tr.base {
+        for dep in edges
+            .runtime_dependencies
+            .iter()
+            .chain(edges.build_dependencies.iter())
+        {
+            if dep.optional || dep.features.is_empty() {
+                continue;
+            }
+            let Some(resolved) = tr.base.get(&dep.package_key) else {
+                // A dangling key is UnresolvedDep's business, not this check's.
+                continue;
+            };
+            let missing: Vec<String> = dep
+                .features
+                .iter()
+                .filter(|f| !resolved.features.contains(f))
+                .cloned()
+                .collect();
+            if !missing.is_empty() {
+                out.push(Violation::UnhonouredFeatureRequest {
+                    from: from.clone(),
+                    dep_key: dep.package_key.clone(),
+                    missing,
+                    resolved: resolved.features.clone(),
+                });
+            }
+        }
+    }
 }
 
 fn check_build_rust_crate_args(spec: &BuildSpec, out: &mut Vec<Violation>) {
@@ -331,6 +396,138 @@ pub fn assert_well_formed(spec: &BuildSpec) -> Result<(), Vec<Violation>> {
         Ok(())
     } else {
         Err(v)
+    }
+}
+
+#[cfg(test)]
+mod features_honoured_tests {
+    use super::*;
+    use crate::build_spec::{
+        BuildTree, CompactTargetResolves, CrateDepSpec, CrateTargetEdges, DepKind, WorkspaceSpec,
+    };
+    use std::collections::BTreeMap;
+
+    fn dep(key: &str, features: &[&str], optional: bool) -> CrateDepSpec {
+        CrateDepSpec {
+            name: key.split('-').next().unwrap_or(key).to_string(),
+            package_key: key.to_string(),
+            kind: DepKind::Normal,
+            features: features.iter().map(|s| (*s).to_string()).collect(),
+            uses_default_features: true,
+            optional,
+            target: None,
+            tree: BuildTree::Target,
+        }
+    }
+
+    fn edges(features: &[&str], deps: Vec<CrateDepSpec>) -> CrateTargetEdges {
+        CrateTargetEdges {
+            dependencies: vec![],
+            runtime_dependencies: deps,
+            build_dependencies: vec![],
+            features: features.iter().map(|s| (*s).to_string()).collect(),
+        }
+    }
+
+    fn bare_spec() -> BuildSpec {
+        BuildSpec {
+            version: crate::build_spec::SCHEMA_VERSION,
+            workspace: WorkspaceSpec { members: vec![] },
+            crates: BTreeMap::new(),
+            root_crate: String::new(),
+            workspace_members: vec![],
+            flake_metadata: BTreeMap::new(),
+            target_resolves: None,
+            cargo_lock_sha256: None,
+            manifest_sha256: crate::manifest_tie::ManifestDigests::new(),
+        }
+    }
+
+    fn spec_with(base: BTreeMap<String, CrateTargetEdges>) -> BuildSpec {
+        let mut s = bare_spec();
+        s.target_resolves = Some(CompactTargetResolves {
+            base,
+            targets: BTreeMap::new(),
+        });
+        s
+    }
+
+    /// THE incident, reduced: cargo_metadata asked semver for `serde`, the
+    /// resolved semver had only `default`/`std`, and every consumer's build
+    /// died several crates away on a missing `Deserialize` impl.
+    #[test]
+    fn a_dropped_feature_request_is_a_violation() {
+        let mut base = BTreeMap::new();
+        base.insert(
+            "cargo_metadata-0.18.1".to_string(),
+            edges(&["default"], vec![dep("semver-1.0.28", &["serde"], false)]),
+        );
+        base.insert(
+            "semver-1.0.28".to_string(),
+            edges(&["default", "std"], vec![]),
+        );
+
+        let v = check(&spec_with(base));
+        let hits: Vec<_> = v
+            .iter()
+            .filter(|x| matches!(x, Violation::UnhonouredFeatureRequest { .. }))
+            .collect();
+        assert_eq!(hits.len(), 1, "expected exactly the dropped-feature violation, got {v:?}");
+        match hits[0] {
+            Violation::UnhonouredFeatureRequest { from, dep_key, missing, .. } => {
+                assert_eq!(from, "cargo_metadata-0.18.1");
+                assert_eq!(dep_key, "semver-1.0.28");
+                assert_eq!(missing, &vec!["serde".to_string()]);
+            }
+            _ => unreachable!(),
+        }
+    }
+
+    /// The honoured case must stay silent, or the invariant fails every build.
+    #[test]
+    fn an_honoured_request_is_not_a_violation() {
+        let mut base = BTreeMap::new();
+        base.insert(
+            "cargo_metadata-0.18.1".to_string(),
+            edges(&["default"], vec![dep("semver-1.0.28", &["serde"], false)]),
+        );
+        base.insert(
+            "semver-1.0.28".to_string(),
+            edges(&["default", "serde", "std"], vec![]),
+        );
+        assert!(check(&spec_with(base))
+            .iter()
+            .all(|x| !matches!(x, Violation::UnhonouredFeatureRequest { .. })));
+    }
+
+    /// OPTIONAL edges are exempt, and this exclusion is load-bearing: an
+    /// optional dep's request is only honoured when the edge activates.
+    /// Measured false positive without it — rmcp asks schemars for `chrono04`
+    /// behind an optional edge, and codesearch builds fine.
+    #[test]
+    fn an_optional_edge_is_exempt() {
+        let mut base = BTreeMap::new();
+        base.insert(
+            "rmcp-0.9.1".to_string(),
+            edges(&["default"], vec![dep("schemars-1.2.2", &["chrono04"], true)]),
+        );
+        base.insert(
+            "schemars-1.2.2".to_string(),
+            edges(&["default", "derive"], vec![]),
+        );
+        assert!(check(&spec_with(base))
+            .iter()
+            .all(|x| !matches!(x, Violation::UnhonouredFeatureRequest { .. })));
+    }
+
+    /// A spec with no target_resolves must not panic or invent violations —
+    /// older schemas legitimately have none.
+    #[test]
+    fn a_spec_without_target_resolves_is_silent() {
+        let s = bare_spec();
+        assert!(check(&s)
+            .iter()
+            .all(|x| !matches!(x, Violation::UnhonouredFeatureRequest { .. })));
     }
 }
 

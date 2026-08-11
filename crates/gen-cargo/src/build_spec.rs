@@ -792,6 +792,14 @@ pub const FLEET_TARGETS: &[&str] = &[
 /// gen-bootstrap chicken-and-egg (gen's own committed spec being
 /// host-filtered, blocking cross-platform build of gen-cli) ends here.
 pub fn generate_multi_target(root: &Path) -> Result<BuildSpec> {
+    generate_multi_target_with(root, &FeatureSelection::default())
+}
+
+/// [`generate_multi_target`] against an explicit feature selection.
+pub fn generate_multi_target_with(
+    root: &Path,
+    selection: &FeatureSelection,
+) -> Result<BuildSpec> {
     use rayon::prelude::*;
 
     // Per-target cargo-metadata is independent — each target spawns
@@ -815,7 +823,7 @@ pub fn generate_multi_target(root: &Path) -> Result<BuildSpec> {
         .par_iter()
         .map(|target| {
             eprintln!("gen build: resolving for {}", target);
-            generate_for_target(root, target)
+            generate_for_target_with(root, target, selection)
                 .map(|spec| (target.to_string(), spec))
         })
         .collect::<Result<Vec<_>>>()?;
@@ -971,6 +979,34 @@ pub fn generate_multi_target(root: &Path) -> Result<BuildSpec> {
 ///
 ///   [package.metadata.pleme]
 ///   features = ["watch-cli"]
+/// Which cargo features a generated spec resolves against.
+///
+/// gen bakes the RESOLVED feature set into `Cargo.build-spec.json`, and
+/// the Nix `rootFeatures` argument is not honored on the lockfile-builder
+/// path — so the spec IS the feature decision. There is no way to ask a
+/// generated spec for fewer features than it was generated with, which
+/// means a crate wanting two variants (say, with and without an embedded
+/// interpreter) needs two SPECS, not two build invocations.
+///
+/// [`FeatureSelection::default`] is exactly the historical behaviour:
+/// default features on, plus whatever `[package.metadata.pleme].features`
+/// opts into. A spec generated that way is byte-identical to one from
+/// before this type existed.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct FeatureSelection {
+    /// Pass `--no-default-features` to cargo's resolver.
+    pub no_default_features: bool,
+    /// Additional features to activate, beyond the manifest's opt-ins.
+    pub features: Vec<String>,
+}
+
+impl FeatureSelection {
+    #[must_use]
+    pub fn is_default(&self) -> bool {
+        !self.no_default_features && self.features.is_empty()
+    }
+}
+
 fn opt_in_feature_selectors(manifest_path: &Path) -> Result<Vec<String>> {
     let meta = MetadataCommand::new()
         .manifest_path(manifest_path)
@@ -1009,6 +1045,18 @@ fn opt_in_feature_selectors(manifest_path: &Path) -> Result<Vec<String>> {
 /// Generate the BuildSpec for an explicit target triple. Used by
 /// cross-build CI to produce a per-target spec.
 pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
+    generate_for_target_with(root, target, &FeatureSelection::default())
+}
+
+/// [`generate_for_target`] against an explicit feature selection.
+///
+/// The default selection reproduces the historical behaviour exactly, so
+/// this is a pure widening — no existing spec changes bytes.
+pub fn generate_for_target_with(
+    root: &Path,
+    target: &str,
+    selection: &FeatureSelection,
+) -> Result<BuildSpec> {
     // Canonicalize the root path so the relative-path math against
     // cargo metadata's absolute paths produces the right answer.
     let root = std::fs::canonicalize(root).map_err(|source| CargoError::Io {
@@ -1068,8 +1116,19 @@ pub fn generate_for_target(root: &Path, target: &str) -> Result<BuildSpec> {
     // Only invoked when at least one workspace member opted in — a
     // workspace with no `[package.metadata.pleme].features` anywhere
     // constructs the EXACT same MetadataCommand as before this fix.
-    if !opt_in_features.is_empty() {
-        cmd.features(cargo_metadata::CargoOpt::SomeFeatures(opt_in_features));
+    // A caller-supplied selection composes with the manifest opt-ins:
+    // cargo takes NoDefaultFeatures and SomeFeatures as separate options,
+    // so a variant spec can subtract the default set AND name what it
+    // wants back.
+    if selection.no_default_features {
+        cmd.features(cargo_metadata::CargoOpt::NoDefaultFeatures);
+    }
+    let mut wanted = opt_in_features;
+    wanted.extend(selection.features.iter().cloned());
+    wanted.sort();
+    wanted.dedup();
+    if !wanted.is_empty() {
+        cmd.features(cargo_metadata::CargoOpt::SomeFeatures(wanted));
     }
     let meta = cmd.exec().map_err(|e| CargoError::Io {
         path: manifest_path.clone(),
@@ -2223,7 +2282,28 @@ fn emit_diagnostics(spec: &BuildSpec) {
 }
 
 pub fn generate_multi_target_and_write(root: &Path) -> Result<std::path::PathBuf> {
-    let mut spec = generate_multi_target(root)?;
+    generate_multi_target_and_write_to(root, &FeatureSelection::default(), None)
+}
+
+/// [`generate_multi_target_and_write`] with an explicit feature selection
+/// and output path.
+///
+/// `out` names the spec file relative to `root`; `None` is the canonical
+/// `Cargo.build-spec.json`. A VARIANT spec must be written somewhere else,
+/// because a repo needs both at once — the default spec is what every
+/// existing consumer reads, and overwriting it to get a variant would
+/// silently change the primary build.
+///
+/// The delta sidecar (`Cargo.gen.lock`) is only written for the canonical
+/// spec. It records the tie between `Cargo.lock` and THE spec, and a
+/// second tie for a second spec would make the D2 pre-commit check
+/// ambiguous about which one it is judging.
+pub fn generate_multi_target_and_write_to(
+    root: &Path,
+    selection: &FeatureSelection,
+    out: Option<&Path>,
+) -> Result<std::path::PathBuf> {
+    let mut spec = generate_multi_target_with(root, selection)?;
     // Canonicalize BEFORE both the full-spec write AND the delta distill so
     // both artifacts are byte-identical across build platforms.
     spec.canonicalize();
@@ -2252,7 +2332,17 @@ pub fn generate_multi_target_and_write(root: &Path) -> Result<std::path::PathBuf
     // shape of a gate nobody has ever seen fail. Emitting here covers every
     // default `gen build`, which is what CI and every operator actually runs.
     emit_diagnostics(&spec);
-    let out = root.join("Cargo.build-spec.json");
+    let is_canonical = out.is_none();
+    let out = out.map_or_else(
+        || root.join("Cargo.build-spec.json"),
+        |p| {
+            if p.is_absolute() {
+                p.to_path_buf()
+            } else {
+                root.join(p)
+            }
+        },
+    );
     let body = serde_json::to_string_pretty(&spec).map_err(|e| CargoError::Io {
         path: out.clone(),
         source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
@@ -2264,11 +2354,18 @@ pub fn generate_multi_target_and_write(root: &Path) -> Result<std::path::PathBuf
     // Additive: emit the slim `Cargo.gen.lock` delta alongside the full
     // spec. Multi-target always carries `target_resolves`, so the delta is
     // always derivable here. A failed emit fails the build — never skipped.
-    crate::gen_delta::write_gen_delta(root, &spec).map_err(|e| CargoError::Io {
-        path: root.join("Cargo.gen.lock"),
-        source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
-    })?;
-    prune_and_log(root);
+    //
+    // Canonical spec ONLY. The delta records the tie between Cargo.lock and
+    // THE spec; writing a second one for a variant would leave the D2
+    // pre-commit check unable to say which spec it is judging, and a tie
+    // that is ambiguous is worse than no tie at all.
+    if is_canonical {
+        crate::gen_delta::write_gen_delta(root, &spec).map_err(|e| CargoError::Io {
+            path: root.join("Cargo.gen.lock"),
+            source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+        })?;
+        prune_and_log(root);
+    }
     Ok(out)
 }
 

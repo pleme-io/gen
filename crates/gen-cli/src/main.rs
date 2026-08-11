@@ -200,6 +200,32 @@ enum Cmd {
         /// spec hasn't drifted (idempotent).
         #[arg(long)]
         commit: bool,
+        /// Resolve the spec with `--no-default-features`.
+        ///
+        /// gen bakes the RESOLVED feature set into the spec, and Nix's
+        /// `rootFeatures` is not honored on the lockfile-builder path —
+        /// so the spec IS the feature decision, and there is no way to
+        /// ask a generated spec for FEWER features than it was generated
+        /// with. A crate that needs two variants needs two specs.
+        ///
+        /// Requires --out: writing a reduced-feature spec over the
+        /// canonical one would silently change the primary build, which
+        /// is the exact failure this flag exists to make impossible.
+        #[arg(long, requires = "out")]
+        no_default_features: bool,
+        /// Features to activate, comma-separated. Composes with
+        /// --no-default-features and with the manifest's
+        /// `[package.metadata.pleme].features` opt-ins.
+        #[arg(long, value_name = "LIST", value_delimiter = ',', requires = "out")]
+        features: Vec<String>,
+        /// Write the spec here instead of `Cargo.build-spec.json`.
+        ///
+        /// Relative paths resolve against the workspace root. A variant
+        /// spec gets no `Cargo.gen.lock` delta — that tie names THE spec,
+        /// and two ties would leave the D2 pre-commit check unable to say
+        /// which one it is judging.
+        #[arg(long, value_name = "PATH")]
+        out: Option<PathBuf>,
     },
     /// Typed read-only freshness check of `Cargo.build-spec.json`.
     /// Returns the `Freshness` variants (Fresh / Drifted /
@@ -730,7 +756,7 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             };
             emit(&summary, cli.format)
         }
-        Cmd::Build { path, filter_platform, single_target, if_stale, commit } => {
+        Cmd::Build { path, filter_platform, single_target, if_stale, commit, no_default_features, features, out } => {
             let root = resolve_root(path, cfg);
             // Atomic: regenerate every sidecar the substrate consumer
             // needs based on the adapter the workspace declares. Today
@@ -766,8 +792,16 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                         gen_cargo::build_spec::generate_and_write(&root)
                             .map_err(CliError::Cargo)?
                     } else {
-                        gen_cargo::build_spec::generate_multi_target_and_write(&root)
-                            .map_err(CliError::Cargo)?
+                        let selection = gen_cargo::build_spec::FeatureSelection {
+                            no_default_features: *no_default_features,
+                            features: features.clone(),
+                        };
+                        gen_cargo::build_spec::generate_multi_target_and_write_to(
+                            &root,
+                            &selection,
+                            out.as_deref(),
+                        )
+                        .map_err(CliError::Cargo)?
                     };
                     eprintln!("gen build: wrote {}", out.display());
                     if *commit {

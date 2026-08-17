@@ -129,10 +129,10 @@ fn vendored_and_replace_relative_paths() {
         s => panic!("expected vendored source, got {s:?}"),
     }
     // the replaced module resolves its Dir to the in-tree replacement.
-    let repl = &spec.packages["github.com/akeylesslabs/akeyless-go/v3#linux-amd64"];
+    let repl = &spec.packages["github.com/example/sdk-go/v3#linux-amd64"];
     match &repl.source {
         PackageSource::Vendored { relative_path } => {
-            assert_eq!(relative_path, "go/src/client/sdktest/akeyless-go");
+            assert_eq!(relative_path, "go/src/client/sdktest/sdk-go");
         }
         s => panic!("expected vendored source, got {s:?}"),
     }

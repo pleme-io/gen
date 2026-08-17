@@ -223,7 +223,8 @@ pub struct BuildSpec {
 
     /// The primary buildable node key (a `package main`).
     pub root_package: String,
-    /// Every buildable `main` node (akeyless: logan/gator/auth/… → many).
+    /// Every buildable `main` node (a service monorepo: many `main`
+    /// packages under one module → many members).
     #[serde(default)]
     pub workspace_members: Vec<String>,
 
@@ -250,7 +251,7 @@ pub enum Renderer {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ModuleSpec {
-    /// go.mod `module` directive, e.g. `akeyless.io/akeyless-main-repo`.
+    /// go.mod `module` directive, e.g. `example.com/monorepo`.
     pub module_path: String,
     /// go.mod `go` directive, e.g. `"1.26"`.
     pub go_version: String,
@@ -279,7 +280,7 @@ pub enum DepMode {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PackageSpec {
     /// Full import path, e.g.
-    /// `akeyless.io/akeyless-main-repo/go/src/microservices/auth`.
+    /// `example.com/monorepo/go/src/microservices/service-a`.
     pub import_path: String,
     /// `Std` | `Module` | `Main` (Cgo/Tool are deferred to M-cgo).
     pub kind: PackageKind,

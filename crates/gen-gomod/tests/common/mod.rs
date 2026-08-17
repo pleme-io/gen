@@ -105,16 +105,17 @@ pub fn dep_free(tuple: &TargetTuple) -> (MockGoBuildEnv, EncodeCtx) {
 }
 
 /// A fixture exercising Go-I3 for BOTH a vendored dep (`vendor/…`) and an
-/// in-tree filesystem `replace` (`go/src/client/…`) — the akeyless shape.
+/// in-tree filesystem `replace` (`go/src/client/…`) — the large service
+/// monorepo shape.
 pub fn vendored_and_replace(tuple: &TargetTuple) -> (MockGoBuildEnv, EncodeCtx) {
     let main = json!({
-        "Dir": "/w/go/src/microservices/auth",
-        "ImportPath": "akeyless.io/repo/go/src/microservices/auth",
+        "Dir": "/w/go/src/microservices/service-a",
+        "ImportPath": "example.com/monorepo/go/src/microservices/service-a",
         "Name": "main",
         "Root": "/w",
         "GoFiles": ["main.go"],
-        "Imports": ["github.com/foo/bar", "github.com/akeylesslabs/akeyless-go/v3"],
-        "Module": {"Path": "akeyless.io/repo", "Main": true}
+        "Imports": ["github.com/foo/bar", "github.com/example/sdk-go/v3"],
+        "Module": {"Path": "example.com/monorepo", "Main": true}
     });
     // Vendored dep — Dir under /w/vendor/…, ImportMap identity omitted.
     let vendored = json!({
@@ -129,22 +130,22 @@ pub fn vendored_and_replace(tuple: &TargetTuple) -> (MockGoBuildEnv, EncodeCtx) 
     });
     // In-tree filesystem replace — Dir points at the replacement under go/src.
     let replaced = json!({
-        "Dir": "/w/go/src/client/sdktest/akeyless-go",
-        "ImportPath": "github.com/akeylesslabs/akeyless-go/v3",
-        "Name": "akeyless",
+        "Dir": "/w/go/src/client/sdktest/sdk-go",
+        "ImportPath": "github.com/example/sdk-go/v3",
+        "Name": "sdkgo",
         "Root": "/w",
         "DepOnly": true,
         "GoFiles": ["client.go"],
         "Imports": [],
-        "Module": {"Path": "akeyless.io/repo", "Main": true}
+        "Module": {"Path": "example.com/monorepo", "Main": true}
     });
     let objs = [main, vendored, replaced];
     let env = MockGoBuildEnv::new()
         .with_list(tuple, stream(&objs))
-        .with_file("/w/go.mod", "module akeyless.io/repo\n\ngo 1.26\n")
-        .with_file("/w/go/src/microservices/auth/main.go", "package main\nfunc main() {}\n")
+        .with_file("/w/go.mod", "module example.com/monorepo\n\ngo 1.26\n")
+        .with_file("/w/go/src/microservices/service-a/main.go", "package main\nfunc main() {}\n")
         .with_file("/w/vendor/github.com/foo/bar/bar.go", "package bar\n")
-        .with_file("/w/go/src/client/sdktest/akeyless-go/client.go", "package akeyless\n");
+        .with_file("/w/go/src/client/sdktest/sdk-go/client.go", "package sdkgo\n");
     (env, EncodeCtx { root: ROOT.into(), tuple: tuple.clone() })
 }
 

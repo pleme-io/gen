@@ -38,7 +38,7 @@
    ;; MEASURED 2026-08-08 over ~/code/github, 429 module roots:
    ;;   eligible              270
    ;;   bare-minor-directive  157   <- the escalation predicate; must reach 0
-   ;;   no-directive            2   (akeyless-funnel, both copies)
+   ;;   no-directive            2   (one repo, both copies)
    ;;   above-fleet-toolchain   0   <- confirms the ONLY throwing arm ships
    ;;                                  with nothing to break
    ;; Re-measure, never infer: `gen adopt-go --dry-run --root <dir> --json`.

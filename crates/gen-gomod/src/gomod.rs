@@ -160,8 +160,12 @@ fn split_path_version(s: &str) -> (String, Option<String>) {
 mod tests {
     use super::*;
 
-    const AKEYLESS_SHAPED: &str = r#"
-module akeyless.io/akeyless-main-repo
+    /// A large service-monorepo shape: a vanity module path, a pinned
+    /// toolchain, both `require` spellings, an in-tree filesystem `replace`
+    /// of a vendored client SDK, and a block `replace` with versions on both
+    /// sides.
+    const MONOREPO_SHAPED: &str = r#"
+module example.com/monorepo
 
 go 1.26
 
@@ -174,7 +178,7 @@ require (
 
 require github.com/single/dep v2.0.0
 
-replace github.com/akeylesslabs/akeyless-go/v3 => ./go/src/client/sdktest/akeyless-go
+replace github.com/example/sdk-go/v3 => ./go/src/client/sdktest/sdk-go
 
 replace (
 	github.com/old/mod v1.0.0 => github.com/new/mod v1.1.0
@@ -182,9 +186,9 @@ replace (
 "#;
 
     #[test]
-    fn parses_akeyless_shaped_go_mod() {
-        let m = GoMod::parse(AKEYLESS_SHAPED);
-        assert_eq!(m.module_path, "akeyless.io/akeyless-main-repo");
+    fn parses_monorepo_shaped_go_mod() {
+        let m = GoMod::parse(MONOREPO_SHAPED);
+        assert_eq!(m.module_path, "example.com/monorepo");
         assert_eq!(m.go_version, "1.26");
         assert_eq!(m.toolchain.as_deref(), Some("go1.26.4"));
         assert_eq!(m.requires.len(), 3);
@@ -193,9 +197,9 @@ replace (
         let fs_replace = m
             .replaces
             .iter()
-            .find(|r| r.old_path == "github.com/akeylesslabs/akeyless-go/v3")
+            .find(|r| r.old_path == "github.com/example/sdk-go/v3")
             .expect("in-tree replace present");
-        assert_eq!(fs_replace.new_path, "./go/src/client/sdktest/akeyless-go");
+        assert_eq!(fs_replace.new_path, "./go/src/client/sdktest/sdk-go");
         assert_eq!(fs_replace.new_version, None);
         // block replace with versions on both sides.
         let mod_replace = m.replaces.iter().find(|r| r.old_path == "github.com/old/mod").unwrap();
@@ -216,7 +220,7 @@ replace (
 
     #[test]
     fn to_module_spec_carries_dep_mode_and_require_presence() {
-        let m = GoMod::parse(AKEYLESS_SHAPED);
+        let m = GoMod::parse(MONOREPO_SHAPED);
         let spec = m.to_module_spec(DepMode::Vendored, None);
         assert!(spec.has_external_deps);
         assert!(spec.dep_mode.is_vendored());

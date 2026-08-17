@@ -63,7 +63,7 @@ use crate::verdict::VerdictKind;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum CveFinding {
     /// CVE-2026-39822 — Go stdlib, hard-failed a build-time CVE gate shared
-    /// by six `akeylesslabs/akeyless-nix-images` services.
+    /// by several services in one downstream Nix image set.
     Cve202639822GoStdlib,
 }
 
@@ -222,33 +222,27 @@ const fn entry(
 }
 
 /// CVE-2026-39822 — Go stdlib. Found live via real trivy scan data as ONE
-/// shared root cause across 6 of the 9 `akeylesslabs/akeyless-nix-images`
-/// services (`gator`, `bis`, `auth`, `logan`, `mark`, `kfm`), all built from
-/// one shared Nix Go toolchain layer (`theory/SECURITY-LAYER.md` §10's
-/// worked example).
+/// shared root cause across several services in one downstream Nix image
+/// set, all built from a single shared Nix Go toolchain layer
+/// (`theory/SECURITY-LAYER.md` §10's worked example). This is the canonical
+/// shape the catalog exists for: N services, ONE vulnerable layer, so the
+/// fix is applied once and every consumer of that layer inherits it.
 ///
-/// **What IS confirmed (2026-07-20).** The fix landed live on
-/// `akeylesslabs/akeyless-nix-images`'s `main` at commit
-/// `7233190cdcca3d5e018345ee614bd9af5eb2974a` ("nixpkgs: bump to pick up
-/// go_1_26 1.26.5 (CVE-2026-39822)") — verified directly by reading that
-/// commit: `flake.nix`/`flake.lock` re-pin the `nixpkgs` input past
-/// `nixos-25.11` to the first upstream rev (`4a07d79b…`) carrying
-/// substitutable `go-1.26.5` for both `x86_64-linux` and `aarch64-linux`
-/// (no local toolchain compile required). The repo's own `CLAUDE.md`, one
-/// commit earlier (`acd8765`, 2026-07-19), independently corroborates the
-/// PRE-fix state: `go_1_26` in the then-pinned nixpkgs resolved to 1.26.4,
-/// "the newest packaged 1.26.x release... CVE-2026-39822 needs 1.26.5."
+/// **What IS confirmed (2026-07-20).** The fix landed: the consumer's
+/// `flake.nix`/`flake.lock` re-pin the `nixpkgs` input past `nixos-25.11` to
+/// the first upstream rev carrying substitutable `go-1.26.5` for both
+/// `x86_64-linux` and `aarch64-linux` (so no local toolchain compile is
+/// required). The PRE-fix state is independently corroborated: `go_1_26` in
+/// the then-pinned nixpkgs resolved to 1.26.4 — the newest packaged 1.26.x
+/// release — while CVE-2026-39822 needs 1.26.5.
 ///
 /// **What is NOT confirmed.** No real trivy re-scan evidence was found
-/// proving the finding is actually gone post-bump — the repo's own CVE gate
-/// (`zot-pull-scan` in `camelot-image-pipeline.yml`) had, as of the commit
-/// immediately prior, never completed an end-to-end run (an ARC-runner
-/// credential gap, per that workflow's own header, corroborated by
-/// `CLAUDE.md`'s "No `.trivyignore` added... that pipeline has never
-/// completed an end-to-end run"). Per the no-round-up rule: `maturity`
-/// stays [`RemediationMaturity::Design`] and `verified_consumers` stays
-/// EMPTY until a passing re-scan is actually observed — "the pin landed in
-/// git" is evidence the fix EXISTS, never by itself evidence it WORKS.
+/// proving the finding is actually gone post-bump: no passing end-to-end run
+/// of the consumer's own CVE gate was observed. Per the no-round-up rule:
+/// `maturity` stays [`RemediationMaturity::Design`] and `verified_consumers`
+/// stays EMPTY until a passing re-scan is actually observed — "the pin
+/// landed in git" is evidence the fix EXISTS, never by itself evidence it
+/// WORKS.
 const CVE_2026_39822_GO_STDLIB: RemediationEntry = entry(
     CveFinding::Cve202639822GoStdlib,
     "CVE-2026-39822",
@@ -258,12 +252,12 @@ const CVE_2026_39822_GO_STDLIB: RemediationEntry = entry(
         fixed_version: "1.26.5",
     },
     AppliesTo {
-        repo: "akeylesslabs/akeyless-nix-images",
+        repo: "<consumer-org>/nix-images",
         layer: "shared Go toolchain Nix layer (go_1_26, resolved via the nixpkgs flake input)",
     },
     &[], // NOT verified by a real trivy re-scan yet — see doc comment above.
     RemediationMaturity::Design,
-    "Go stdlib CVE shared across 6/9 akeyless-nix-images services (gator, bis, auth, logan, mark, kfm) — fix landed live @7233190, re-scan confirmation pending",
+    "Go stdlib CVE shared across several services built from one shared Nix Go toolchain layer — fix landed upstream, re-scan confirmation pending",
 );
 
 /// The full remediation catalog. Adding a fix = a `const` + one entry here +
@@ -407,7 +401,7 @@ mod tests {
                 fixed_version: "1.26.5"
             }
         );
-        assert_eq!(e.applies_to.repo, "akeylesslabs/akeyless-nix-images");
+        assert_eq!(e.applies_to.repo, "<consumer-org>/nix-images");
         assert!(e.applies_to.layer.contains("Go toolchain"));
         assert!(
             e.verified_consumers.is_empty(),

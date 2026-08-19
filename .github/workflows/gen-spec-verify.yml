@@ -120,11 +120,19 @@ jobs:
       # `[features]` edit changes the delta but not Cargo.lock). Diffs
       # `Cargo.gen.lock`, which IS tracked, so the subject set is real and
       # `--exit-code` fails on any difference while printing it.
+      # paths-dirty rather than `git diff --exit-code`, and the difference is
+      # real here: the regen step above can CREATE Cargo.gen.lock where none was
+      # tracked, and git diff cannot see an untracked file — so the old form
+      # passed for exactly the case a first-time regen produces.
       - name: Fail PR if author didn't include the regen
         if: github.event_name == 'pull_request'
-        run: |
-          git --no-pager diff --exit-code -- Cargo.gen.lock \
-            || { echo "::error::Cargo.gen.lock is stale. Run \`gen build . --commit\` locally and include the regen commit in this PR."; exit 1; }
+        uses: pleme-io/actions/paths-dirty@main
+        with:
+          paths: Cargo.gen.lock
+          expect: clean
+          reason: |
+            Cargo.gen.lock is stale. Run `gen build . --commit` locally and
+            include the regen commit in this PR.
 
       # Push the gen-spec-bot commit back to main via the typed
       # action — no inline shell URL rewriting.

@@ -1,4 +1,4 @@
-// EXPECT: no function or associated item named `default`
+// EXPECT: named `default` found for struct `NonEmpty<T>`
 // EXPECT: expected `NonEmpty<u8>`, found `Vec<u8>`
 //
 // §III.7's hardening #2, proven: with `head: T` as a real field there is no

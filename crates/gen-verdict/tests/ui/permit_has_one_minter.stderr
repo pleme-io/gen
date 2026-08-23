@@ -9,11 +9,11 @@ error[E0624]: associated function `mint` is private
    |     pub(crate) fn mint(subjects: Subjects<S>) -> Self {
    |     ------------------------------------------------- private associated function defined here
 
-error[E0599]: no function or associated item named `default` found for struct `Permit<S>` in the current scope
+error[E0599]: no associated function or constant named `default` found for struct `Permit<S>` in the current scope
   --> tests/ui/permit_has_one_minter.rs:19:42
    |
 19 |     let _defaulted: Permit<u8> = Permit::default();
-   |                                          ^^^^^^^ function or associated item not found in `Permit<_>`
+   |                                          ^^^^^^^ associated function or constant not found in `Permit<_>`
 
 error[E0277]: the trait bound `Permit<u8>: serde::Deserialize<'de>` is not satisfied
   --> tests/ui/permit_has_one_minter.rs:20:31

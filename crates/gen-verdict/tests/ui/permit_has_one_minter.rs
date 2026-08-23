@@ -1,5 +1,5 @@
 // EXPECT: associated function `mint` is private
-// EXPECT: no function or associated item named `default`
+// EXPECT: named `default` found for struct `Permit<S>`
 // EXPECT: the trait bound `Permit<u8>: serde::Deserialize<'de>` is not satisfied
 //
 // The capability leg: a `Permit` is obtainable ONLY from a held verdict.

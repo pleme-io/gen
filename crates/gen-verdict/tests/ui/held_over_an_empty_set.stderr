@@ -25,11 +25,11 @@ error[E0308]: mismatched types
    = note: expected struct `NonEmpty<u8>`
               found struct `Vec<u8>`
 
-error[E0599]: no function or associated item named `empty` found for struct `NonEmpty<T>` in the current scope
+error[E0599]: no associated function or constant named `empty` found for struct `NonEmpty<T>` in the current scope
   --> tests/ui/held_over_an_empty_set.rs:28:53
    |
 28 |     let _no_empty_witness: Subjects<u8> = Subjects::empty();
-   |                                                     ^^^^^ function or associated item not found in `NonEmpty<_>`
+   |                                                     ^^^^^ associated function or constant not found in `NonEmpty<_>`
    |
 note: if you're trying to build a new `NonEmpty<_>` consider using one of the following associated functions:
       NonEmpty::<T>::one

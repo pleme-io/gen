@@ -1,6 +1,6 @@
 // EXPECT: cannot create non-exhaustive variant
 // EXPECT: expected `NonEmpty<u8>`, found `Vec<u8>`
-// EXPECT: no function or associated item named `empty`
+// EXPECT: named `empty` found for struct `NonEmpty<T>`
 //
 // THE headline proof: a pass over an empty subject set has no expressible
 // form.

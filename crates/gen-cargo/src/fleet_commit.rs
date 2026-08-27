@@ -258,18 +258,17 @@ fn git_file_state(repo: &Path) -> Result<GitFileState, String> {
 }
 
 fn run_git(repo: &Path, args: &[&str]) -> Result<String, String> {
-    let output = Command::new("git")
-        .args(args)
-        .current_dir(repo)
-        .output()
-        .map_err(|e| format!("git {args:?}: spawn failed: {e}"))?;
-    if !output.status.success() {
-        return Err(format!(
-            "git {args:?} → exit {}: {}",
-            output.status.code().unwrap_or(-1),
-            String::from_utf8_lossy(&output.stderr).trim()
-        ));
-    }
+    // Local git: no network, so the bound only catches a wedged
+    // filesystem or a stale `index.lock`. See `crate::bounded`.
+    let owned: Vec<String> = args.iter().map(|s| (*s).to_string()).collect();
+    let dir = repo.to_path_buf();
+    let output = crate::bounded::Bounded::new(std::time::Duration::from_secs(60))
+        .run(|| {
+            let mut c = Command::new("git");
+            c.args(&owned).current_dir(&dir);
+            c
+        })
+        .map_err(|e| format!("git {args:?}: {e}"))?;
     Ok(String::from_utf8_lossy(&output.stdout).into_owned())
 }
 

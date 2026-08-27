@@ -61,13 +61,22 @@ impl PathDepResolver for GitCliResolver {
 }
 
 fn git_remote_url(dir: &Path) -> Option<String> {
-    let out = std::process::Command::new("git")
-        .args(["-C", dir.to_str()?, "config", "--get", "remote.origin.url"])
-        .output()
+    // Local git. Bounded per `crate::bounded`: a stale `index.lock`
+    // or a wedged filesystem would otherwise hang path resolution.
+    let owned: Vec<String> = vec!["-C", dir.to_str()?, "config", "--get", "remote.origin.url"]
+        .into_iter()
+        .map(std::string::ToString::to_string)
+        .collect();
+    let out = crate::bounded::Bounded::new(std::time::Duration::from_secs(30))
+        .run(|| {
+            let mut c = std::process::Command::new("git");
+            c.args(&owned);
+            c
+        })
+        // A non-zero exit is already an Err from `Bounded`, so `.ok()?`
+        // subsumes the old `status.success()` check — this is not a
+        // dropped guard.
         .ok()?;
-    if !out.status.success() {
-        return None;
-    }
     let s = String::from_utf8(out.stdout).ok()?;
     let trimmed = s.trim();
     if trimmed.is_empty() {
@@ -78,13 +87,22 @@ fn git_remote_url(dir: &Path) -> Option<String> {
 }
 
 fn git_head_rev(dir: &Path) -> Option<String> {
-    let out = std::process::Command::new("git")
-        .args(["-C", dir.to_str()?, "rev-parse", "HEAD"])
-        .output()
+    // Local git. Bounded per `crate::bounded`: a stale `index.lock`
+    // or a wedged filesystem would otherwise hang path resolution.
+    let owned: Vec<String> = vec!["-C", dir.to_str()?, "rev-parse", "HEAD"]
+        .into_iter()
+        .map(std::string::ToString::to_string)
+        .collect();
+    let out = crate::bounded::Bounded::new(std::time::Duration::from_secs(30))
+        .run(|| {
+            let mut c = std::process::Command::new("git");
+            c.args(&owned);
+            c
+        })
+        // A non-zero exit is already an Err from `Bounded`, so `.ok()?`
+        // subsumes the old `status.success()` check — this is not a
+        // dropped guard.
         .ok()?;
-    if !out.status.success() {
-        return None;
-    }
     let s = String::from_utf8(out.stdout).ok()?;
     let trimmed = s.trim();
     if trimmed.len() == 40 && trimmed.chars().all(|c| c.is_ascii_hexdigit()) {

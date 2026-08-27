@@ -163,17 +163,17 @@ pub fn verify_one(repo: &Path, fetch: bool) -> VerifyState {
 }
 
 fn git(repo: &Path, args: &[&str]) -> Result<String, String> {
-    let out = Command::new("git")
-        .args(args)
-        .current_dir(repo)
-        .output()
+    // Local git: no network, so the bound only catches a wedged
+    // filesystem or a stale `index.lock`. See `crate::bounded`.
+    let owned: Vec<String> = args.iter().map(|s| (*s).to_string()).collect();
+    let dir = repo.to_path_buf();
+    let out = crate::bounded::Bounded::new(std::time::Duration::from_secs(60))
+        .run(|| {
+            let mut c = Command::new("git");
+            c.args(&owned).current_dir(&dir);
+            c
+        })
         .map_err(|e| format!("git {args:?}: {e}"))?;
-    if !out.status.success() {
-        return Err(format!(
-            "git {args:?} → {}",
-            String::from_utf8_lossy(&out.stderr).trim()
-        ));
-    }
     Ok(String::from_utf8_lossy(&out.stdout).into_owned())
 }
 

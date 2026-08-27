@@ -48,18 +48,21 @@ const BLOCKING: &[&str] = &[".output()", ".status()", ".wait()", ".spawn()"];
 /// which keeps the ledger honest in both directions. An allowlist that
 /// is merely a superset rots into a permanent exemption.
 ///
-/// Converted so far: `git_prefetcher.rs` (the measured wedge — network),
+/// Converted: `git_prefetcher.rs` (the measured wedge — network),
 /// `adapter.rs` (`cargo generate-lockfile` — network),
-/// `gen-cli/flake_lint.rs` (`nix flake metadata` — network). The
-/// remainder are LOCAL git/process calls: lower risk, since they do not
-/// wait on a remote, but not zero — a wedged filesystem or a stale
-/// `index.lock` hangs them just as completely.
+/// `gen-cli/flake_lint.rs` (`nix flake metadata` — network), and the
+/// local-git helpers in `fleet_verify.rs`, `fleet_commit.rs` and
+/// `path_resolver.rs` — lower risk since they do not wait on a remote,
+/// but a stale `index.lock` hangs them just as completely.
 const PENDING: &[&str] = &[
+    // Test-only: a fixture helper, not a production path.
     "gen-cargo/src/build_spec.rs",
-    "gen-cargo/src/fleet_commit.rs",
+    // Contains a DELIBERATE detached spawn (a watchdog that is meant to
+    // outlive its parent) alongside ordinary waits. Converting it needs
+    // the detached case separated from the bounded ones rather than a
+    // mechanical substitution, so it is left for a change that can give
+    // it the attention it needs.
     "gen-cargo/src/fleet_migrate.rs",
-    "gen-cargo/src/fleet_verify.rs",
-    "gen-cargo/src/path_resolver.rs",
     "gen-cli/src/main.rs",
 ];
 

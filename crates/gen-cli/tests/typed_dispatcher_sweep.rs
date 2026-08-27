@@ -53,10 +53,7 @@ fn check<T: TypedDispatcher>(name: &'static str) {
 
     let mut seen: Vec<&&'static str> = Vec::with_capacity(kinds.len());
     for k in &kinds {
-        assert!(
-            !seen.contains(&k),
-            "{name}: duplicate variant kind '{k}'"
-        );
+        assert!(!seen.contains(&k), "{name}: duplicate variant kind '{k}'");
         seen.push(k);
     }
 }

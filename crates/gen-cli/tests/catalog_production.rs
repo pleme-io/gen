@@ -75,8 +75,7 @@ fn each_production_variant_count_matches_expected() {
         ("gen.swift.swift-quirk", 4),
     ];
     for (label, count) in expected {
-        let entry =
-            catalog::by_label(label).unwrap_or_else(|| panic!("missing label {label}"));
+        let entry = catalog::by_label(label).unwrap_or_else(|| panic!("missing label {label}"));
         let got = (entry.variant_count)();
         assert_eq!(
             got, *count,
@@ -94,11 +93,7 @@ fn variant_kinds_are_globally_unique_per_dispatcher() {
         let kinds = (entry.variant_kinds)();
         let mut seen = Vec::with_capacity(kinds.len());
         for k in &kinds {
-            assert!(
-                !seen.contains(k),
-                "{}: duplicate kind {k}",
-                entry.label
-            );
+            assert!(!seen.contains(k), "{}: duplicate kind {k}", entry.label);
             seen.push(*k);
         }
     }

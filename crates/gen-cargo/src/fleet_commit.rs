@@ -120,11 +120,7 @@ impl CommitReport {
 /// after each successful commit. `rebase_first` runs
 /// `git pull --rebase` before push to absorb upstream changes (sidecars
 /// land cleanly on top of CI auto-release commits).
-pub fn run(
-    root: &Path,
-    push: bool,
-    rebase_first: bool,
-) -> Result<CommitReport, CargoError> {
+pub fn run(root: &Path, push: bool, rebase_first: bool) -> Result<CommitReport, CargoError> {
     let started = Instant::now();
     let mut outcomes: IndexMap<String, CommitOutcome> = IndexMap::new();
 
@@ -447,6 +443,9 @@ mod tests {
         ));
         // OTHER must still be untracked.
         let status = run_git(&repo, &["status", "--porcelain"]).unwrap();
-        assert!(status.contains("?? OTHER"), "OTHER should be untracked: {status:?}");
+        assert!(
+            status.contains("?? OTHER"),
+            "OTHER should be untracked: {status:?}"
+        );
     }
 }

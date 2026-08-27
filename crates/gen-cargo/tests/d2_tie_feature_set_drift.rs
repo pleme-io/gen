@@ -101,12 +101,14 @@ fn a_feature_set_change_that_leaves_cargo_lock_identical_is_caught() {
     // this test would certify nothing.
     let lock_b = fs::read(root.join("Cargo.lock")).unwrap();
     assert_eq!(
-        lock_a,
-        lock_b,
+        lock_a, lock_b,
         "FIXTURE INVALID: Cargo.lock moved between the two states, so this \
          test does not reproduce the defect and cannot certify the fix"
     );
-    eprintln!("[B] Cargo.lock byte-identical: YES ({} bytes)", lock_b.len());
+    eprintln!(
+        "[B] Cargo.lock byte-identical: YES ({} bytes)",
+        lock_b.len()
+    );
 
     // The delta REALLY IS different for state B — i.e. the committed
     // artifact from state A genuinely no longer describes this build. Without

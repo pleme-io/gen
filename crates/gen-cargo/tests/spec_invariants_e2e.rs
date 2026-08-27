@@ -41,7 +41,11 @@ serde = { version = "1", features = ["derive"] }
     )
     .unwrap();
     fs::create_dir_all(root.join("src")).unwrap();
-    fs::write(root.join("src/lib.rs"), "pub fn hello() -> &'static str { \"hello\" }\n").unwrap();
+    fs::write(
+        root.join("src/lib.rs"),
+        "pub fn hello() -> &'static str { \"hello\" }\n",
+    )
+    .unwrap();
     // Generate a real lockfile via cargo so resolver edges exist.
     let _ = Command::new("cargo")
         .args(["generate-lockfile", "--offline"])
@@ -134,15 +138,10 @@ fn quirks_registered_names_match_actual_cargo_crate_names() {
     // crates.io in tests, so we just check name shape (lowercase
     // letters, digits, hyphens, underscores).
     for name in gen_cargo::quirks::registered_crate_names() {
+        assert!(!name.is_empty(), "empty crate name in quirks registry");
         assert!(
-            !name.is_empty(),
-            "empty crate name in quirks registry"
-        );
-        assert!(
-            name.chars().all(|c| c.is_ascii_lowercase()
-                || c.is_ascii_digit()
-                || c == '-'
-                || c == '_'),
+            name.chars()
+                .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-' || c == '_'),
             "invalid crate name shape in quirks registry: `{name}`"
         );
         assert!(

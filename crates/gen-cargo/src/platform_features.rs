@@ -221,7 +221,8 @@ mod tests {
 
     #[test]
     fn notify_macos_fsevent_is_apple_tagged() {
-        let e = lookup("notify", "macos_fsevent").expect("notify/macos_fsevent should be registered");
+        let e =
+            lookup("notify", "macos_fsevent").expect("notify/macos_fsevent should be registered");
         assert_eq!(e.tag, PlatformTag::Apple);
         // Sanity: the canonical leak signature — feature is apple-tagged,
         // does NOT match linux/musl triples.

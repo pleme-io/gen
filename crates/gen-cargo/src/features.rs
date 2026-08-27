@@ -97,11 +97,17 @@ pub fn generate(workspace_root: &Path) -> Result<FeaturesManifest> {
         Some(r) => r
             .nodes
             .iter()
-            .map(|n| (n.id.repr.clone(), n.features.iter().map(String::from).collect()))
+            .map(|n| {
+                (
+                    n.id.repr.clone(),
+                    n.features.iter().map(String::from).collect(),
+                )
+            })
             .collect(),
     };
 
-    let resolved_dep_features: IndexMap<String, IndexMap<String, Vec<String>>> = match &meta.resolve {
+    let resolved_dep_features: IndexMap<String, IndexMap<String, Vec<String>>> = match &meta.resolve
+    {
         None => IndexMap::new(),
         Some(r) => r
             .nodes
@@ -116,7 +122,12 @@ pub fn generate(workspace_root: &Path) -> Result<FeaturesManifest> {
                     let feats: Vec<String> = d
                         .dep_kinds
                         .iter()
-                        .flat_map(|k| k.target.as_ref().map(|_| Vec::<String>::new()).unwrap_or_default())
+                        .flat_map(|k| {
+                            k.target
+                                .as_ref()
+                                .map(|_| Vec::<String>::new())
+                                .unwrap_or_default()
+                        })
                         .collect();
                     deps.insert(d.name.clone(), feats);
                 }
@@ -181,10 +192,7 @@ pub fn generate(workspace_root: &Path) -> Result<FeaturesManifest> {
             },
         );
     }
-    Ok(FeaturesManifest {
-        version: 1,
-        crates,
-    })
+    Ok(FeaturesManifest { version: 1, crates })
 }
 
 /// Convenience: write the features manifest to

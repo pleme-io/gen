@@ -76,7 +76,11 @@ pub enum Violation {
     /// header (which nixpkgs' fetchurl does not set). Substrate has a
     /// transitional Nix-side rewrite, but the gen-side emission must
     /// be the canonical form.
-    RegistryUrlNotCanonical { crate_key: String, name: String, url: String },
+    RegistryUrlNotCanonical {
+        crate_key: String,
+        name: String,
+        url: String,
+    },
     /// Spec emitted with a `version` field below the current
     /// SCHEMA_VERSION. Means the spec was emitted by an older gen
     /// and is missing fields downstream consumers rely on.
@@ -392,11 +396,7 @@ fn check_renames(spec: &BuildSpec, out: &mut Vec<Violation>) {
 /// reaches Nix.
 pub fn assert_well_formed(spec: &BuildSpec) -> Result<(), Vec<Violation>> {
     let v = check(spec);
-    if v.is_empty() {
-        Ok(())
-    } else {
-        Err(v)
-    }
+    if v.is_empty() { Ok(()) } else { Err(v) }
 }
 
 #[cfg(test)]
@@ -472,9 +472,18 @@ mod features_honoured_tests {
             .iter()
             .filter(|x| matches!(x, Violation::UnhonouredFeatureRequest { .. }))
             .collect();
-        assert_eq!(hits.len(), 1, "expected exactly the dropped-feature violation, got {v:?}");
+        assert_eq!(
+            hits.len(),
+            1,
+            "expected exactly the dropped-feature violation, got {v:?}"
+        );
         match hits[0] {
-            Violation::UnhonouredFeatureRequest { from, dep_key, missing, .. } => {
+            Violation::UnhonouredFeatureRequest {
+                from,
+                dep_key,
+                missing,
+                ..
+            } => {
                 assert_eq!(from, "cargo_metadata-0.18.1");
                 assert_eq!(dep_key, "semver-1.0.28");
                 assert_eq!(missing, &vec!["serde".to_string()]);
@@ -495,9 +504,11 @@ mod features_honoured_tests {
             "semver-1.0.28".to_string(),
             edges(&["default", "serde", "std"], vec![]),
         );
-        assert!(check(&spec_with(base))
-            .iter()
-            .all(|x| !matches!(x, Violation::UnhonouredFeatureRequest { .. })));
+        assert!(
+            check(&spec_with(base))
+                .iter()
+                .all(|x| !matches!(x, Violation::UnhonouredFeatureRequest { .. }))
+        );
     }
 
     /// OPTIONAL edges are exempt, and this exclusion is load-bearing: an
@@ -509,15 +520,20 @@ mod features_honoured_tests {
         let mut base = BTreeMap::new();
         base.insert(
             "rmcp-0.9.1".to_string(),
-            edges(&["default"], vec![dep("schemars-1.2.2", &["chrono04"], true)]),
+            edges(
+                &["default"],
+                vec![dep("schemars-1.2.2", &["chrono04"], true)],
+            ),
         );
         base.insert(
             "schemars-1.2.2".to_string(),
             edges(&["default", "derive"], vec![]),
         );
-        assert!(check(&spec_with(base))
-            .iter()
-            .all(|x| !matches!(x, Violation::UnhonouredFeatureRequest { .. })));
+        assert!(
+            check(&spec_with(base))
+                .iter()
+                .all(|x| !matches!(x, Violation::UnhonouredFeatureRequest { .. }))
+        );
     }
 
     /// A spec with no target_resolves must not panic or invent violations —
@@ -525,9 +541,11 @@ mod features_honoured_tests {
     #[test]
     fn a_spec_without_target_resolves_is_silent() {
         let s = bare_spec();
-        assert!(check(&s)
-            .iter()
-            .all(|x| !matches!(x, Violation::UnhonouredFeatureRequest { .. })));
+        assert!(
+            check(&s)
+                .iter()
+                .all(|x| !matches!(x, Violation::UnhonouredFeatureRequest { .. }))
+        );
     }
 }
 
@@ -703,9 +721,10 @@ mod tests {
         a.runtime_dependencies = vec![dep("b", &k2, DepKind::Dev)];
         s.crates.insert(k1.clone(), a);
         let v = check(&s);
-        assert!(v
-            .iter()
-            .any(|x| matches!(x, Violation::DevDepInRuntimeOrBuild { .. })));
+        assert!(
+            v.iter()
+                .any(|x| matches!(x, Violation::DevDepInRuntimeOrBuild { .. }))
+        );
     }
 
     #[test]
@@ -840,7 +859,9 @@ mod tests {
         if !root.exists() {
             return;
         }
-        let Ok(spec) = crate::build_spec::generate(root) else { return };
+        let Ok(spec) = crate::build_spec::generate(root) else {
+            return;
+        };
         match assert_well_formed(&spec) {
             Ok(()) => (),
             Err(violations) => panic!(

@@ -40,7 +40,7 @@
 //! that should follow observing it fire on real specs first.
 
 use crate::build_spec::BuildSpec;
-use crate::platform_features::{lookup, PlatformTag};
+use crate::platform_features::{PlatformTag, lookup};
 use serde::{Deserialize, Serialize};
 
 /// Typed diagnostic emitted by `diagnose`. Variants are tagged
@@ -414,7 +414,10 @@ mod tests {
             links: None,
             lib_name: None,
             lib_path: None,
-            pre_build: Some(format!("export CARGO_CRATE_NAME={};", name.replace('-', "_"))),
+            pre_build: Some(format!(
+                "export CARGO_CRATE_NAME={};",
+                name.replace('-', "_")
+            )),
         };
         (
             key,

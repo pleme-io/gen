@@ -126,8 +126,8 @@ fn assert_roundtrip_lossless(spec: &BuildSpec, label: &str) {
              skip_serializing[_if] without #[serde(default)]: {e}"
         )
     });
-    let second = serde_json::to_vec(&parsed)
-        .unwrap_or_else(|e| panic!("{label}: re-serialize failed: {e}"));
+    let second =
+        serde_json::to_vec(&parsed).unwrap_or_else(|e| panic!("{label}: re-serialize failed: {e}"));
     assert_eq!(
         first, second,
         "{label}: round-trip is not idempotent — \
@@ -183,8 +183,7 @@ fn no_dead_dependencies_union() {
     let Some((_dir, spec)) = generate_fixture_spec() else {
         return;
     };
-    let value: serde_json::Value =
-        serde_json::to_value(&spec).expect("serialize spec to Value");
+    let value: serde_json::Value = serde_json::to_value(&spec).expect("serialize spec to Value");
 
     let crates = value
         .get("crates")
@@ -280,8 +279,11 @@ fn lossless_split_union_equals_runtime_plus_build() {
 
     use std::collections::BTreeSet;
     for (key, c) in &spec.crates {
-        let union_keys: BTreeSet<&str> =
-            c.dependencies.iter().map(|d| d.package_key.as_str()).collect();
+        let union_keys: BTreeSet<&str> = c
+            .dependencies
+            .iter()
+            .map(|d| d.package_key.as_str())
+            .collect();
         let split_keys: BTreeSet<&str> = c
             .runtime_dependencies
             .iter()
@@ -454,10 +456,7 @@ fn fixture_full() -> IndexMap<String, TargetResolve> {
     let mut full: IndexMap<String, TargetResolve> = IndexMap::new();
     full.insert("aarch64-apple-darwin".to_string(), mk("fsevent", false));
     full.insert("x86_64-apple-darwin".to_string(), mk("fsevent", false));
-    full.insert(
-        "x86_64-unknown-linux-gnu".to_string(),
-        mk("inotify", true),
-    );
+    full.insert("x86_64-unknown-linux-gnu".to_string(), mk("inotify", true));
     full
 }
 
@@ -481,8 +480,7 @@ fn compact_is_lossless() {
             .get(triple)
             .unwrap_or_else(|| panic!("expand() dropped triple {triple}"));
         let orig_keys: std::collections::BTreeSet<&String> = original.crates.keys().collect();
-        let rec_keys: std::collections::BTreeSet<&String> =
-            reconstructed.crates.keys().collect();
+        let rec_keys: std::collections::BTreeSet<&String> = reconstructed.crates.keys().collect();
         assert_eq!(
             orig_keys, rec_keys,
             "triple {triple}: base // overrides did not reconstruct the original key set"
@@ -572,10 +570,7 @@ fn single_target_compaction_is_all_base_empty_overrides() {
     let mut crates: BTreeMap<String, CrateTargetEdges> = BTreeMap::new();
     crates.insert("a-1.0.0".to_string(), edge("dep-1.0.0", "std"));
     crates.insert("b-2.0.0".to_string(), edge("dep-1.0.0", "alloc"));
-    full.insert(
-        "aarch64-apple-darwin".to_string(),
-        TargetResolve { crates },
-    );
+    full.insert("aarch64-apple-darwin".to_string(), TargetResolve { crates });
 
     let compact = CompactTargetResolves::from_full(full.clone());
     assert_eq!(

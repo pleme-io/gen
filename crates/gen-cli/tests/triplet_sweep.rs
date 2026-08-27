@@ -23,9 +23,9 @@ use gen_gomod::quirks::GomodQuirk;
 use gen_helm::quirks::HelmQuirk;
 use gen_npm::quirks::NpmQuirk;
 use gen_pip::quirks::PipQuirk;
+use gen_platform::TypedDispatcherTrait;
 use gen_poetry::quirks::PoetryQuirk;
 use gen_swift::quirks::SwiftQuirk;
-use gen_platform::TypedDispatcherTrait;
 
 #[test]
 fn cargo_quirk_triplet_coherent() {
@@ -132,12 +132,16 @@ fn every_adapter_discriminant_appears_in_variant_kinds() {
     check!(PipQuirk, PipQuirk::SkipCheck);
     check!(
         PoetryQuirk,
-        PoetryQuirk::SkipCheck { package: "x".into() }
+        PoetryQuirk::SkipCheck {
+            package: "x".into()
+        }
     );
     check!(GomodQuirk, GomodQuirk::CgoOff);
     check!(
         AnsibleQuirk,
-        AnsibleQuirk::DropDependency { collection: "x".into() }
+        AnsibleQuirk::DropDependency {
+            collection: "x".into()
+        }
     );
     check!(SwiftQuirk, SwiftQuirk::Ldflag { flag: "x".into() });
 }

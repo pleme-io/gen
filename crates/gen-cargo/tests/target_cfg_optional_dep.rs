@@ -60,7 +60,8 @@ fn rustix_libc_backend_survives_optional_filter_on_apple() {
         return;
     }
 
-    let spec = match gen_cargo::build_spec::generate_for_target(dir.path(), "aarch64-apple-darwin") {
+    let spec = match gen_cargo::build_spec::generate_for_target(dir.path(), "aarch64-apple-darwin")
+    {
         Ok(s) => s,
         Err(e) => {
             eprintln!("skipping: generate_for_target failed (offline metadata?): {e}");
@@ -90,7 +91,9 @@ fn rustix_libc_backend_survives_optional_filter_on_apple() {
          for target-scoped deps). deps = {dep_names:?}"
     );
     assert!(
-        dep_names.iter().any(|n| *n == "libc_errno" || *n == "errno"),
+        dep_names
+            .iter()
+            .any(|n| *n == "libc_errno" || *n == "errno"),
         "rustix's target-cfg-gated optional `errno`/`libc_errno` was dropped \
          on apple. deps = {dep_names:?}"
     );

@@ -10,7 +10,7 @@
 //!  - Each known variant (`force-cfg`, `fold-normal-into-build`,
 //!    `substitute-source`) is reachable from the registry.
 
-use gen_cargo::quirks::{registered_crate_names, registry, CrateQuirk};
+use gen_cargo::quirks::{CrateQuirk, registered_crate_names, registry};
 
 #[test]
 fn registry_lookup_is_never_empty_for_registered_names() {

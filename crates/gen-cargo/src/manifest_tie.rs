@@ -262,7 +262,10 @@ mod tests {
         let dir = tmpdir("empty");
         // The whole point: a guard over zero subjects must NOT report the
         // strongest verdict. `Match { verified: 0 }` is unreachable.
-        assert_eq!(verify(&dir, &ManifestDigests::new()), ManifestTie::Unrecorded);
+        assert_eq!(
+            verify(&dir, &ManifestDigests::new()),
+            ManifestTie::Unrecorded
+        );
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -297,7 +300,10 @@ mod tests {
                 assert_eq!(changed.len(), 1);
                 assert_eq!(changed[0].path, "Cargo.toml");
                 assert!(changed[0].actual.is_some());
-                assert_ne!(changed[0].actual.as_deref(), Some(changed[0].expected.as_str()));
+                assert_ne!(
+                    changed[0].actual.as_deref(),
+                    Some(changed[0].expected.as_str())
+                );
             }
             other => panic!("expected Drifted, got {other:?}"),
         }

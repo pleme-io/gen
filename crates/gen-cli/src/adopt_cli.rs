@@ -20,7 +20,7 @@
 //! substrate evaluates in Nix. A census that disagreed with the build gate
 //! about what "eligible" means would be worse than no census.
 
-use gen_gomod::adopt::{census, AdoptionRefusal, Census, FsAdoptEnv};
+use gen_gomod::adopt::{AdoptionRefusal, Census, FsAdoptEnv, census};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
@@ -152,7 +152,10 @@ fn print_human(c: &Census, fleet_go: &str) {
             );
         }
     }
-    println!("\n  bare-minor-directive == {}  <- the escalation predicate", c.bare_minor_directive());
+    println!(
+        "\n  bare-minor-directive == {}  <- the escalation predicate",
+        c.bare_minor_directive()
+    );
 }
 
 fn print_json(c: &Census, fleet_go: &str) {

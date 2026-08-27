@@ -39,7 +39,10 @@ fn crate_quirk_variant_fields_match_struct_shape() {
 #[test]
 fn variant_count_matches_kinds_len() {
     assert_eq!(CrateQuirk::variant_count(), 4);
-    assert_eq!(CrateQuirk::variant_count(), CrateQuirk::variant_kinds().len());
+    assert_eq!(
+        CrateQuirk::variant_count(),
+        CrateQuirk::variant_kinds().len()
+    );
 }
 
 #[test]

@@ -15,8 +15,8 @@
 //! of an unchanged multiset).
 
 use gen_cargo::build_spec::{
-    BuildSpec, CrateDepSpec, CrateSpec, CrateSource, CrateTargetEdges, DepKind,
-    TargetResolve, WorkspaceSpec,
+    BuildSpec, CrateDepSpec, CrateSource, CrateSpec, CrateTargetEdges, DepKind, TargetResolve,
+    WorkspaceSpec,
 };
 use gen_cargo::gen_delta::GenDelta;
 use gen_cargo::gen_delta::GenDeltaArtifact;
@@ -48,7 +48,11 @@ fn edges() -> CrateTargetEdges {
             dep("cc", "1.0.0", DepKind::Build, None),
             dep("bindgen", "0.1.0", DepKind::Build, None),
         ],
-        features: vec!["std".to_string(), "alloc".to_string(), "default".to_string()],
+        features: vec![
+            "std".to_string(),
+            "alloc".to_string(),
+            "default".to_string(),
+        ],
     }
 }
 
@@ -91,7 +95,9 @@ fn fixture() -> BuildSpec {
     let mut full: indexmap::IndexMap<String, TargetResolve> = indexmap::IndexMap::new();
     full.insert(
         "x86_64-unknown-linux-gnu".to_string(),
-        TargetResolve { crates: tr_crates.clone() },
+        TargetResolve {
+            crates: tr_crates.clone(),
+        },
     );
     full.insert(
         "aarch64-apple-darwin".to_string(),
@@ -100,12 +106,16 @@ fn fixture() -> BuildSpec {
 
     BuildSpec {
         version: gen_cargo::build_spec::SCHEMA_VERSION,
-        workspace: WorkspaceSpec { members: Vec::new() },
+        workspace: WorkspaceSpec {
+            members: Vec::new(),
+        },
         crates,
         root_crate: "zcrate-1.0.0".to_string(),
         workspace_members: vec!["zcrate-1.0.0".to_string()],
         flake_metadata: BTreeMap::new(),
-        target_resolves: Some(gen_cargo::build_spec::CompactTargetResolves::from_full(full)),
+        target_resolves: Some(gen_cargo::build_spec::CompactTargetResolves::from_full(
+            full,
+        )),
         cargo_lock_sha256: Some("a".repeat(64)),
         // Deliberately reverse-sorted on insert: the emitted map must come
         // out canonical (BTreeMap key order) regardless, same discipline as
@@ -127,7 +137,11 @@ fn shuffle(spec: &mut BuildSpec) {
         c.runtime_dependencies.reverse();
         c.build_dependencies.reverse();
         c.features.reverse();
-        for d in c.runtime_dependencies.iter_mut().chain(c.build_dependencies.iter_mut()) {
+        for d in c
+            .runtime_dependencies
+            .iter_mut()
+            .chain(c.build_dependencies.iter_mut())
+        {
             d.features.reverse();
         }
     }
@@ -136,7 +150,11 @@ fn shuffle(spec: &mut BuildSpec) {
             e.runtime_dependencies.reverse();
             e.build_dependencies.reverse();
             e.features.reverse();
-            for d in e.runtime_dependencies.iter_mut().chain(e.build_dependencies.iter_mut()) {
+            for d in e
+                .runtime_dependencies
+                .iter_mut()
+                .chain(e.build_dependencies.iter_mut())
+            {
                 d.features.reverse();
             }
         };
@@ -187,7 +205,10 @@ fn delta_is_byte_stable_under_input_permutation() {
     shuffled.canonicalize();
     let d_shuffled = GenDelta::distill(&shuffled).unwrap().to_json().unwrap();
 
-    assert_eq!(d_shuffled, d_base, "Cargo.gen.lock must be byte-stable cross-platform");
+    assert_eq!(
+        d_shuffled, d_base,
+        "Cargo.gen.lock must be byte-stable cross-platform"
+    );
 }
 
 /// (3) Idempotence: canonicalize() applied twice == once.
@@ -208,7 +229,11 @@ fn canonicalize_preserves_content() {
     // Multiset of every edge package_key + every feature, BEFORE.
     let mut before: Vec<String> = Vec::new();
     for c in spec.crates.values() {
-        for d in c.runtime_dependencies.iter().chain(c.build_dependencies.iter()) {
+        for d in c
+            .runtime_dependencies
+            .iter()
+            .chain(c.build_dependencies.iter())
+        {
             before.push(d.package_key.clone());
             before.extend(d.features.iter().cloned());
         }
@@ -220,7 +245,11 @@ fn canonicalize_preserves_content() {
 
     let mut after: Vec<String> = Vec::new();
     for c in spec.crates.values() {
-        for d in c.runtime_dependencies.iter().chain(c.build_dependencies.iter()) {
+        for d in c
+            .runtime_dependencies
+            .iter()
+            .chain(c.build_dependencies.iter())
+        {
             after.push(d.package_key.clone());
             after.extend(d.features.iter().cloned());
         }
@@ -228,5 +257,8 @@ fn canonicalize_preserves_content() {
     }
     after.sort();
 
-    assert_eq!(before, after, "canonicalize must preserve the multiset of content");
+    assert_eq!(
+        before, after,
+        "canonicalize must preserve the multiset of content"
+    );
 }

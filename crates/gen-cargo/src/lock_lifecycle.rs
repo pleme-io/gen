@@ -140,7 +140,7 @@ impl LockLifecycleState {
 /// two SHA-256 hashes worst case. Same input → same output.
 #[must_use]
 pub fn current_state(root: &Path) -> LockLifecycleState {
-    use crate::build_spec::{check_freshness, Freshness};
+    use crate::build_spec::{Freshness, check_freshness};
     match check_freshness(root) {
         Freshness::MissingLock => LockLifecycleState::MissingLock,
         Freshness::MissingSpec { lock_hash } | Freshness::UnhashedSpec { lock_hash } => {
@@ -148,11 +148,17 @@ pub fn current_state(root: &Path) -> LockLifecycleState {
                 current_lock_hash: lock_hash,
             }
         }
-        Freshness::Fresh { spec_hash, lock_hash } => LockLifecycleState::Locked {
+        Freshness::Fresh {
+            spec_hash,
+            lock_hash,
+        } => LockLifecycleState::Locked {
             spec_hash,
             lock_hash,
         },
-        Freshness::Drifted { spec_hash, lock_hash } => LockLifecycleState::Drifted {
+        Freshness::Drifted {
+            spec_hash,
+            lock_hash,
+        } => LockLifecycleState::Drifted {
             committed_lock_hash: spec_hash,
             current_lock_hash: lock_hash,
         },
@@ -241,13 +247,11 @@ pub fn diff_specs(old: &BuildSpec, new: &BuildSpec) -> LockDiff {
     // possible (cargo resolver allows side-by-side); we key by
     // (name, version) for the value lookup but group changes by
     // crate name for the operator-facing diff.
-    let mut old_by_id: BTreeMap<(String, String), &crate::build_spec::CrateSpec> =
-        BTreeMap::new();
+    let mut old_by_id: BTreeMap<(String, String), &crate::build_spec::CrateSpec> = BTreeMap::new();
     for c in old.crates.values() {
         old_by_id.insert((c.name.clone(), c.version.clone()), c);
     }
-    let mut new_by_id: BTreeMap<(String, String), &crate::build_spec::CrateSpec> =
-        BTreeMap::new();
+    let mut new_by_id: BTreeMap<(String, String), &crate::build_spec::CrateSpec> = BTreeMap::new();
     for c in new.crates.values() {
         new_by_id.insert((c.name.clone(), c.version.clone()), c);
     }
@@ -348,8 +352,12 @@ pub fn diff_specs(old: &BuildSpec, new: &BuildSpec) -> LockDiff {
         },
     };
 
-    diff.added.sort_by(|a, b| (a.name.clone(), a.version.clone()).cmp(&(b.name.clone(), b.version.clone())));
-    diff.removed.sort_by(|a, b| (a.name.clone(), a.version.clone()).cmp(&(b.name.clone(), b.version.clone())));
+    diff.added.sort_by(|a, b| {
+        (a.name.clone(), a.version.clone()).cmp(&(b.name.clone(), b.version.clone()))
+    });
+    diff.removed.sort_by(|a, b| {
+        (a.name.clone(), a.version.clone()).cmp(&(b.name.clone(), b.version.clone()))
+    });
     diff.upgraded.sort_by(|a, b| a.name.cmp(&b.name));
     diff.source_changed.sort_by(|a, b| a.name.cmp(&b.name));
     diff
@@ -456,12 +464,11 @@ impl gen_types::LockLifecyclePrimitive for CargoLifecycle {
                 source: Box::new(e),
             }
         })?;
-        let new_bytes =
-            std::fs::read(&spec_path).map_err(|source| LockError::Io {
-                action: "update",
-                path: spec_path.clone(),
-                source,
-            })?;
+        let new_bytes = std::fs::read(&spec_path).map_err(|source| LockError::Io {
+            action: "update",
+            path: spec_path.clone(),
+            source,
+        })?;
         let new_spec: BuildSpec =
             serde_json::from_slice(&new_bytes).map_err(|e| LockError::SpecGeneration {
                 action: "update",
@@ -489,9 +496,7 @@ impl gen_types::LockLifecyclePrimitive for CargoLifecycle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::build_spec::{
-        BuildSpec, CrateSource, CrateSpec, BuildRustCrateArgs, WorkspaceSpec,
-    };
+    use crate::build_spec::{BuildRustCrateArgs, BuildSpec, CrateSource, CrateSpec, WorkspaceSpec};
     use std::collections::BTreeMap;
 
     fn empty_spec(version: u32) -> BuildSpec {
@@ -614,11 +619,7 @@ mod tests {
         let mut b = empty_spec(8);
         b.crates.insert(
             "serde-1.0.0".into(),
-            make_crate(
-                "serde",
-                "1.0.0",
-                git("https://github.com/x/y", "deadbeef"),
-            ),
+            make_crate("serde", "1.0.0", git("https://github.com/x/y", "deadbeef")),
         );
         let d = diff_specs(&a, &b);
         assert_eq!(d.source_changed.len(), 1);
@@ -632,7 +633,10 @@ mod tests {
         let a = empty_spec(7);
         let b = empty_spec(8);
         let d = diff_specs(&a, &b);
-        assert_eq!(d.schema_version, Some(SchemaVersionDelta { from: 7, to: 8 }));
+        assert_eq!(
+            d.schema_version,
+            Some(SchemaVersionDelta { from: 7, to: 8 })
+        );
     }
 
     #[test]
@@ -659,7 +663,10 @@ mod tests {
     #[test]
     fn lifecycle_state_has_four_variants() {
         use gen_platform::TypedDispatcherTrait;
-        assert_eq!(<LockLifecycleState as TypedDispatcherTrait>::variant_count(), 4);
+        assert_eq!(
+            <LockLifecycleState as TypedDispatcherTrait>::variant_count(),
+            4
+        );
         let kinds = <LockLifecycleState as TypedDispatcherTrait>::variant_kinds();
         assert!(kinds.contains(&"unlocked"));
         assert!(kinds.contains(&"locked"));
@@ -670,9 +677,17 @@ mod tests {
     #[test]
     fn lifecycle_state_summary_matches_discriminant() {
         let cases = [
-            LockLifecycleState::Unlocked { current_lock_hash: "x".into() },
-            LockLifecycleState::Locked { spec_hash: "x".into(), lock_hash: "x".into() },
-            LockLifecycleState::Drifted { committed_lock_hash: "x".into(), current_lock_hash: "y".into() },
+            LockLifecycleState::Unlocked {
+                current_lock_hash: "x".into(),
+            },
+            LockLifecycleState::Locked {
+                spec_hash: "x".into(),
+                lock_hash: "x".into(),
+            },
+            LockLifecycleState::Drifted {
+                committed_lock_hash: "x".into(),
+                current_lock_hash: "y".into(),
+            },
             LockLifecycleState::MissingLock,
         ];
         for s in &cases {
@@ -682,9 +697,26 @@ mod tests {
 
     #[test]
     fn requires_operator_action_only_for_drift_and_missing() {
-        assert!(LockLifecycleState::Drifted { committed_lock_hash: "a".into(), current_lock_hash: "b".into() }.requires_operator_action());
+        assert!(
+            LockLifecycleState::Drifted {
+                committed_lock_hash: "a".into(),
+                current_lock_hash: "b".into()
+            }
+            .requires_operator_action()
+        );
         assert!(LockLifecycleState::MissingLock.requires_operator_action());
-        assert!(!LockLifecycleState::Unlocked { current_lock_hash: "x".into() }.requires_operator_action());
-        assert!(!LockLifecycleState::Locked { spec_hash: "x".into(), lock_hash: "x".into() }.requires_operator_action());
+        assert!(
+            !LockLifecycleState::Unlocked {
+                current_lock_hash: "x".into()
+            }
+            .requires_operator_action()
+        );
+        assert!(
+            !LockLifecycleState::Locked {
+                spec_hash: "x".into(),
+                lock_hash: "x".into()
+            }
+            .requires_operator_action()
+        );
     }
 }

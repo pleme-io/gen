@@ -11,7 +11,7 @@ use std::fs;
 use std::path::Path;
 
 use gen_cargo::gen_delta::{
-    confirm_freshness, DeltaFreshness, GenDeltaArtifact, DELTA_SCHEMA_VERSION,
+    DELTA_SCHEMA_VERSION, DeltaFreshness, GenDeltaArtifact, confirm_freshness,
 };
 
 fn tmpdir(tag: &str) -> std::path::PathBuf {

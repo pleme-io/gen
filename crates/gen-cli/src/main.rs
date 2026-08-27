@@ -33,7 +33,11 @@ use {
 };
 
 #[derive(Parser, Debug)]
-#[command(name = "gen", version, about = "universal package-manager engine — operator CLI")]
+#[command(
+    name = "gen",
+    version,
+    about = "universal package-manager engine — operator CLI"
+)]
 struct Cli {
     /// Output format for structured commands.
     #[arg(long, value_enum, default_value_t = OutputFormat::Json, global = true)]
@@ -60,9 +64,7 @@ enum Cmd {
     /// (Read-only diagnostic; for the transient-lock operator
     /// surface, see `gen lock`.)
     #[command(name = "lockfile-info")]
-    LockfileInfo {
-        path: Option<PathBuf>,
-    },
+    LockfileInfo { path: Option<PathBuf> },
     /// Print the typed config at the given tier (bare / discovered /
     /// default / custom <yaml-path>).
     #[command(name = "config-show")]
@@ -129,24 +131,18 @@ enum Cmd {
     },
     /// Render the workspace at <path> to Nix source (crate2nix shape).
     /// Output goes to `cfg.render.output_path` or stdout.
-    Render {
-        path: Option<PathBuf>,
-    },
+    Render { path: Option<PathBuf> },
     /// Generate Cargo.features.json sidecar (cargo-metadata-driven).
     /// Substrate's lockfile-builder reads this at eval to activate the
     /// right per-crate features. Tiny (~10-20% of Cargo.nix size).
     #[command(name = "lock-features")]
-    LockFeatures {
-        path: Option<PathBuf>,
-    },
+    LockFeatures { path: Option<PathBuf> },
     /// Generate the complete typed Cargo.build-spec.json.
     /// Composes Cargo.toml + Cargo.lock + cargo metadata into ONE
     /// typed JSON that substrate's lockfile-builder consumes directly.
     /// Replaces both Cargo.nix AND Cargo.features.json.
     #[command(name = "lock-build")]
-    LockBuild {
-        path: Option<PathBuf>,
-    },
+    LockBuild { path: Option<PathBuf> },
     /// Canonical operator entrypoint. Regenerates every build sidecar
     /// the substrate consumer needs: Cargo.build-spec.json today,
     /// adapter-equivalents (npm/bundler/etc.) when they ship. Run
@@ -380,9 +376,7 @@ enum Cmd {
     /// Probe the configured substituters for every lockfile entry in
     /// the workspace at <path>. Report hit / miss / hit-rate.
     #[command(name = "cache-probe")]
-    CacheProbe {
-        path: Option<PathBuf>,
-    },
+    CacheProbe { path: Option<PathBuf> },
     /// Emit a canonical pleme-io repository scaffold: 4-line flake.nix
     /// against substrate.<ecosystem>.<shape>, minimal manifest +
     /// source, gitignore, auto-release CI shim. One command → full
@@ -529,9 +523,9 @@ impl TierArg {
             Self::Bare => ConfigTier::Bare,
             Self::Discovered => ConfigTier::Discovered,
             Self::Default => ConfigTier::Default,
-            Self::Custom => ConfigTier::Custom(
-                custom_path.unwrap_or_else(|| PathBuf::from(".gen.yaml")),
-            ),
+            Self::Custom => {
+                ConfigTier::Custom(custom_path.unwrap_or_else(|| PathBuf::from(".gen.yaml")))
+            }
         }
     }
 }
@@ -673,7 +667,12 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             };
             emit(&summary, cli.format)
         }
-        Cmd::FleetMigrate { plan, no_push, jobs, refresh } => {
+        Cmd::FleetMigrate {
+            plan,
+            no_push,
+            jobs,
+            refresh,
+        } => {
             let src = std::fs::read_to_string(plan)
                 .map_err(|e| CliError::Other(format!("read {}: {e}", plan.display())))?;
             let report = fleet_migrate_plan::run_plan(&src, *no_push, *jobs, *refresh)
@@ -756,7 +755,16 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             };
             emit(&summary, cli.format)
         }
-        Cmd::Build { path, filter_platform, single_target, if_stale, commit, no_default_features, features, out } => {
+        Cmd::Build {
+            path,
+            filter_platform,
+            single_target,
+            if_stale,
+            commit,
+            no_default_features,
+            features,
+            out,
+        } => {
             let root = resolve_root(path, cfg);
             // Atomic: regenerate every sidecar the substrate consumer
             // needs based on the adapter the workspace declares. Today
@@ -789,8 +797,7 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                         gen_cargo::build_spec::generate_for_target_and_write(&root, &triple)
                             .map_err(CliError::Cargo)?
                     } else if *single_target {
-                        gen_cargo::build_spec::generate_and_write(&root)
-                            .map_err(CliError::Cargo)?
+                        gen_cargo::build_spec::generate_and_write(&root).map_err(CliError::Cargo)?
                     } else {
                         let selection = gen_cargo::build_spec::FeatureSelection {
                             no_default_features: *no_default_features,
@@ -816,10 +823,8 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                     // triple) selects the Go (goos, goarch) tuple, else the
                     // build host. Emits Go.build-spec.json next to go.mod.
                     let out = match filter_platform {
-                        Some(triple) => {
-                            gen_gomod::generate_for_target_and_write(&root, triple)
-                                .map_err(CliError::Gomod)?
-                        }
+                        Some(triple) => gen_gomod::generate_for_target_and_write(&root, triple)
+                            .map_err(CliError::Gomod)?,
                         None => gen_gomod::generate_and_write(&root).map_err(CliError::Gomod)?,
                     };
                     eprintln!("gen build: wrote {}", out.display());
@@ -927,7 +932,9 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             Ok(())
         }
         Cmd::FlakeLint { path, fix } => {
-            let root = path.clone().unwrap_or_else(|| std::env::current_dir().unwrap_or_default());
+            let root = path
+                .clone()
+                .unwrap_or_else(|| std::env::current_dir().unwrap_or_default());
             let source = flake_lint::NixCliMetadataSource;
             let report = flake_lint::run(&source, &root, *fix)
                 .map_err(|e| CliError::Other(format!("flake-lint: {e}")))?;
@@ -1093,11 +1100,18 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                 .collect();
             emit(&rows, cli.format)
         }
-        Cmd::Scaffold { shape, name, dir, owner } => {
-            scaffold_repo(*shape, name, dir.as_deref(), owner)
-                .map_err(|e| CliError::Other(format!("scaffold: {e}")))
-        }
-        Cmd::ScaffoldAdapter { name, manifest, dir } => {
+        Cmd::Scaffold {
+            shape,
+            name,
+            dir,
+            owner,
+        } => scaffold_repo(*shape, name, dir.as_deref(), owner)
+            .map_err(|e| CliError::Other(format!("scaffold: {e}"))),
+        Cmd::ScaffoldAdapter {
+            name,
+            manifest,
+            dir,
+        } => {
             scaffold_adapter(name, manifest, dir.as_deref())
                 .map_err(|e| CliError::Other(format!("scaffold-adapter: {e}")))?;
             println!(
@@ -1105,26 +1119,39 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             );
             Ok(())
         }
-        Cmd::AdoptGo { roots, fleet_go, dry_run, json } => {
+        Cmd::AdoptGo {
+            roots,
+            fleet_go,
+            dry_run,
+            json,
+        } => {
             // `required = true` already refuses the flagless form; this asserts
             // the invariant at the point it is relied on rather than trusting a
             // clap attribute to stay put.
             debug_assert!(*dry_run, "adopt-go has no non-dry-run mode");
-            let roots = if roots.is_empty() { vec![PathBuf::from(".")] } else { roots.clone() };
+            let roots = if roots.is_empty() {
+                vec![PathBuf::from(".")]
+            } else {
+                roots.clone()
+            };
             let code = adopt_cli::run(&adopt_cli::AdoptGoArgs {
                 roots,
                 fleet_go: fleet_go.clone(),
                 json: *json,
             })
-                .map_err(CliError::Other)?;
+            .map_err(CliError::Other)?;
             if code != 0 {
                 std::process::exit(code);
             }
             Ok(())
         }
-        Cmd::Kanshou(sub) => kanshou_dispatch(sub)
-            .map_err(|e| CliError::Other(format!("kanshou: {e}"))),
-        Cmd::Dispatchers { ecosystem, from_catalog } => {
+        Cmd::Kanshou(sub) => {
+            kanshou_dispatch(sub).map_err(|e| CliError::Other(format!("kanshou: {e}")))
+        }
+        Cmd::Dispatchers {
+            ecosystem,
+            from_catalog,
+        } => {
             if *from_catalog {
                 #[derive(serde::Serialize)]
                 struct CatalogEntry<'a> {
@@ -1320,7 +1347,10 @@ jobs:
     secrets: inherit
 "#;
     fs::write(
-        target.join(".github").join("workflows").join("auto-release.yml"),
+        target
+            .join(".github")
+            .join("workflows")
+            .join("auto-release.yml"),
         workflow,
     )?;
 
@@ -1379,10 +1409,7 @@ enum CliError {
 ///
 /// The build-spec is keyed by the same `{name}-{version}` package_key
 /// shape that gen-cargo uses internally, so lookup is exact.
-fn enrich_manifest_with_build_spec(
-    root: &std::path::Path,
-    manifest: &mut gen_types::Manifest,
-) {
+fn enrich_manifest_with_build_spec(root: &std::path::Path, manifest: &mut gen_types::Manifest) {
     let path = root.join("Cargo.build-spec.json");
     let Ok(text) = std::fs::read_to_string(&path) else {
         return;
@@ -1440,10 +1467,7 @@ fn enrich_manifest_with_build_spec(
 /// Adapter dispatch — selects the matching parser based on the marker
 /// file present at `root`. Honors `cfg.workspace.force_adapter` when
 /// set, otherwise probes the routing table in declaration order.
-fn dispatch(
-    root: &std::path::Path,
-    cfg: &GenConfig,
-) -> Result<gen_types::Manifest, CliError> {
+fn dispatch(root: &std::path::Path, cfg: &GenConfig) -> Result<gen_types::Manifest, CliError> {
     let adapter = pick_adapter(root, cfg)?;
     match adapter.as_str() {
         "cargo" => Ok(gen_cargo::parse(root)?),
@@ -1456,10 +1480,7 @@ fn dispatch(
     }
 }
 
-fn pick_adapter(
-    root: &std::path::Path,
-    cfg: &GenConfig,
-) -> Result<String, CliError> {
+fn pick_adapter(root: &std::path::Path, cfg: &GenConfig) -> Result<String, CliError> {
     if let Some(force) = &cfg.workspace.force_adapter {
         return Ok(force.clone());
     }
@@ -1485,11 +1506,7 @@ fn _resolve_root_lint_silencer(p: &Path) -> PathBuf {
 ///
 /// Adding the crate to the workspace `members` list + filling in
 /// `Adapter::build` is the operator's only remaining work.
-fn scaffold_adapter(
-    name: &str,
-    manifest: &str,
-    dir: Option<&Path>,
-) -> Result<(), std::io::Error> {
+fn scaffold_adapter(name: &str, manifest: &str, dir: Option<&Path>) -> Result<(), std::io::Error> {
     use std::fs;
     let crate_dir = dir
         .map(|p| p.to_path_buf())
@@ -1952,9 +1969,7 @@ async fn kanshou_run(sub: &KanshouCmd) -> Result<(), Box<dyn std::error::Error>>
             let target = pick_target(app, *pid)?;
             let mut client = kanshou::Client::connect(&target.socket_path).await?;
             let segments: Vec<String> = path.split('.').map(str::to_string).collect();
-            let result = client
-                .query(&kanshou::Query::field(segments))
-                .await?;
+            let result = client.query(&kanshou::Query::field(segments)).await?;
             match result {
                 Ok(value) => println!("{}", serde_json::to_string_pretty(&value)?),
                 Err(e) => {
@@ -1977,9 +1992,7 @@ async fn kanshou_run(sub: &KanshouCmd) -> Result<(), Box<dyn std::error::Error>>
             let target = pick_target(app, *pid)?;
             let mut client = kanshou::Client::connect(&target.socket_path).await?;
             let empty: Vec<String> = vec![];
-            let probe = client
-                .query(&kanshou::Query::field(empty))
-                .await?;
+            let probe = client.query(&kanshou::Query::field(empty)).await?;
             #[derive(serde::Serialize)]
             struct SchemaOut<'a> {
                 app: &'a str,

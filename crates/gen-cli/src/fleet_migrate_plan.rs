@@ -19,7 +19,7 @@ use std::path::PathBuf;
 use gen_cargo::fleet_migrate::{self, MigrateOpts, MigrateReport};
 use gen_cargo::fleet_verify::{self, VerifyOpts, VerifyReport};
 use serde::{Deserialize, Serialize};
-use tatara_lisp::{compile_typed, DeriveTataraDomain};
+use tatara_lisp::{DeriveTataraDomain, compile_typed};
 
 /// A fleet delta-only migration plan. Field names map to kebab-case
 /// kwargs (`workspace_root` → `:workspace-root`); `#[serde(default)]`
@@ -100,7 +100,8 @@ impl FleetMigrationPlan {
                     && !self.exclude.contains(&name)
                     && d.join("Cargo.toml").exists()
                     && d.join(".git").exists()
-                    && (d.join("Cargo.build-spec.json").exists() || d.join("Cargo.gen.lock").exists())
+                    && (d.join("Cargo.build-spec.json").exists()
+                        || d.join("Cargo.gen.lock").exists())
             })
             .collect())
     }
@@ -194,10 +195,9 @@ mod tests {
 
     #[test]
     fn parses_minimal_plan() {
-        let p = FleetMigrationPlan::from_source(
-            r#"(fleet-migration-plan :workspace-root "/tmp/ws")"#,
-        )
-        .expect("parse");
+        let p =
+            FleetMigrationPlan::from_source(r#"(fleet-migration-plan :workspace-root "/tmp/ws")"#)
+                .expect("parse");
         assert_eq!(p.workspace_root, "/tmp/ws");
         assert!(p.repos.is_empty());
         assert!(!p.push);

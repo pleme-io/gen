@@ -213,8 +213,8 @@ impl MigrateReport {
 /// cache is safe under cargo's own file locks. Outcomes are returned in
 /// the input order regardless of completion order.
 pub fn run(repos: &[PathBuf], opts: &MigrateOpts) -> Result<MigrateReport, CargoError> {
-    use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::Mutex;
+    use std::sync::atomic::{AtomicUsize, Ordering};
 
     let started = Instant::now();
     let jobs = opts.jobs.max(1);
@@ -223,18 +223,20 @@ pub fn run(repos: &[PathBuf], opts: &MigrateOpts) -> Result<MigrateReport, Cargo
 
     std::thread::scope(|scope| {
         for _ in 0..jobs {
-            scope.spawn(|| loop {
-                let i = next.fetch_add(1, Ordering::SeqCst);
-                if i >= repos.len() {
-                    break;
+            scope.spawn(|| {
+                loop {
+                    let i = next.fetch_add(1, Ordering::SeqCst);
+                    if i >= repos.len() {
+                        break;
+                    }
+                    let repo = &repos[i];
+                    let name = repo
+                        .file_name()
+                        .map(|s| s.to_string_lossy().into_owned())
+                        .unwrap_or_else(|| repo.display().to_string());
+                    let outcome = migrate_one(repo, opts);
+                    collected.lock().unwrap().push((i, name, outcome));
                 }
-                let repo = &repos[i];
-                let name = repo
-                    .file_name()
-                    .map(|s| s.to_string_lossy().into_owned())
-                    .unwrap_or_else(|| repo.display().to_string());
-                let outcome = migrate_one(repo, opts);
-                collected.lock().unwrap().push((i, name, outcome));
             });
         }
     });
@@ -268,7 +270,7 @@ pub fn migrate_one(repo: &Path, opts: &MigrateOpts) -> MigrateOutcome {
                 category: MigrateFailure::GitInspectionFailed,
                 detail,
                 elapsed_ms: ms(),
-            }
+            };
         }
         Ok(Some(detail)) => return MigrateOutcome::SkippedDirty { detail },
         Ok(None) => {}
@@ -787,21 +789,31 @@ mod tests {
         ensure_gitignored(&dir, BUILD_SPEC).unwrap();
         let after_second = std::fs::read_to_string(dir.join(".gitignore")).unwrap();
         assert_eq!(after_first, after_second);
-        assert_eq!(
-            after_second.lines().filter(|l| *l == BUILD_SPEC).count(),
-            1
-        );
+        assert_eq!(after_second.lines().filter(|l| *l == BUILD_SPEC).count(), 1);
     }
 
     #[test]
     fn ensure_lock_committable_drops_lock_ignore() {
         let dir = temp_git_repo("lockgi");
-        write(&dir, ".gitignore", "/target\nCargo.build-spec.json\nCargo.lock\n");
+        write(
+            &dir,
+            ".gitignore",
+            "/target\nCargo.build-spec.json\nCargo.lock\n",
+        );
         ensure_lock_committable(&dir).unwrap();
         let gi = std::fs::read_to_string(dir.join(".gitignore")).unwrap();
-        assert!(!gi.lines().any(|l| l.trim() == "Cargo.lock"), "lock ignore dropped");
-        assert!(gi.lines().any(|l| l.trim() == "Cargo.build-spec.json"), "build-spec ignore kept");
-        assert!(gi.lines().any(|l| l.trim() == "/target"), "other ignores kept");
+        assert!(
+            !gi.lines().any(|l| l.trim() == "Cargo.lock"),
+            "lock ignore dropped"
+        );
+        assert!(
+            gi.lines().any(|l| l.trim() == "Cargo.build-spec.json"),
+            "build-spec ignore kept"
+        );
+        assert!(
+            gi.lines().any(|l| l.trim() == "/target"),
+            "other ignores kept"
+        );
         // idempotent + no-op when lock isn't ignored
         ensure_lock_committable(&dir).unwrap();
         assert_eq!(std::fs::read_to_string(dir.join(".gitignore")).unwrap(), gi);
@@ -868,7 +880,11 @@ mod tests {
         // Dirty ONLY stale artifacts → not blocking.
         write(&dir, "target/x.o", "b");
         std::fs::remove_file(dir.join("crate-hashes.json")).unwrap();
-        assert_eq!(blocking_dirty(&dir).unwrap(), None, "stale artifacts must not block");
+        assert_eq!(
+            blocking_dirty(&dir).unwrap(),
+            None,
+            "stale artifacts must not block"
+        );
         // Now also touch a source file → blocking.
         write(&dir, "src.rs", "b");
         assert!(
@@ -884,7 +900,10 @@ mod tests {
         let p = dir.join(GEN_SPEC_WF_PATH);
         assert!(p.exists(), "workflow written");
         let body = std::fs::read_to_string(&p).unwrap();
-        assert!(body.contains("reusable-gen-spec.yml@main"), "calls the reusable workflow");
+        assert!(
+            body.contains("reusable-gen-spec.yml@main"),
+            "calls the reusable workflow"
+        );
         assert!(body.contains("**/Cargo.lock"), "triggers on lock change");
         // idempotent — second call leaves it byte-identical.
         ensure_gen_spec_workflow(&dir).unwrap();
@@ -934,7 +953,10 @@ mod tests {
         std::fs::set_permissions(&fakegen, std::fs::Permissions::from_mode(0o755)).unwrap();
         let start = Instant::now();
         let r = run_build_with_timeout(&dir, &fakegen, 1);
-        assert!(matches!(r, BuildResult::TimedOut), "expected TimedOut, got {r:?}");
+        assert!(
+            matches!(r, BuildResult::TimedOut),
+            "expected TimedOut, got {r:?}"
+        );
         assert!(
             start.elapsed() < Duration::from_secs(8),
             "timeout must kill ~1s, not wait the full 30s sleep"

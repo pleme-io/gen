@@ -52,11 +52,7 @@ impl std::fmt::Debug for GenBuildJob {
 
 impl GenBuildJob {
     #[must_use]
-    pub fn new(
-        repo_name: impl Into<String>,
-        repo_path: impl Into<PathBuf>,
-        write: bool,
-    ) -> Self {
+    pub fn new(repo_name: impl Into<String>, repo_path: impl Into<PathBuf>, write: bool) -> Self {
         Self {
             repo_name: repo_name.into(),
             repo_path: repo_path.into(),
@@ -136,9 +132,8 @@ pub(crate) fn sweep_one_sync(repo: &Path, write: bool) -> SweepOutcome {
                 .unwrap_or(0)
         })
     } else {
-        build_spec::generate(repo).map(|spec| {
-            serde_json::to_string(&spec).map(|s| s.len()).unwrap_or(0)
-        })
+        build_spec::generate(repo)
+            .map(|spec| serde_json::to_string(&spec).map(|s| s.len()).unwrap_or(0))
     };
     let elapsed_ms = started.elapsed().as_millis() as u64;
     match spec_result {

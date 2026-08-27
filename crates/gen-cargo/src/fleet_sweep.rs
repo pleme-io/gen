@@ -23,10 +23,7 @@ use crate::error::CargoError;
 #[serde(tag = "status", rename_all = "kebab-case")]
 pub enum SweepOutcome {
     /// Spec was generated successfully.
-    Ok {
-        spec_bytes: usize,
-        elapsed_ms: u64,
-    },
+    Ok { spec_bytes: usize, elapsed_ms: u64 },
     /// Repo skipped (no Cargo.toml or no Cargo.lock).
     Skipped { reason: SkipReason },
     /// gen-cargo or cargo metadata failed.
@@ -233,7 +230,7 @@ fn run_via_scheduler(
     use shigoto_scheduler::{InProcessScheduler, Scheduler};
     use shigoto_types::{JobKindId, JobPhase, OutputSink};
 
-    use crate::gen_build_job::{GenBuildJob, GEN_BUILD_KIND};
+    use crate::gen_build_job::{GEN_BUILD_KIND, GenBuildJob};
 
     let rt = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -248,9 +245,10 @@ fn run_via_scheduler(
             .with_emitter(Arc::new(NullEmitter::new()));
 
         let mut budget = BudgetTree::new();
-        budget
-            .by_kind
-            .insert(JobKindId::new(GEN_BUILD_KIND), BudgetSpec::max_concurrent(DEFAULT_BUDGET));
+        budget.by_kind.insert(
+            JobKindId::new(GEN_BUILD_KIND),
+            BudgetSpec::max_concurrent(DEFAULT_BUDGET),
+        );
         scheduler.install_budget(budget).await;
 
         let sink: Arc<InMemorySink<SweepOutcome>> = Arc::new(InMemorySink::new());
@@ -274,7 +272,9 @@ fn run_via_scheduler(
         // termination criterion tend's reconcile uses.
         const MAX_TICKS: usize = 4096;
         for _ in 0..MAX_TICKS {
-            let receipt = scheduler.tick(&mut dag).await
+            let receipt = scheduler
+                .tick(&mut dag)
+                .await
                 .map_err(|e| CargoError::FleetSweep(format!("scheduler tick: {e}")))?;
             if receipt.transitions_this_tick.is_empty() {
                 break;
@@ -330,7 +330,8 @@ mod tests {
         use std::sync::atomic::{AtomicU64, Ordering};
         static C: AtomicU64 = AtomicU64::new(0);
         let n = C.fetch_add(1, Ordering::Relaxed);
-        let p = std::env::temp_dir().join(format!("gen-fleet-sweep-test-{}-{}", std::process::id(), n));
+        let p =
+            std::env::temp_dir().join(format!("gen-fleet-sweep-test-{}-{}", std::process::id(), n));
         let _ = fs::remove_dir_all(&p);
         fs::create_dir_all(&p).unwrap();
         p
@@ -356,7 +357,8 @@ mod tests {
 
     #[test]
     fn classifier_recognizes_workspace_member_failure() {
-        let detail = "cargo metadata exited with an error: failed to load manifest for workspace member ...";
+        let detail =
+            "cargo metadata exited with an error: failed to load manifest for workspace member ...";
         assert!(matches!(
             FailureCategory::classify(detail),
             FailureCategory::WorkspaceMemberInvalid
@@ -442,7 +444,10 @@ edition = "2024"
         assert_eq!(report.skipped_count(), 1);
         assert_eq!(report.total_spec_bytes(), 300);
         let by_cat = report.failures_by_category();
-        assert_eq!(by_cat.get(&FailureCategory::GitFetchFailed).map(Vec::len), Some(1));
+        assert_eq!(
+            by_cat.get(&FailureCategory::GitFetchFailed).map(Vec::len),
+            Some(1)
+        );
     }
 }
 

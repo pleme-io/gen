@@ -21,8 +21,8 @@ use indexmap::IndexMap;
 // platform-dependent (linux CI vs darwin). IndexMap stays for working/
 // intermediate maps whose order is FLEET_TARGETS-deterministic or never
 // serialized. (Determinism canonicalization — GEN TYPED-SPEC CONTRACT.)
-use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 use crate::error::{CargoError, Result};
 
@@ -557,7 +557,11 @@ pub struct BuildRustCrateArgs {
     pub edition: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub features: Vec<String>,
-    #[serde(rename = "crateRenames", default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serde(
+        rename = "crateRenames",
+        default,
+        skip_serializing_if = "BTreeMap::is_empty"
+    )]
     pub crate_renames: BTreeMap<String, Vec<CrateRenameRecord>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub release: Option<bool>,
@@ -796,10 +800,7 @@ pub fn generate_multi_target(root: &Path) -> Result<BuildSpec> {
 }
 
 /// [`generate_multi_target`] against an explicit feature selection.
-pub fn generate_multi_target_with(
-    root: &Path,
-    selection: &FeatureSelection,
-) -> Result<BuildSpec> {
+pub fn generate_multi_target_with(root: &Path, selection: &FeatureSelection) -> Result<BuildSpec> {
     use rayon::prelude::*;
 
     // Per-target cargo-metadata is independent — each target spawns
@@ -823,8 +824,7 @@ pub fn generate_multi_target_with(
         .par_iter()
         .map(|target| {
             eprintln!("gen build: resolving for {}", target);
-            generate_for_target_with(root, target, selection)
-                .map(|spec| (target.to_string(), spec))
+            generate_for_target_with(root, target, selection).map(|spec| (target.to_string(), spec))
         })
         .collect::<Result<Vec<_>>>()?;
     let mut per_target: IndexMap<String, BuildSpec> = IndexMap::new();
@@ -853,7 +853,9 @@ pub fn generate_multi_target_with(
     // mio on linux-only paths that don't apply to darwin).
     for spec in per_target.values() {
         for (key, crate_spec) in &spec.crates {
-            base.crates.entry(key.clone()).or_insert_with(|| crate_spec.clone());
+            base.crates
+                .entry(key.clone())
+                .or_insert_with(|| crate_spec.clone());
         }
     }
 
@@ -879,9 +881,10 @@ pub fn generate_multi_target_with(
             for (canonical, records) in &src.crate_renames {
                 let entry = dst.crate_renames.entry(canonical.clone()).or_default();
                 for record in records {
-                    if !entry.iter().any(|r| {
-                        r.version == record.version && r.rename == record.rename
-                    }) {
+                    if !entry
+                        .iter()
+                        .any(|r| r.version == record.version && r.rename == record.rename)
+                    {
                         entry.push(record.clone());
                     }
                 }
@@ -896,9 +899,10 @@ pub fn generate_multi_target_with(
                     .entry(canonical.clone())
                     .or_default();
                 for record in records {
-                    if !entry.iter().any(|r| {
-                        r.version == record.version && r.rename == record.rename
-                    }) {
+                    if !entry
+                        .iter()
+                        .any(|r| r.version == record.version && r.rename == record.rename)
+                    {
                         entry.push(record.clone());
                     }
                 }
@@ -1151,7 +1155,10 @@ pub fn generate_for_target_with(
                     .filter_map(|r| {
                         let h = r.integrity.as_ref()?;
                         let hex = h.strip_prefix("sha256:").unwrap_or(h);
-                        Some(((r.id.name.clone(), r.id.version.to_string()), hex.to_string()))
+                        Some((
+                            (r.id.name.clone(), r.id.version.to_string()),
+                            hex.to_string(),
+                        ))
                     })
                     .collect()
             })
@@ -1166,9 +1173,13 @@ pub fn generate_for_target_with(
         .iter()
         .filter_map(|id| meta.packages.iter().find(|p| &p.id == *id))
         .map(|p| {
-            let abs_dir = p.manifest_path.parent().map(|p| p.to_string()).unwrap_or_default();
-            let rel = pathdiff_relative(&abs_dir, &workspace_root_str)
-                .unwrap_or_else(|| abs_dir.clone());
+            let abs_dir = p
+                .manifest_path
+                .parent()
+                .map(|p| p.to_string())
+                .unwrap_or_default();
+            let rel =
+                pathdiff_relative(&abs_dir, &workspace_root_str).unwrap_or_else(|| abs_dir.clone());
             WorkspaceMemberSpec {
                 name: p.name.to_string(),
                 relative_path: if rel.is_empty() { ".".to_string() } else { rel },
@@ -1176,10 +1187,8 @@ pub fn generate_for_target_with(
         })
         .collect();
 
-    let workspace_member_names: std::collections::HashSet<String> = workspace_members
-        .iter()
-        .map(|m| m.name.clone())
-        .collect();
+    let workspace_member_names: std::collections::HashSet<String> =
+        workspace_members.iter().map(|m| m.name.clone()).collect();
 
     // Pre-index resolved features by package id.
     let resolved_features: IndexMap<String, Vec<String>> = meta
@@ -1188,7 +1197,12 @@ pub fn generate_for_target_with(
         .map(|r| {
             r.nodes
                 .iter()
-                .map(|n| (n.id.repr.clone(), n.features.iter().map(String::from).collect()))
+                .map(|n| {
+                    (
+                        n.id.repr.clone(),
+                        n.features.iter().map(String::from).collect(),
+                    )
+                })
                 .collect()
         })
         .unwrap_or_default();
@@ -1271,7 +1285,11 @@ pub fn generate_for_target_with(
         // src_path is the absolute path to the build.rs file; we
         // strip the package's manifest_dir prefix to get the
         // relative path the substrate consumer needs.
-        let manifest_dir = pkg.manifest_path.parent().map(|p| p.to_string()).unwrap_or_default();
+        let manifest_dir = pkg
+            .manifest_path
+            .parent()
+            .map(|p| p.to_string())
+            .unwrap_or_default();
         let build_script = pkg
             .targets
             .iter()
@@ -1392,7 +1410,9 @@ pub fn generate_for_target_with(
 
         let mut dependencies: Vec<CrateDepSpec> = Vec::new();
         for (local_name, dep_pkg_id, dep_kinds) in &edges_for_pkg {
-            let Some(dep_pkg) = by_id.get(dep_pkg_id) else { continue; };
+            let Some(dep_pkg) = by_id.get(dep_pkg_id) else {
+                continue;
+            };
 
             // Prune phantom optional edges. cargo_metadata's resolve
             // graph lists an OPTIONAL dependency edge even when its
@@ -1433,9 +1453,8 @@ pub fn generate_for_target_with(
                             || parent_feats.iter().any(|f| {
                                 pkg.features.get(f).is_some_and(|exp| {
                                     exp.iter().any(|e| {
-                                        e.strip_prefix("dep:").is_some_and(|n| {
-                                            n == implicit || n == d.name
-                                        })
+                                        e.strip_prefix("dep:")
+                                            .is_some_and(|n| n == implicit || n == d.name)
                                     })
                                 })
                             })
@@ -1477,7 +1496,9 @@ pub fn generate_for_target_with(
                 .iter()
                 .filter(|k| !matches!(k.kind, cargo_metadata::DependencyKind::Development))
                 .collect();
-            if kinds_to_emit.is_empty() { continue; }
+            if kinds_to_emit.is_empty() {
+                continue;
+            }
 
             for graph_kind in &kinds_to_emit {
                 let kind = match graph_kind.kind {
@@ -1535,15 +1556,13 @@ pub fn generate_for_target_with(
                         .clone()
                         .unwrap_or_else(|| d.name.clone())
                         .replace('-', "_");
-                    consumer_name == local_name.replace('-', "_")
-                        && d.kind == graph_kind.kind
+                    consumer_name == local_name.replace('-', "_") && d.kind == graph_kind.kind
                 };
                 let declared = pkg
                     .dependencies
                     .iter()
                     .find(|d| {
-                        name_kind_matches(d)
-                            && d.target.as_ref().map(ToString::to_string) == target
+                        name_kind_matches(d) && d.target.as_ref().map(ToString::to_string) == target
                     })
                     .or_else(|| pkg.dependencies.iter().find(name_kind_matches));
                 let (features, uses_default_features, optional) = match declared {
@@ -1864,7 +1883,10 @@ pub fn generate_for_target_with(
             .and_then(|p| p.as_object());
         let module_trio = pleme.map(|p| {
             let str_or = |k: &str, default: String| -> String {
-                p.get(k).and_then(|v| v.as_str()).map(String::from).unwrap_or(default)
+                p.get(k)
+                    .and_then(|v| v.as_str())
+                    .map(String::from)
+                    .unwrap_or(default)
             };
             let bool_or = |k: &str, default: bool| -> bool {
                 p.get(k).and_then(|v| v.as_bool()).unwrap_or(default)
@@ -1885,7 +1907,9 @@ pub fn generate_for_target_with(
             let name = str_or("hm-leaf", tool_id.clone());
             let description = str_or(
                 "description",
-                pkg.description.clone().unwrap_or_else(|| format!("{tool_id} CLI tool")),
+                pkg.description
+                    .clone()
+                    .unwrap_or_else(|| format!("{tool_id} CLI tool")),
             );
             let package_attr = str_or("package-attr", tool_id.clone());
             let binary_name = str_or("binary-name", tool_id.clone());
@@ -1912,7 +1936,6 @@ pub fn generate_for_target_with(
         );
     }
 
-
     // Prefetch sha256 for every Git source so substrate's
     // lockfile-builder can dispatch pkgs.fetchgit with a FIXED HASH
     // (no IFD, no impure builtins.fetchGit). Sequential — could be
@@ -1937,7 +1960,10 @@ pub fn generate_for_target_with(
     // significantly more time than the 5-line fix to write.
     let prefetcher = crate::git_prefetcher::default_prefetcher();
     for crate_spec in crates.values_mut() {
-        if let CrateSource::Git { url, rev, sha256, .. } = &mut crate_spec.source {
+        if let CrateSource::Git {
+            url, rev, sha256, ..
+        } = &mut crate_spec.source
+        {
             if sha256.is_none() && !url.is_empty() && !rev.is_empty() {
                 let hash = prefetcher.prefetch(url, rev).map_err(|e| {
                     CargoError::PrefetchSha256Failed {
@@ -1975,7 +2001,9 @@ pub fn generate_for_target_with(
         // was read out of — never a hand-kept list that can drift from it.
         manifest_sha256: crate::manifest_tie::collect(
             root,
-            local_manifest_paths(root, &meta).iter().map(PathBuf::as_path),
+            local_manifest_paths(root, &meta)
+                .iter()
+                .map(PathBuf::as_path),
         ),
     })
 }
@@ -2225,7 +2253,12 @@ pub fn check_freshness(root: &Path) -> Freshness {
     };
     let spec_hash = match header.cargo_lock_sha256 {
         None => return Freshness::UnhashedSpec { lock_hash },
-        Some(h) if h != lock_hash => return Freshness::Drifted { spec_hash: h, lock_hash },
+        Some(h) if h != lock_hash => {
+            return Freshness::Drifted {
+                spec_hash: h,
+                lock_hash,
+            };
+        }
         Some(h) => h,
     };
     // The lock half of the tie matches. Now the MANIFEST half — without it
@@ -2236,7 +2269,10 @@ pub fn check_freshness(root: &Path) -> Freshness {
     // satisfy. Widening the gate without widening the producer is worse than
     // not widening at all.
     match crate::manifest_tie::verify(root, &header.manifest_sha256) {
-        crate::manifest_tie::ManifestTie::Match { .. } => Freshness::Fresh { spec_hash, lock_hash },
+        crate::manifest_tie::ManifestTie::Match { .. } => Freshness::Fresh {
+            spec_hash,
+            lock_hash,
+        },
         // A pre-v12 spec records no manifest digests: freshness is not
         // provable, so it is treated as the same class as a pre-hash spec —
         // `needs_regen()`, which is what makes the fleet migration
@@ -2247,9 +2283,10 @@ pub fn check_freshness(root: &Path) -> Freshness {
         // `gen confirm`'s `DeltaFreshness::ManifestDrift`, since `Freshness`
         // is a fixed-variant typed-dispatcher catalog member and the
         // regenerate/skip decision needs only the classification.
-        crate::manifest_tie::ManifestTie::Drifted { .. } => {
-            Freshness::Drifted { spec_hash, lock_hash }
-        }
+        crate::manifest_tie::ManifestTie::Drifted { .. } => Freshness::Drifted {
+            spec_hash,
+            lock_hash,
+        },
     }
 }
 
@@ -2540,9 +2577,7 @@ fn prune_and_log(root: &Path) {
             path.display()
         ),
         Ok(None) => {}
-        Err(e) => eprintln!(
-            "gen: warning — could not prune deprecated crate-hashes.json: {e}"
-        ),
+        Err(e) => eprintln!("gen: warning — could not prune deprecated crate-hashes.json: {e}"),
     }
 }
 
@@ -2587,7 +2622,11 @@ fn resolve_pkg_source(
 ) -> Result<CrateSource> {
     let is_path_dep = pkg.source.is_none();
     if is_path_dep {
-        let abs_dir = pkg.manifest_path.parent().map(|p| p.to_string()).unwrap_or_default();
+        let abs_dir = pkg
+            .manifest_path
+            .parent()
+            .map(|p| p.to_string())
+            .unwrap_or_default();
         let rel = pathdiff_relative(&abs_dir, workspace_root_str)
             .or_else(|| relative_path_escaping(&abs_dir, workspace_root_str))
             .unwrap_or_else(|| abs_dir.clone());
@@ -2602,7 +2641,11 @@ fn resolve_pkg_source(
             use crate::path_resolver::PathDepResolver;
             let abs_path = std::path::Path::new(&abs_dir);
             return match resolver.resolve(abs_path) {
-                Some((url, rev)) => Ok(CrateSource::Git { url, rev, sha256: None }),
+                Some((url, rev)) => Ok(CrateSource::Git {
+                    url,
+                    rev,
+                    sha256: None,
+                }),
                 None => Err(CargoError::UnresolvableExternalPath {
                     name: pkg.name.to_string(),
                     version: pkg.version.to_string(),
@@ -2661,9 +2704,13 @@ fn resolve_pkg_source(
             });
         }
         // Path source not in workspace — bare relative.
-        let abs_dir = pkg.manifest_path.parent().map(|p| p.to_string()).unwrap_or_default();
-        let rel = pathdiff_relative(&abs_dir, workspace_root_str)
-            .unwrap_or_else(|| abs_dir.clone());
+        let abs_dir = pkg
+            .manifest_path
+            .parent()
+            .map(|p| p.to_string())
+            .unwrap_or_default();
+        let rel =
+            pathdiff_relative(&abs_dir, workspace_root_str).unwrap_or_else(|| abs_dir.clone());
         return Ok(CrateSource::Path { relative_path: rel });
     }
     Ok(CrateSource::Path {
@@ -2847,10 +2894,16 @@ fn strip_dir_prefix(path: &str, dir: &str) -> Option<String> {
 /// not a case the substrate cares about). Both inputs are display
 /// paths.
 fn relative_path_escaping(from: &str, base: &str) -> Option<String> {
-    let from_components: Vec<&str> =
-        from.trim_end_matches('/').split('/').filter(|c| !c.is_empty()).collect();
-    let base_components: Vec<&str> =
-        base.trim_end_matches('/').split('/').filter(|c| !c.is_empty()).collect();
+    let from_components: Vec<&str> = from
+        .trim_end_matches('/')
+        .split('/')
+        .filter(|c| !c.is_empty())
+        .collect();
+    let base_components: Vec<&str> = base
+        .trim_end_matches('/')
+        .split('/')
+        .filter(|c| !c.is_empty())
+        .collect();
     // Find common prefix length.
     let common: usize = from_components
         .iter()
@@ -2973,7 +3026,7 @@ fn classify_optional_dep(
 
 #[cfg(test)]
 mod weak_dependency_tests {
-    use super::{classify_optional_dep, optional_dep_activated, OptionalDepActivation};
+    use super::{OptionalDepActivation, classify_optional_dep, optional_dep_activated};
     use std::collections::BTreeMap;
 
     /// Build a feature table from `(feat, [refs])` pairs.
@@ -3021,7 +3074,13 @@ mod weak_dependency_tests {
         // here the bare implicit feature (sqlx -> sqlx-postgres via
         // `postgres = ["sqlx-postgres"]`).
         assert_eq!(
-            classify_optional_dep(true, false, &["sqlx-postgres".to_string()], &empty, "sqlx-postgres"),
+            classify_optional_dep(
+                true,
+                false,
+                &["sqlx-postgres".to_string()],
+                &empty,
+                "sqlx-postgres"
+            ),
             FeatureActivated
         );
 
@@ -3062,7 +3121,11 @@ mod weak_dependency_tests {
             ("postgres", &["sqlx-postgres"]),
             (
                 "migrate",
-                &["sqlx-postgres?/migrate", "sqlx-sqlite?/migrate", "sqlx-mysql?/migrate"],
+                &[
+                    "sqlx-postgres?/migrate",
+                    "sqlx-sqlite?/migrate",
+                    "sqlx-mysql?/migrate",
+                ],
             ),
         ]);
         let resolved = vec![
@@ -3108,7 +3171,11 @@ mod weak_dependency_tests {
         ]);
         // No `serde_core` in the resolved set — cargo suppressed the implicit
         // feature because `dep:serde_core` is used.
-        let resolved = vec!["default".to_string(), "serde".to_string(), "std".to_string()];
+        let resolved = vec![
+            "default".to_string(),
+            "serde".to_string(),
+            "std".to_string(),
+        ];
         assert!(
             optional_dep_activated(&resolved, &table, "serde_core"),
             "serde = [\"dep:serde_core\"] is active → serde_core IS activated; emit the edge"
@@ -3315,11 +3382,8 @@ mod path_helper_tests {
         use std::sync::atomic::{AtomicU64, Ordering};
         static C: AtomicU64 = AtomicU64::new(0);
         let n = C.fetch_add(1, Ordering::Relaxed);
-        let p = std::env::temp_dir().join(format!(
-            "gen-cargo-freshness-{}-{}",
-            std::process::id(),
-            n
-        ));
+        let p =
+            std::env::temp_dir().join(format!("gen-cargo-freshness-{}-{}", std::process::id(), n));
         let _ = std::fs::remove_dir_all(&p);
         std::fs::create_dir_all(&p).unwrap();
         p
@@ -3328,10 +3392,7 @@ mod path_helper_tests {
     #[test]
     fn check_freshness_missing_lock() {
         let dir = freshness_tmpdir();
-        assert_eq!(
-            super::check_freshness(&dir).summary(),
-            "missing-lock"
-        );
+        assert_eq!(super::check_freshness(&dir).summary(), "missing-lock");
     }
 
     #[test]
@@ -3354,10 +3415,7 @@ mod path_helper_tests {
     fn check_freshness_missing_spec() {
         let dir = freshness_tmpdir();
         std::fs::write(dir.join("Cargo.lock"), b"# lock").unwrap();
-        assert_eq!(
-            super::check_freshness(&dir).summary(),
-            "missing-spec"
-        );
+        assert_eq!(super::check_freshness(&dir).summary(), "missing-spec");
     }
 
     #[test]
@@ -3378,10 +3436,7 @@ mod path_helper_tests {
             br#"{"version": 5, "workspace": {"crates": {"x": {"this_field_doesnt_exist": true}}}}"#,
         )
         .unwrap();
-        assert_eq!(
-            super::check_freshness(&dir).summary(),
-            "unhashed-spec"
-        );
+        assert_eq!(super::check_freshness(&dir).summary(), "unhashed-spec");
     }
 
     fn sha256_hex(bytes: &[u8]) -> String {
@@ -3487,10 +3542,7 @@ mod path_helper_tests {
             b"this is not json at all",
         )
         .unwrap();
-        assert_eq!(
-            super::check_freshness(&dir).summary(),
-            "missing-spec"
-        );
+        assert_eq!(super::check_freshness(&dir).summary(), "missing-spec");
     }
 
     // ------------------------------------------------------------------
@@ -3508,10 +3560,20 @@ mod path_helper_tests {
     fn freshness_summary_matches_discriminant_across_all_variants() {
         use super::Freshness;
         let cases = [
-            Freshness::Fresh { spec_hash: "a".into(), lock_hash: "a".into() },
-            Freshness::Drifted { spec_hash: "a".into(), lock_hash: "b".into() },
-            Freshness::UnhashedSpec { lock_hash: "c".into() },
-            Freshness::MissingSpec { lock_hash: "d".into() },
+            Freshness::Fresh {
+                spec_hash: "a".into(),
+                lock_hash: "a".into(),
+            },
+            Freshness::Drifted {
+                spec_hash: "a".into(),
+                lock_hash: "b".into(),
+            },
+            Freshness::UnhashedSpec {
+                lock_hash: "c".into(),
+            },
+            Freshness::MissingSpec {
+                lock_hash: "d".into(),
+            },
             Freshness::MissingLock,
         ];
         for f in &cases {
@@ -3527,10 +3589,20 @@ mod path_helper_tests {
     #[test]
     fn freshness_is_variant_helpers_cover_every_arm() {
         use super::Freshness;
-        let fresh = Freshness::Fresh { spec_hash: "x".into(), lock_hash: "x".into() };
-        let drifted = Freshness::Drifted { spec_hash: "x".into(), lock_hash: "y".into() };
-        let unhashed = Freshness::UnhashedSpec { lock_hash: "x".into() };
-        let missing_spec = Freshness::MissingSpec { lock_hash: "x".into() };
+        let fresh = Freshness::Fresh {
+            spec_hash: "x".into(),
+            lock_hash: "x".into(),
+        };
+        let drifted = Freshness::Drifted {
+            spec_hash: "x".into(),
+            lock_hash: "y".into(),
+        };
+        let unhashed = Freshness::UnhashedSpec {
+            lock_hash: "x".into(),
+        };
+        let missing_spec = Freshness::MissingSpec {
+            lock_hash: "x".into(),
+        };
         let missing_lock = Freshness::MissingLock;
 
         // Each helper recognizes its own variant, rejects every other.
@@ -3562,7 +3634,13 @@ mod path_helper_tests {
         // catalog-level change that must roll through the snapshot.
         assert_eq!(
             <super::Freshness as TypedDispatcherTrait>::variant_kinds(),
-            vec!["fresh", "drifted", "unhashed-spec", "missing-spec", "missing-lock"],
+            vec![
+                "fresh",
+                "drifted",
+                "unhashed-spec",
+                "missing-spec",
+                "missing-lock"
+            ],
         );
     }
 }
@@ -3602,11 +3680,8 @@ mod dependency_key_normalization_tests {
         use std::sync::atomic::{AtomicU64, Ordering};
         static C: AtomicU64 = AtomicU64::new(0);
         let n = C.fetch_add(1, Ordering::Relaxed);
-        let p = std::env::temp_dir().join(format!(
-            "gen-cargo-i4-{label}-{}-{}",
-            std::process::id(),
-            n
-        ));
+        let p =
+            std::env::temp_dir().join(format!("gen-cargo-i4-{label}-{}-{}", std::process::id(), n));
         let _ = std::fs::remove_dir_all(&p);
         std::fs::create_dir_all(&p).unwrap();
         p
@@ -3674,11 +3749,15 @@ mod dependency_key_normalization_tests {
         // exact shape `GitCliResolver` promotes. Fully local/hermetic:
         // `git config --get remote.origin.url` + `git rev-parse HEAD`
         // both read local repo state only — neither contacts the remote.
-        run(Command::new("git").arg("-C").arg(&sibling_dir).args(["init", "-q"]));
         run(Command::new("git")
             .arg("-C")
             .arg(&sibling_dir)
-            .args(["config", "user.email", "test@example.com"]));
+            .args(["init", "-q"]));
+        run(Command::new("git").arg("-C").arg(&sibling_dir).args([
+            "config",
+            "user.email",
+            "test@example.com",
+        ]));
         run(Command::new("git")
             .arg("-C")
             .arg(&sibling_dir)
@@ -3689,7 +3768,10 @@ mod dependency_key_normalization_tests {
             "origin",
             "https://github.com/pleme-io/sibling",
         ]));
-        run(Command::new("git").arg("-C").arg(&sibling_dir).args(["add", "-A"]));
+        run(Command::new("git")
+            .arg("-C")
+            .arg(&sibling_dir)
+            .args(["add", "-A"]));
         run(Command::new("git")
             .arg("-C")
             .arg(&sibling_dir)
@@ -3740,7 +3822,9 @@ mod dependency_key_normalization_tests {
         // rev — the promotion itself still runs correctly.
         let sibling_source = pkg_sources.get(&sibling_pkg.id.repr).unwrap();
         let CrateSource::Git { rev, url, .. } = sibling_source else {
-            panic!("sibling's external path-dep must be promoted to CrateSource::Git, got: {sibling_source:?}");
+            panic!(
+                "sibling's external path-dep must be promoted to CrateSource::Git, got: {sibling_source:?}"
+            );
         };
         assert!(!rev.is_empty(), "promoted rev must be non-empty");
         assert_eq!(url, "https://github.com/pleme-io/sibling");

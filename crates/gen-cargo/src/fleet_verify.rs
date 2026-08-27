@@ -79,8 +79,8 @@ pub struct VerifyOpts {
 
 /// Verify every repo, up to `opts.jobs` concurrently. Order preserved.
 pub fn verify(repos: &[PathBuf], opts: VerifyOpts) -> Result<VerifyReport, CargoError> {
-    use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::Mutex;
+    use std::sync::atomic::{AtomicUsize, Ordering};
 
     let started = Instant::now();
     let jobs = opts.jobs.max(1);
@@ -89,18 +89,20 @@ pub fn verify(repos: &[PathBuf], opts: VerifyOpts) -> Result<VerifyReport, Cargo
 
     std::thread::scope(|scope| {
         for _ in 0..jobs {
-            scope.spawn(|| loop {
-                let i = next.fetch_add(1, Ordering::SeqCst);
-                if i >= repos.len() {
-                    break;
+            scope.spawn(|| {
+                loop {
+                    let i = next.fetch_add(1, Ordering::SeqCst);
+                    if i >= repos.len() {
+                        break;
+                    }
+                    let repo = &repos[i];
+                    let name = repo
+                        .file_name()
+                        .map(|s| s.to_string_lossy().into_owned())
+                        .unwrap_or_else(|| repo.display().to_string());
+                    let state = verify_one(repo, opts.fetch);
+                    collected.lock().unwrap().push((i, name, state));
                 }
-                let repo = &repos[i];
-                let name = repo
-                    .file_name()
-                    .map(|s| s.to_string_lossy().into_owned())
-                    .unwrap_or_else(|| repo.display().to_string());
-                let state = verify_one(repo, opts.fetch);
-                collected.lock().unwrap().push((i, name, state));
             });
         }
     });
@@ -198,8 +200,19 @@ mod tests {
     // Point origin/<branch> at HEAD via a local alias so verify_one (no
     // network) classifies the committed tree.
     fn alias_remote(d: &Path) {
-        let branch = git(d, &["rev-parse", "--abbrev-ref", "HEAD"]).unwrap().trim().to_string();
-        git(d, &["update-ref", &format!("refs/remotes/origin/{branch}"), "HEAD"]).unwrap();
+        let branch = git(d, &["rev-parse", "--abbrev-ref", "HEAD"])
+            .unwrap()
+            .trim()
+            .to_string();
+        git(
+            d,
+            &[
+                "update-ref",
+                &format!("refs/remotes/origin/{branch}"),
+                "HEAD",
+            ],
+        )
+        .unwrap();
     }
 
     fn write_gen_spec_ci(d: &Path) {

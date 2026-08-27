@@ -17,8 +17,8 @@ use std::path::Path;
 // BTreeMap (not IndexMap): the delta's keyed maps are canonical (sorted-by-key)
 // by construction, so `Cargo.gen.lock` is byte-identical across build platforms.
 // They are cloned/collected from the already-canonical BuildSpec.
-use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 use thiserror::Error;
 
 use crate::build_spec::{
@@ -687,10 +687,12 @@ mod tests {
         // GEN_DELTA_SPEC=<build-spec.json> GEN_DELTA_OUT=<Cargo.gen.lock>
         // (default: gen's own). Distills the slim delta from any build-spec
         // for the substrate lockfile-delta equivalence oracle.
-        let spec_path = std::env::var("GEN_DELTA_SPEC")
-            .unwrap_or_else(|_| concat!(env!("CARGO_MANIFEST_DIR"), "/../../Cargo.build-spec.json").into());
-        let out = std::env::var("GEN_DELTA_OUT")
-            .unwrap_or_else(|_| concat!(env!("CARGO_MANIFEST_DIR"), "/../../Cargo.gen.lock").into());
+        let spec_path = std::env::var("GEN_DELTA_SPEC").unwrap_or_else(|_| {
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../../Cargo.build-spec.json").into()
+        });
+        let out = std::env::var("GEN_DELTA_OUT").unwrap_or_else(|_| {
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../../Cargo.gen.lock").into()
+        });
         let spec: BuildSpec =
             serde_json::from_str(&std::fs::read_to_string(&spec_path).unwrap()).unwrap();
         let d = GenDelta::distill(&spec).unwrap();
@@ -839,7 +841,10 @@ mod tests {
             cargo_lock_sha256: "a".into(),
             manifests_verified: 3,
         };
-        let stale = DeltaFreshness::Stale { expected: "a".into(), actual: "b".into() };
+        let stale = DeltaFreshness::Stale {
+            expected: "a".into(),
+            actual: "b".into(),
+        };
         let drift = DeltaFreshness::ManifestDrift {
             cargo_lock_sha256: "a".into(),
             changed: vec![crate::manifest_tie::ManifestDrift {
@@ -849,7 +854,9 @@ mod tests {
             }],
         };
         let untied = DeltaFreshness::UntiedDelta { actual: "b".into() };
-        let untied_manifests = DeltaFreshness::UntiedManifests { cargo_lock_sha256: "a".into() };
+        let untied_manifests = DeltaFreshness::UntiedManifests {
+            cargo_lock_sha256: "a".into(),
+        };
         let missing = DeltaFreshness::MissingDelta { actual: "b".into() };
         let nolock = DeltaFreshness::MissingLock;
 
@@ -876,12 +883,17 @@ mod tests {
     #[test]
     fn every_non_fresh_verdict_is_stale() {
         for v in [
-            DeltaFreshness::Stale { expected: "a".into(), actual: "b".into() },
+            DeltaFreshness::Stale {
+                expected: "a".into(),
+                actual: "b".into(),
+            },
             DeltaFreshness::ManifestDrift {
                 cargo_lock_sha256: "a".into(),
                 changed: vec![],
             },
-            DeltaFreshness::UntiedManifests { cargo_lock_sha256: "a".into() },
+            DeltaFreshness::UntiedManifests {
+                cargo_lock_sha256: "a".into(),
+            },
             DeltaFreshness::UntiedDelta { actual: "b".into() },
             DeltaFreshness::MissingDelta { actual: "b".into() },
             DeltaFreshness::MissingLock,

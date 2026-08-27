@@ -85,13 +85,34 @@ pub fn convert_package(
     // Direct + dev + build dependencies (top-level), then targeted.
     let mut dependencies = Vec::new();
     for (n, d) in &raw.dependencies {
-        dependencies.push(convert_dep(n, d, DependencyKind::Direct, None, workspace_deps, manifest_path)?);
+        dependencies.push(convert_dep(
+            n,
+            d,
+            DependencyKind::Direct,
+            None,
+            workspace_deps,
+            manifest_path,
+        )?);
     }
     for (n, d) in &raw.dev_dependencies {
-        dependencies.push(convert_dep(n, d, DependencyKind::Dev, None, workspace_deps, manifest_path)?);
+        dependencies.push(convert_dep(
+            n,
+            d,
+            DependencyKind::Dev,
+            None,
+            workspace_deps,
+            manifest_path,
+        )?);
     }
     for (n, d) in &raw.build_dependencies {
-        dependencies.push(convert_dep(n, d, DependencyKind::Build, None, workspace_deps, manifest_path)?);
+        dependencies.push(convert_dep(
+            n,
+            d,
+            DependencyKind::Build,
+            None,
+            workspace_deps,
+            manifest_path,
+        )?);
     }
     for (cfg, block) in &raw.target {
         let predicate = parse_target_key(cfg);
@@ -278,10 +299,7 @@ fn convert_dep(
     };
 
     Ok(Dependency {
-        name: detail
-            .package
-            .clone()
-            .unwrap_or_else(|| name.to_string()),
+        name: detail.package.clone().unwrap_or_else(|| name.to_string()),
         constraint,
         kind,
         features_enabled: detail.features.clone(),
@@ -316,10 +334,7 @@ pub fn parse_version_constraint(name: &str, raw: Option<&str>) -> Result<Version
     // atom + retain the original raw syntax in native_syntax so the
     // engine can round-trip back.
     let spec = if atoms.len() == 2 {
-        if let (
-            ConstraintSpec::GreaterEqual(lo),
-            ConstraintSpec::Less(hi),
-        ) = (&atoms[0], &atoms[1])
+        if let (ConstraintSpec::GreaterEqual(lo), ConstraintSpec::Less(hi)) = (&atoms[0], &atoms[1])
         {
             ConstraintSpec::Range {
                 lower_inclusive: lo.clone(),
@@ -372,7 +387,11 @@ fn parse_one_spec(name: &str, raw: &str) -> Result<ConstraintSpec> {
     // `<=0.61.0` (the `.*` semantics — "match anything at this prefix" —
     // are preserved by the surrounding operator).
     let raw_trimmed = raw.trim_end_matches(".*");
-    let raw = if raw_trimmed.is_empty() { raw } else { raw_trimmed };
+    let raw = if raw_trimmed.is_empty() {
+        raw
+    } else {
+        raw_trimmed
+    };
     if let Some(rest) = raw.strip_prefix(">=") {
         Ok(ConstraintSpec::GreaterEqual(parse(rest.trim(), raw)?))
     } else if let Some(rest) = raw.strip_prefix("<=") {
@@ -399,7 +418,8 @@ fn parse_one_spec(name: &str, raw: &str) -> Result<ConstraintSpec> {
 /// strings are mapped to [`PackageSource`]; checksums (sha256 hex) are
 /// stored as the integrity field.
 pub fn convert_lockfile(raw: &CargoLock, lock_path: &Path) -> Result<Lockfile> {
-    let mut resolved: IndexMap<String, ResolvedPackage> = IndexMap::with_capacity(raw.packages.len());
+    let mut resolved: IndexMap<String, ResolvedPackage> =
+        IndexMap::with_capacity(raw.packages.len());
     // Build a (name, version) → PackageId index. Keying by name alone
     // is wrong when a crate appears at multiple versions (hashbrown
     // 0.15.5 + 0.16.1 in the same lockfile) — last write would

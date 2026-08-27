@@ -16,7 +16,7 @@
 
 use std::path::Path;
 
-use gen_cargo::build_spec::{generate_multi_target_and_write_to, FeatureSelection};
+use gen_cargo::build_spec::{FeatureSelection, generate_multi_target_and_write_to};
 
 fn write(dir: &Path, rel: &str, body: &str) {
     let p = dir.join(rel);
@@ -90,14 +90,23 @@ fn a_variant_spec_subtracts_the_default_feature_set() {
     )
     .expect("variant spec");
 
-    assert_ne!(canonical, variant, "the variant must not overwrite the canonical spec");
+    assert_ne!(
+        canonical, variant,
+        "the variant must not overwrite the canonical spec"
+    );
     assert!(variant.ends_with("Cargo.novariant.build-spec.json"));
 
     let c = features_of(&canonical);
     let v = features_of(&variant);
 
-    assert!(c.contains(&"default".to_string()), "canonical lost `default`: {c:?}");
-    assert!(c.contains(&"heavy".to_string()), "canonical lost `heavy`: {c:?}");
+    assert!(
+        c.contains(&"default".to_string()),
+        "canonical lost `default`: {c:?}"
+    );
+    assert!(
+        c.contains(&"heavy".to_string()),
+        "canonical lost `heavy`: {c:?}"
+    );
 
     assert!(
         !v.contains(&"default".to_string()),

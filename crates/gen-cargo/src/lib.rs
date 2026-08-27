@@ -12,6 +12,7 @@
 //! ```
 
 pub mod adapter;
+pub mod bounded;
 pub mod build_spec;
 pub mod convert;
 pub mod diagnostics;
@@ -20,8 +21,8 @@ pub mod error;
 pub mod features;
 pub mod fleet_commit;
 pub mod fleet_migrate;
-pub mod fleet_verify;
 pub mod fleet_sweep;
+pub mod fleet_verify;
 pub mod gen_build_job;
 pub mod gen_delta;
 pub mod git_prefetcher;
@@ -33,7 +34,7 @@ pub mod platform_features;
 pub mod quirks;
 pub mod raw;
 
-pub use adapter::{ctx_for, CargoAdapter};
+pub use adapter::{CargoAdapter, ctx_for};
 pub use error::{CargoError, Result};
 
 use std::path::{Path, PathBuf};
@@ -91,7 +92,10 @@ pub fn parse(root: &Path) -> Result<Manifest> {
                     path: root.join("Cargo.lock"),
                     source,
                 })?;
-            Some(convert::convert_lockfile(&parsed, &root.join("Cargo.lock"))?)
+            Some(convert::convert_lockfile(
+                &parsed,
+                &root.join("Cargo.lock"),
+            )?)
         }
         None => None,
     };
@@ -168,14 +172,13 @@ fn expand_glob(root: &Path, pattern: &str) -> Option<Vec<PathBuf>> {
     //   "crates/*"        — dir-prefix glob (matches dirs under crates/)
     //   "ratatui-*"       — file-prefix glob (matches dirs in root with this prefix)
     // Distinguish by whether prefix ends with '/' (dir) or a name segment.
-    let (search_dir, name_prefix) =
-        if prefix.is_empty() || prefix.ends_with('/') {
-            (root.join(prefix.trim_end_matches('/')), String::new())
-        } else if let Some(slash) = prefix.rfind('/') {
-            (root.join(&prefix[..slash]), prefix[slash + 1..].to_string())
-        } else {
-            (root.to_path_buf(), prefix.to_string())
-        };
+    let (search_dir, name_prefix) = if prefix.is_empty() || prefix.ends_with('/') {
+        (root.join(prefix.trim_end_matches('/')), String::new())
+    } else if let Some(slash) = prefix.rfind('/') {
+        (root.join(&prefix[..slash]), prefix[slash + 1..].to_string())
+    } else {
+        (root.to_path_buf(), prefix.to_string())
+    };
     let mut out = Vec::new();
     let entries = std::fs::read_dir(&search_dir).ok()?;
     for e in entries.flatten() {
@@ -235,9 +238,17 @@ indexmap = { version = "2", default-features = false }
         let s = p.dependencies.iter().find(|d| d.name == "serde").unwrap();
         assert!(matches!(s.kind, gen_types::DependencyKind::Direct));
         assert_eq!(s.constraint.native_syntax.as_deref(), Some("1.0"));
-        let sj = p.dependencies.iter().find(|d| d.name == "serde_json").unwrap();
+        let sj = p
+            .dependencies
+            .iter()
+            .find(|d| d.name == "serde_json")
+            .unwrap();
         assert_eq!(sj.features_enabled, vec!["preserve_order".to_string()]);
-        let im = p.dependencies.iter().find(|d| d.name == "indexmap").unwrap();
+        let im = p
+            .dependencies
+            .iter()
+            .find(|d| d.name == "indexmap")
+            .unwrap();
         assert!(!im.default_features);
     }
 
@@ -325,7 +336,9 @@ winapi = "0.3"
         let p = m.find_package("p").unwrap();
         let nix = p.dependencies.iter().find(|d| d.name == "nix").unwrap();
         let pred = nix.target_predicate.as_ref().unwrap();
-        assert!(matches!(pred, gen_types::TargetPredicate::CargoCfg { expr } if expr.contains("unix")));
+        assert!(
+            matches!(pred, gen_types::TargetPredicate::CargoCfg { expr } if expr.contains("unix"))
+        );
         let winapi = p.dependencies.iter().find(|d| d.name == "winapi").unwrap();
         assert!(matches!(winapi.kind, gen_types::DependencyKind::Dev));
     }
@@ -408,20 +421,14 @@ extra = ["serde/derive", "dep:opt"]
         let p = m.find_package("p").unwrap();
         assert_eq!(p.features.len(), 3);
         let extra = p.features.iter().find(|f| f.name == "extra").unwrap();
-        assert!(
-            extra
-                .implies
-                .iter()
-                .any(|r| matches!(r, gen_types::FeatureRef::Namespaced { package, feature }
-                    if package == "serde" && feature == "derive"))
-        );
-        assert!(
-            extra
-                .implies
-                .iter()
-                .any(|r| matches!(r, gen_types::FeatureRef::DepActivation { dep_name }
-                    if dep_name == "opt"))
-        );
+        assert!(extra.implies.iter().any(
+            |r| matches!(r, gen_types::FeatureRef::Namespaced { package, feature }
+                    if package == "serde" && feature == "derive")
+        ));
+        assert!(extra.implies.iter().any(
+            |r| matches!(r, gen_types::FeatureRef::DepActivation { dep_name }
+                    if dep_name == "opt")
+        ));
     }
 
     #[test]
@@ -506,7 +513,10 @@ checksum = "0000000000000000000000000000000000000000000000000000000000000002"
         }
         assert_eq!(serde_entry.resolved_dependencies.len(), 1);
         assert_eq!(serde_entry.resolved_dependencies[0].name, "serde_derive");
-        assert_ne!(lock.content_addressed_hash, gen_types::ContentHash::genesis());
+        assert_ne!(
+            lock.content_addressed_hash,
+            gen_types::ContentHash::genesis()
+        );
     }
 
     #[test]

@@ -93,13 +93,30 @@ pub struct NixCliMetadataSource;
 
 impl MetadataSource for NixCliMetadataSource {
     fn metadata(&self, flake_path: &Path) -> std::io::Result<String> {
-        let out = Command::new("nix")
-            .args(["flake", "metadata", "--no-write-lock-file"])
-            .current_dir(flake_path)
-            .output()?;
-        let mut combined = String::from_utf8_lossy(&out.stdout).into_owned();
-        combined.push_str(&String::from_utf8_lossy(&out.stderr));
-        Ok(combined)
+        // `nix flake metadata` FETCHES inputs, so it can stall on a dead
+        // remote. Bounded + retried per `gen_cargo::bounded`.
+        //
+        // Non-zero exit is deliberately not an error here: this source
+        // returns combined stdout+stderr for the parser to inspect, and a
+        // failed metadata call still carries the diagnostic text the
+        // linter wants. Only a HANG is fatal.
+        let dir = flake_path.to_path_buf();
+        let bounded =
+            gen_cargo::bounded::Bounded::new(std::time::Duration::from_secs(300)).attempts(2);
+        match bounded.run(|| {
+            let mut c = Command::new("nix");
+            c.args(["flake", "metadata", "--no-write-lock-file"])
+                .current_dir(&dir);
+            c
+        }) {
+            Ok(out) => {
+                let mut combined = String::from_utf8_lossy(&out.stdout).into_owned();
+                combined.push_str(&String::from_utf8_lossy(&out.stderr));
+                Ok(combined)
+            }
+            Err(gen_cargo::bounded::ExecError::Failed { stderr, .. }) => Ok(stderr),
+            Err(e) => Err(std::io::Error::other(e.to_string())),
+        }
     }
 }
 
@@ -163,11 +180,17 @@ pub fn parse_flake_nix_pins(text: &str) -> Vec<FlakeIssue> {
         if !line_trim.contains("url") || !line_trim.contains(prefix) {
             continue;
         }
-        let Some(quote_open) = line.find(prefix) else { continue; };
+        let Some(quote_open) = line.find(prefix) else {
+            continue;
+        };
         let after = &line[quote_open + prefix.len()..];
-        let Some(quote_close) = after.find('"') else { continue; };
+        let Some(quote_close) = after.find('"') else {
+            continue;
+        };
         let url_body = &after[..quote_close];
-        let Some(slash) = url_body.find('/') else { continue; };
+        let Some(slash) = url_body.find('/') else {
+            continue;
+        };
         let input = &url_body[..slash];
         let rev_raw = &url_body[slash + 1..];
         // Strip any ?args= or branch params.
@@ -269,7 +292,11 @@ fn parse_block_header(trimmed: &str) -> Option<String> {
     let rest = rest.trim_end();
     let rest = rest.strip_suffix('=')?;
     let name = rest.trim();
-    if name.is_empty() || !name.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '_') {
+    if name.is_empty()
+        || !name
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
+    {
         return None;
     }
     Some(name.to_string())
@@ -402,9 +429,11 @@ warning: Git tree is dirty
         assert!(!out.contains("seibi.*inputs.nixpkgs.follows"));
         assert!(!out.contains("seibi.*inputs.fenix.follows"));
         // other's fenix.follows is preserved (different consumer)
-        assert!(out.contains(r#"other = {
+        assert!(out.contains(
+            r#"other = {
       inputs.fenix.follows = "fenix";
-    };"#));
+    };"#
+        ));
     }
 
     #[test]
@@ -432,7 +461,12 @@ warning: Git tree is dirty
 }
 "#;
         let issues = parse_flake_nix_pins(text);
-        assert_eq!(issues.len(), 2, "expected 2 pleme-io pins, got: {:?}", issues);
+        assert_eq!(
+            issues.len(),
+            2,
+            "expected 2 pleme-io pins, got: {:?}",
+            issues
+        );
         let names: Vec<_> = issues
             .iter()
             .filter_map(|i| match i {
@@ -491,10 +525,7 @@ warning: Git tree is dirty
         let src = StaticMetadataSource(
             "warning: input 'seibi' has an override for a non-existent input 'fenix'\n",
         );
-        let tmp = std::env::temp_dir().join(format!(
-            "gen-flake-lint-test-{}",
-            std::process::id()
-        ));
+        let tmp = std::env::temp_dir().join(format!("gen-flake-lint-test-{}", std::process::id()));
         std::fs::create_dir_all(&tmp).unwrap();
         std::fs::write(
             tmp.join("flake.nix"),

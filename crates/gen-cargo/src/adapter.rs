@@ -37,16 +37,18 @@ impl Adapter for CargoAdapter {
         use std::process::Command;
         let lockfile = ctx.workspace_root.join("Cargo.lock");
         let created = !lockfile.exists();
-        let status = Command::new("cargo")
-            .arg("generate-lockfile")
-            .current_dir(&ctx.workspace_root)
-            .status()
-            .map_err(|e| AdapterError::Internal(format!("cargo generate-lockfile spawn: {e}")))?;
-        if !status.success() {
-            return Err(AdapterError::Internal(format!(
-                "cargo generate-lockfile exited with status {status:?}"
-            )));
-        }
+        // Bounded + retried: this resolves against the network, so it can
+        // stall indefinitely. See `crate::bounded` for the hang class.
+        let root = ctx.workspace_root.clone();
+        crate::bounded::Bounded::new(std::time::Duration::from_secs(600))
+            .attempts(3)
+            .retry_failures(true)
+            .run(|| {
+                let mut c = Command::new("cargo");
+                c.arg("generate-lockfile").current_dir(&root);
+                c
+            })
+            .map_err(|e| AdapterError::Internal(e.to_string()))?;
         Ok(LockOutcome {
             lockfile_path: lockfile,
             created,
@@ -106,8 +108,7 @@ impl Adapter for CargoAdapter {
         } else {
             for v in &violations {
                 let (name, locus) = violation_locus(v);
-                let message = serde_json::to_string(v)
-                    .unwrap_or_else(|_| format!("{v:?}"));
+                let message = serde_json::to_string(v).unwrap_or_else(|_| format!("{v:?}"));
                 broken.push(InvariantBreak {
                     name: name.to_string(),
                     message,
@@ -180,19 +181,13 @@ fn violation_locus(v: &crate::invariants::Violation) -> (&'static str, Option<St
     use crate::invariants::Violation::*;
     match v {
         UnresolvedDep { from, .. } => ("unresolved-dep", Some(from.clone())),
-        UnhonouredFeatureRequest { from, .. } => {
-            ("unhonoured-feature-request", Some(from.clone()))
-        }
+        UnhonouredFeatureRequest { from, .. } => ("unhonoured-feature-request", Some(from.clone())),
         RegistryWithoutSha256 { crate_key, .. } => {
             ("registry-without-sha256", Some(crate_key.clone()))
         }
-        WorkspaceMemberNotInCrates { key } => {
-            ("workspace-member-not-in-crates", Some(key.clone()))
-        }
+        WorkspaceMemberNotInCrates { key } => ("workspace-member-not-in-crates", Some(key.clone())),
         RootCrateNotInCrates { key } => ("root-crate-not-in-crates", Some(key.clone())),
-        DevDepInRuntimeOrBuild { from, .. } => {
-            ("dev-dep-in-runtime-or-build", Some(from.clone()))
-        }
+        DevDepInRuntimeOrBuild { from, .. } => ("dev-dep-in-runtime-or-build", Some(from.clone())),
         RenameVersionMismatch { from, .. } => ("rename-version-mismatch", Some(from.clone())),
         DuplicateCrateKey { key } => ("duplicate-crate-key", Some(key.clone())),
         MissingBuildRustCrateName { crate_key, .. } => {

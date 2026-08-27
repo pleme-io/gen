@@ -175,38 +175,65 @@ impl GitPrefetcher for GitCliPrefetcher {
 /// surrounding bash + nix-hash + json-formatting machinery.
 fn git_clone_at_rev(url: &str, rev: &str, dest: &Path) -> Result<(), String> {
     use std::process::Command;
+    use std::time::Duration;
 
-    let run = |args: &[&str], cwd: Option<&Path>| -> Result<(), String> {
-        let mut cmd = Command::new("git");
-        cmd.args(args);
-        if let Some(c) = cwd {
-            cmd.current_dir(c);
-        }
-        let output = cmd
-            .output()
-            .map_err(|e| format!("spawn `git {}`: {e}", args.join(" ")))?;
-        if !output.status.success() {
-            return Err(format!(
-                "`git {}` exited {}: {}",
-                args.join(" "),
-                output.status,
-                String::from_utf8_lossy(&output.stderr).trim()
-            ));
-        }
-        Ok(())
+    use crate::bounded::{Bounded, git_stall_guard};
+
+    /// Local git work: no network, so a long bound here only exists to
+    /// catch a wedged filesystem or a paused process.
+    const LOCAL_BOUND: Duration = Duration::from_secs(60);
+    /// One network fetch. Generous enough for a large cold repo on a slow
+    /// link, short enough that a stall is caught in minutes rather than
+    /// never. Layer 1 (the stall guard) normally fires first, at 30s of
+    /// no throughput.
+    const FETCH_BOUND: Duration = Duration::from_secs(300);
+
+    let local = Bounded::new(LOCAL_BOUND);
+    // Retries are what a bound buys: a transient reset or stall now
+    // recovers instead of wedging a fleet-wide lock refresh.
+    let network = Bounded::new(FETCH_BOUND).attempts(3).retry_failures(true);
+
+    let run = |b: &Bounded, args: &[&str], cwd: Option<&Path>| -> Result<(), String> {
+        let owned: Vec<String> = args.iter().map(|s| (*s).to_string()).collect();
+        let cwd = cwd.map(std::path::Path::to_path_buf);
+        b.run(|| {
+            let mut cmd = Command::new("git");
+            cmd.args(&owned);
+            if let Some(c) = cwd.as_ref() {
+                cmd.current_dir(c);
+            }
+            cmd
+        })
+        .map(|_| ())
+        .map_err(|e| e.to_string())
     };
 
-    run(&["init", "--quiet", dest.to_str().unwrap()], None)?;
-    run(&["remote", "add", "origin", url], Some(dest))?;
+    run(&local, &["init", "--quiet", dest.to_str().unwrap()], None)?;
+    run(&local, &["remote", "add", "origin", url], Some(dest))?;
+
+    // ── ★ THE STALL GUARD IS WHY THE FALLBACK BELOW STILL WORKS ──────
+    // The fallback is `if shallow_fetch.is_err()`. Before the guard, a
+    // stalled fetch was never `Err` — it simply never returned — so
+    // neither the fallback NOR the error path was ever reached, and the
+    // process sat at 0% CPU indefinitely. Measured 2026-08-27: six
+    // orphaned `git index-pack` processes, 20 minutes, no output.
+    // `http.lowSpeedLimit`/`lowSpeedTime` make git abort a dead transfer
+    // itself, turning the hang into an ordinary error this code already
+    // knows how to handle.
+    let guard = git_stall_guard();
+    let mut shallow: Vec<&str> = guard.to_vec();
+    shallow.extend_from_slice(&["fetch", "--quiet", "--depth=1", "origin", rev]);
+    let mut full: Vec<&str> = guard.to_vec();
+    full.extend_from_slice(&["fetch", "--quiet", "origin", rev]);
+
     // --depth=1 keeps the fetch minimal — only the rev's tree, no
     // history. Some servers reject shallow fetches by SHA; fall back
     // to a full fetch + checkout if the shallow attempt fails.
-    let shallow_fetch =
-        run(&["fetch", "--quiet", "--depth=1", "origin", rev], Some(dest));
-    if shallow_fetch.is_err() {
-        run(&["fetch", "--quiet", "origin", rev], Some(dest))?;
+    if run(&network, &shallow, Some(dest)).is_err() {
+        run(&network, &full, Some(dest))?;
     }
     run(
+        &local,
         &[
             "-c",
             "advice.detachedHead=false",
@@ -227,8 +254,7 @@ fn git_clone_at_rev(url: &str, rev: &str, dest: &Path) -> Result<(), String> {
 /// NAR into memory before hashing would balloon RAM use; copying
 /// through a hash-writer keeps the working set to the I/O buffer.
 fn nar_sha256(path: &Path) -> Result<[u8; 32], String> {
-    let encoder =
-        nix_nar::Encoder::new(path).map_err(|e| format!("nix-nar Encoder: {e}"))?;
+    let encoder = nix_nar::Encoder::new(path).map_err(|e| format!("nix-nar Encoder: {e}"))?;
     let mut reader = std::io::BufReader::new(encoder);
     let mut writer = Sha256Writer::new();
     std::io::copy(&mut reader, &mut writer).map_err(|e| format!("nar copy: {e}"))?;
@@ -283,12 +309,7 @@ impl MockPrefetcher {
     }
 
     /// Register a `(url, rev) → hash` mapping.
-    pub fn insert(
-        &self,
-        url: impl Into<String>,
-        rev: impl Into<String>,
-        hash: PrefetchedHash,
-    ) {
+    pub fn insert(&self, url: impl Into<String>, rev: impl Into<String>, hash: PrefetchedHash) {
         self.mappings
             .lock()
             .expect("MockPrefetcher mutex poisoned")
@@ -346,7 +367,9 @@ mod tests {
         let hash = PrefetchedHash::from_digest([1u8; 32]);
         mock.insert("https://example.com/repo", "deadbeef", hash.clone());
 
-        let got = mock.prefetch("https://example.com/repo", "deadbeef").unwrap();
+        let got = mock
+            .prefetch("https://example.com/repo", "deadbeef")
+            .unwrap();
         assert_eq!(got, hash);
     }
 

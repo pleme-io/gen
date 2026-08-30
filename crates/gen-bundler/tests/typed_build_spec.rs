@@ -51,7 +51,10 @@ fn package_args_serializes_with_canonical_bundler_keys() {
     let v: serde_json::Value = serde_json::to_value(&args).unwrap();
     assert_eq!(v.get("pname"), Some(&serde_json::json!("foo")));
     assert_eq!(v.get("gemfile"), Some(&serde_json::json!("./Gemfile")));
-    assert_eq!(v.get("lockfile"), Some(&serde_json::json!("./Gemfile.lock")));
+    assert_eq!(
+        v.get("lockfile"),
+        Some(&serde_json::json!("./Gemfile.lock"))
+    );
     assert_eq!(v.get("gemset"), Some(&serde_json::json!("./gemset.nix")));
     assert_eq!(v.get("ruby"), Some(&serde_json::json!("ruby_3_3")));
     assert_eq!(v.get("groups"), Some(&serde_json::json!(["default"])));
@@ -66,15 +69,21 @@ fn package_args_serializes_with_canonical_bundler_keys() {
 #[test]
 fn quirk_variants_round_trip() {
     for q in [
-        BundlerQuirk::PinRuby { version: "3.3".into() },
+        BundlerQuirk::PinRuby {
+            version: "3.3".into(),
+        },
         BundlerQuirk::SkipNativeBuild,
-        BundlerQuirk::ExtraCflags { flags: "-mssse3".into() },
+        BundlerQuirk::ExtraCflags {
+            flags: "-mssse3".into(),
+        },
         BundlerQuirk::SubstituteSource {
             file: "lib/x.rb".into(),
             from: "a".into(),
             to: "b".into(),
         },
-        BundlerQuirk::OverrideSource { url: "https://r".into() },
+        BundlerQuirk::OverrideSource {
+            url: "https://r".into(),
+        },
     ] {
         let v: serde_json::Value = serde_json::to_value(&q).unwrap();
         assert!(v.get("kind").is_some());
@@ -102,8 +111,16 @@ fn invariants_fire_on_missing_fields() {
         workspace_members: vec!["broken-1.0.0".into()],
     };
     let violations = <BundlerInvariants as Invariants>::check(&spec);
-    assert!(violations.iter().any(|v| matches!(v, Violation::MissingPname { .. })));
-    assert!(violations.iter().any(|v| matches!(v, Violation::MissingVersion { .. })));
+    assert!(
+        violations
+            .iter()
+            .any(|v| matches!(v, Violation::MissingPname { .. }))
+    );
+    assert!(
+        violations
+            .iter()
+            .any(|v| matches!(v, Violation::MissingVersion { .. }))
+    );
 }
 
 #[test]

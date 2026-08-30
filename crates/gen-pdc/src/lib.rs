@@ -55,10 +55,8 @@ pub mod content_addr;
 pub mod fixture;
 pub mod spec;
 
-pub use catalog::{
-    maturity_histogram, variant, ClauseStatus, EcosystemVariant, Maturity, CATALOG,
-};
-pub use check::{check, PdcCheckOutcome, PdcViolation};
+pub use catalog::{CATALOG, ClauseStatus, EcosystemVariant, Maturity, maturity_histogram, variant};
+pub use check::{PdcCheckOutcome, PdcViolation, check};
 pub use clause::{PdcClause, UnrepTier};
 pub use content_addr::{ContentAddr, ContentAddrError};
 pub use spec::{PdcNode, PdcSpec, SourceClass};

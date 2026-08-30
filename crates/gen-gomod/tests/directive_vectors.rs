@@ -12,7 +12,7 @@
 //! `--if-present` vacuity this fleet has already been bitten by. If the table
 //! is not found, this fails naming the variable and every path it tried.
 
-use gen_gomod::directive::{classify, Verdict};
+use gen_gomod::directive::{Verdict, classify};
 use std::path::PathBuf;
 
 fn table_path() -> PathBuf {

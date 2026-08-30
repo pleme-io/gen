@@ -269,7 +269,10 @@ pub const REMEDIATION_CATALOG: &[&RemediationEntry] = &[&CVE_2026_39822_GO_STDLI
 /// Look up a finding's remediation entry.
 #[must_use]
 pub fn remediation_for(finding: CveFinding) -> Option<&'static RemediationEntry> {
-    REMEDIATION_CATALOG.iter().copied().find(|e| e.finding == finding)
+    REMEDIATION_CATALOG
+        .iter()
+        .copied()
+        .find(|e| e.finding == finding)
 }
 
 /// Look up a remediation entry by its raw CVE id string (the consumer-facing
@@ -277,7 +280,10 @@ pub fn remediation_for(finding: CveFinding) -> Option<&'static RemediationEntry>
 /// `CveFinding` value).
 #[must_use]
 pub fn remediation_for_cve_id(cve_id: &str) -> Option<&'static RemediationEntry> {
-    REMEDIATION_CATALOG.iter().copied().find(|e| e.cve_id == cve_id)
+    REMEDIATION_CATALOG
+        .iter()
+        .copied()
+        .find(|e| e.cve_id == cve_id)
 }
 
 /// The confirmation-maturity histogram — `(design, verified_once,
@@ -318,8 +324,14 @@ mod tests {
         // finding cannot ship without an entry, and no entry names a
         // phantom finding.
         for finding in CveFinding::ALL {
-            let n = REMEDIATION_CATALOG.iter().filter(|e| e.finding == finding).count();
-            assert_eq!(n, 1, "finding {finding:?} must have exactly one catalog entry (found {n})");
+            let n = REMEDIATION_CATALOG
+                .iter()
+                .filter(|e| e.finding == finding)
+                .count();
+            assert_eq!(
+                n, 1,
+                "finding {finding:?} must have exactly one catalog entry (found {n})"
+            );
         }
         assert_eq!(
             REMEDIATION_CATALOG.len(),
@@ -366,7 +378,11 @@ mod tests {
                 ));
             }
         }
-        assert!(failures.is_empty(), "rounded-up maturity claim(s):\n  - {}", failures.join("\n  - "));
+        assert!(
+            failures.is_empty(),
+            "rounded-up maturity claim(s):\n  - {}",
+            failures.join("\n  - ")
+        );
     }
 
     #[test]
@@ -415,7 +431,10 @@ mod tests {
 
         // The cve_id-string lookup path (what a build-time gate hard-fails
         // with) resolves to the SAME entry.
-        assert_eq!(remediation_for_cve_id("CVE-2026-39822").unwrap().finding, e.finding);
+        assert_eq!(
+            remediation_for_cve_id("CVE-2026-39822").unwrap().finding,
+            e.finding
+        );
         assert!(remediation_for_cve_id("CVE-9999-00000").is_none());
     }
 

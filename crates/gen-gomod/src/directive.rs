@@ -100,7 +100,9 @@ pub fn classify(directive: &str, fleet_go: &str) -> Verdict {
     if dots != 1 && dots != 2 {
         return Verdict::Unparseable;
     }
-    if d.split('.').any(|p| p.is_empty() || p.parse::<u64>().is_err()) {
+    if d.split('.')
+        .any(|p| p.is_empty() || p.parse::<u64>().is_err())
+    {
         return Verdict::Unparseable;
     }
     if cmp_version(d, fleet_go) == std::cmp::Ordering::Greater {

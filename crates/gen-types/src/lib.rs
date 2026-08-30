@@ -33,13 +33,13 @@
 #![allow(clippy::module_name_repetitions)]
 
 pub mod adapter;
-pub mod dispatcher;
-pub mod ecosystem;
-pub mod lock_lifecycle;
 pub mod constraint;
 pub mod dependency;
 pub mod derivation;
+pub mod dispatcher;
+pub mod ecosystem;
 pub mod feature;
+pub mod lock_lifecycle;
 pub mod lockfile;
 pub mod manifest;
 pub mod package;
@@ -50,20 +50,21 @@ pub mod version;
 pub mod workspace;
 
 pub use adapter::{
-    adapter_by_name, registered_adapter_names, registered_adapters, Adapter, AdapterCtx,
-    AdapterError, AdapterQuirkEntry, AdapterRegistration, AdapterResult,
-    BuildSpec as AdapterBuildSpec, ConfirmReport, DepChange, DepEdge, DependencyBump,
-    DispatcherVariant, DiffRef,
-    DiffReport, InvariantBreak, LockOutcome, Plan, PlanIntent, PlanWarning, PlanWarningSeverity,
-    Sbom, SbomFormat,
+    Adapter, AdapterCtx, AdapterError, AdapterQuirkEntry, AdapterRegistration, AdapterResult,
+    BuildSpec as AdapterBuildSpec, ConfirmReport, DepChange, DepEdge, DependencyBump, DiffRef,
+    DiffReport, DispatcherVariant, InvariantBreak, LockOutcome, Plan, PlanIntent, PlanWarning,
+    PlanWarningSeverity, Sbom, SbomFormat, adapter_by_name, registered_adapter_names,
+    registered_adapters,
 };
-pub use dispatcher::TypedDispatcher;
-pub use lock_lifecycle::{LockError, LockLifecyclePrimitive};
-pub use ecosystem::{Invariants, QuirkRegistry, Spec};
 pub use constraint::{Combinator, CompoundConstraint, ConstraintSpec, VersionConstraint};
 pub use dependency::{Dependency, DependencyKind};
-pub use derivation::{BuildCommand, BuildScript, BuildStep, BuildStepKind, Derivation, DerivationRef};
+pub use derivation::{
+    BuildCommand, BuildScript, BuildStep, BuildStepKind, Derivation, DerivationRef,
+};
+pub use dispatcher::TypedDispatcher;
+pub use ecosystem::{Invariants, QuirkRegistry, Spec};
 pub use feature::{Feature, FeatureRef};
+pub use lock_lifecycle::{LockError, LockLifecyclePrimitive};
 pub use lockfile::{ContentHash, Lockfile, ResolvedPackage};
 pub use manifest::Manifest;
 pub use package::{Package, PackageId};

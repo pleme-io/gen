@@ -13,7 +13,7 @@
 pub mod ast;
 pub mod render;
 
-pub use ast::{StarlarkValue, StarlarkStmt, KwArg};
+pub use ast::{KwArg, StarlarkStmt, StarlarkValue};
 pub use render::render_file;
 
 use gen_types::{Manifest, Package};
@@ -123,7 +123,9 @@ mod tests {
             registry: Registry::CratesIo,
             dependencies: vec![Dependency {
                 name: "serde".into(),
-                constraint: VersionConstraint::from_spec(ConstraintSpec::Caret(Version::new(1, 0, 0))),
+                constraint: VersionConstraint::from_spec(ConstraintSpec::Caret(Version::new(
+                    1, 0, 0,
+                ))),
                 kind: DependencyKind::Direct,
                 features_enabled: vec![],
                 default_features: true,
@@ -138,7 +140,12 @@ mod tests {
             homepage: None,
             repository: None,
         };
-        Manifest::new("/x", Workspace::single_package("/x", "cargo"), vec![p], None)
+        Manifest::new(
+            "/x",
+            Workspace::single_package("/x", "cargo"),
+            vec![p],
+            None,
+        )
     }
 
     #[test]

@@ -272,6 +272,24 @@ enum Cmd {
         /// Root directory containing N repo sub-directories.
         path: PathBuf,
     },
+    /// `gen lock-check` — freshness of every revision a consumer's
+    /// `flake.lock` PINS, which is what it actually builds.
+    ///
+    /// ★ `fleet-check` reads worktrees. A consumer does not build your
+    /// worktree; it builds the pinned rev. When those disagree, every
+    /// worktree-reading tool reports fine and the build fails — measured
+    /// 2026-08-30, where `gen fleet-check` said 0 stale, `gen confirm` said
+    /// fresh, `git status` said clean, and `nix eval` failed D2 on a pinned
+    /// rev whose regen had landed upstream after the pin.
+    #[command(name = "lock-check")]
+    LockCheck {
+        /// Directory containing the `flake.lock` to read. Defaults to cwd.
+        #[arg(long)]
+        flake: Option<PathBuf>,
+        /// Root under which local clones live as `<root>/<owner>/<repo>`.
+        #[arg(long, default_value = "~/code/github")]
+        clones: String,
+    },
     /// Run gen build across every cargo workspace under <path>.
     /// Emits a typed sweep report (JSON|YAML). Use --write to persist
     /// Cargo.build-spec.json into each successful repo for committing.
@@ -927,6 +945,105 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                 .collect();
             emit(&final_entries, cli.format)?;
             if needs_any_regen {
+                std::process::exit(1);
+            }
+            Ok(())
+        }
+        Cmd::LockCheck { flake, clones } => {
+            #[derive(serde::Serialize)]
+            struct PinnedFreshness {
+                input: String,
+                repo: String,
+                rev: String,
+                /// `None` when no local clone was found — an ABSENCE, reported
+                /// as such rather than folded into "fresh". A checker that
+                /// silently skips what it cannot see is the vacuous-guard
+                /// shape this command exists to remove.
+                freshness: Option<gen_cargo::build_spec::Freshness>,
+                #[serde(skip_serializing_if = "Option::is_none")]
+                unchecked_because: Option<&'static str>,
+            }
+
+            let dir = flake
+                .clone()
+                .unwrap_or_else(|| std::env::current_dir().unwrap_or_default());
+            let lock_path = dir.join("flake.lock");
+            let bytes = std::fs::read(&lock_path).map_err(|e| {
+                CliError::Other(format!("lock-check: read {}: {e}", lock_path.display()))
+            })?;
+            let doc: serde_json::Value = serde_json::from_slice(&bytes).map_err(|e| {
+                CliError::Other(format!("lock-check: parse {}: {e}", lock_path.display()))
+            })?;
+
+            let clone_root = if let Some(rest) = clones.strip_prefix("~/") {
+                std::env::var("HOME").map_or_else(
+                    |_| PathBuf::from(clones.clone()),
+                    |h| PathBuf::from(h).join(rest),
+                )
+            } else {
+                PathBuf::from(clones.clone())
+            };
+
+            let mut rows: Vec<PinnedFreshness> = Vec::new();
+            let mut any_stale = false;
+            let mut unchecked = 0usize;
+
+            if let Some(nodes) = doc.get("nodes").and_then(|n| n.as_object()) {
+                for (name, node) in nodes {
+                    if name == "root" {
+                        continue;
+                    }
+                    let Some(locked) = node.get("locked") else {
+                        continue;
+                    };
+                    let (Some(owner), Some(repo), Some(rev)) = (
+                        locked.get("owner").and_then(|v| v.as_str()),
+                        locked.get("repo").and_then(|v| v.as_str()),
+                        locked.get("rev").and_then(|v| v.as_str()),
+                    ) else {
+                        continue;
+                    };
+                    let checkout = clone_root.join(owner).join(repo);
+                    if !checkout.join(".git").exists() {
+                        unchecked += 1;
+                        rows.push(PinnedFreshness {
+                            input: name.clone(),
+                            repo: format!("{owner}/{repo}"),
+                            rev: rev.to_string(),
+                            freshness: None,
+                            unchecked_because: Some("no local clone"),
+                        });
+                        continue;
+                    }
+                    let Some(lock) = git_show(&checkout, rev, "Cargo.lock") else {
+                        // Not a cargo workspace at that rev — not a finding.
+                        continue;
+                    };
+                    let tie = git_show(&checkout, rev, "Cargo.gen.lock")
+                        .or_else(|| git_show(&checkout, rev, "Cargo.build-spec.json"));
+                    let f = gen_cargo::build_spec::check_freshness_at_rev(&lock, tie.as_deref());
+                    if f.needs_regen() {
+                        any_stale = true;
+                    }
+                    rows.push(PinnedFreshness {
+                        input: name.clone(),
+                        repo: format!("{owner}/{repo}"),
+                        rev: rev.to_string(),
+                        freshness: Some(f),
+                        unchecked_because: None,
+                    });
+                }
+            }
+
+            rows.sort_by(|a, b| a.input.cmp(&b.input));
+            emit(&rows, cli.format)?;
+            if unchecked > 0 {
+                eprintln!(
+                    "lock-check: {unchecked} pinned input(s) had no local clone and were \
+                     NOT checked — this is a coverage gap, not a pass"
+                );
+            }
+            if any_stale {
                 std::process::exit(1);
             }
             Ok(())
@@ -2026,4 +2143,19 @@ fn pick_target(
         )
         .into()
     })
+}
+
+/// Read one file at one revision, without touching the worktree.
+///
+/// A typed wrapper rather than an inline command: this is the whole point of
+/// `lock-check` — the worktree is precisely the thing that must NOT be read.
+fn git_show(repo: &Path, rev: &str, file: &str) -> Option<Vec<u8>> {
+    let out = std::process::Command::new("git")
+        .arg("-C")
+        .arg(repo)
+        .arg("show")
+        .arg(format!("{rev}:{file}"))
+        .output()
+        .ok()?;
+    out.status.success().then_some(out.stdout)
 }

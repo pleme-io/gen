@@ -77,8 +77,8 @@ pub mod set;
 pub mod solver;
 pub mod universe;
 
-pub use set::{newest_first, Bound, Interval, VersionSet};
+pub use set::{Bound, Interval, VersionSet, newest_first};
 pub use solver::{
-    Conflict, PackageAt, Requirement, Resolution, SolveError, Solver, DEFAULT_MAX_STEPS,
+    Conflict, DEFAULT_MAX_STEPS, PackageAt, Requirement, Resolution, SolveError, Solver,
 };
-pub use universe::{edge, edge_of_kind, Follow, MapUniverse, PackageUniverse};
+pub use universe::{Follow, MapUniverse, PackageUniverse, edge, edge_of_kind};

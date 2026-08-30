@@ -5,7 +5,17 @@ use serde::{Deserialize, Serialize};
 
 /// Quirks for known third-party Ruby gems whose install/build fails
 /// inside the nixpkgs sandbox without a known-good workaround.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, gen_macros::TypedDispatcher, gen_macros::Discriminant, gen_macros::IsVariant)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    gen_macros::TypedDispatcher,
+    gen_macros::Discriminant,
+    gen_macros::IsVariant,
+)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum BundlerQuirk {
     /// Pin a specific Ruby interpreter for a gem whose native

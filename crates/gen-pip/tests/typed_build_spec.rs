@@ -21,7 +21,10 @@ fn package_args_serializes_to_build_python_package_keys() {
     assert_eq!(v.get("pname"), Some(&serde_json::json!("rich")));
     assert_eq!(v.get("version"), Some(&serde_json::json!("13.7.0")));
     assert_eq!(v.get("pyproject"), Some(&serde_json::json!(true)));
-    assert_eq!(v.get("build-system"), Some(&serde_json::json!(["poetry-core"])));
+    assert_eq!(
+        v.get("build-system"),
+        Some(&serde_json::json!(["poetry-core"]))
+    );
     assert_eq!(
         v.get("propagatedBuildInputs"),
         Some(&serde_json::json!(["markdown-it-py", "pygments"]))
@@ -31,7 +34,10 @@ fn package_args_serializes_to_build_python_package_keys() {
         Some(&serde_json::json!(["python3Packages.poetry-core"]))
     );
     assert_eq!(v.get("doCheck"), Some(&serde_json::json!(false)));
-    assert_eq!(v.get("pythonImportsCheck"), Some(&serde_json::json!(["rich", "rich.console"])));
+    assert_eq!(
+        v.get("pythonImportsCheck"),
+        Some(&serde_json::json!(["rich", "rich.console"]))
+    );
 }
 
 #[test]
@@ -47,9 +53,13 @@ fn empty_args_serializes_to_empty_object() {
 #[test]
 fn quirk_variants_round_trip() {
     for q in [
-        PipQuirk::PinInterpreter { python: "python311".into() },
+        PipQuirk::PinInterpreter {
+            python: "python311".into(),
+        },
         PipQuirk::SkipCheck,
-        PipQuirk::DropRequires { package: "broken-dep".into() },
+        PipQuirk::DropRequires {
+            package: "broken-dep".into(),
+        },
         PipQuirk::SubstituteSource {
             file: "setup.py".into(),
             from: "old".into(),
@@ -88,7 +98,10 @@ fn build_spec_implements_spec_trait() {
     assert_eq!(spec.schema_version(), SCHEMA_VERSION);
     assert_eq!(spec.root_key(), "rich-13.7.0");
     let violations = <PipInvariants as Invariants>::check(&spec);
-    assert!(violations.is_empty(), "minimal spec violated: {violations:?}");
+    assert!(
+        violations.is_empty(),
+        "minimal spec violated: {violations:?}"
+    );
 }
 
 #[test]

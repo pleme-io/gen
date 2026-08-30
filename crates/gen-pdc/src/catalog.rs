@@ -109,15 +109,16 @@ impl EcosystemVariant {
     /// only-mitigated tier? (Shipped/M1 variants do; Design ones do not.)
     #[must_use]
     pub fn discharges_all_clauses(&self) -> bool {
-        PdcClause::ALL
-            .iter()
-            .all(|cl| self.tier_for(*cl).is_some())
+        PdcClause::ALL.iter().all(|cl| self.tier_for(*cl).is_some())
     }
 }
 
 // ── clause-status shorthands ─────────────────────────────────────────────
 const fn cs(clause: PdcClause, tier: UnrepTier) -> ClauseStatus {
-    ClauseStatus { clause, tier: Some(tier) }
+    ClauseStatus {
+        clause,
+        tier: Some(tier),
+    }
 }
 const fn gap(clause: PdcClause) -> ClauseStatus {
     ClauseStatus { clause, tier: None }
@@ -307,11 +308,19 @@ mod tests {
     #[test]
     fn maturity_histogram_partitions_the_catalog() {
         let (d, m1, s) = maturity_histogram();
-        assert_eq!(d + m1 + s, CATALOG.len(), "maturity histogram must sum to catalog size");
+        assert_eq!(
+            d + m1 + s,
+            CATALOG.len(),
+            "maturity histogram must sum to catalog size"
+        );
         // Tier-honest snapshot of the CURRENT fleet state (2026-07):
         // cargo shipped, gomod M1, npm+pip design. Update deliberately when
         // a variant advances — this line IS the ledger.
-        assert_eq!((d, m1, s), (2, 1, 1), "PDC maturity ledger drifted — update deliberately");
+        assert_eq!(
+            (d, m1, s),
+            (2, 1, 1),
+            "PDC maturity ledger drifted — update deliberately"
+        );
     }
 
     #[test]
@@ -339,7 +348,10 @@ mod tests {
                     assert!(
                         rank(t) <= rank(ach),
                         "variant {} rounds clause {:?} UP: claims {:?}, achievable {:?}",
-                        v.name, cs.clause, t, ach
+                        v.name,
+                        cs.clause,
+                        t,
+                        ach
                     );
                 }
             }
@@ -353,7 +365,8 @@ mod tests {
                 Maturity::Shipped | Maturity::M1 => assert!(
                     v.discharges_all_clauses(),
                     "{} is {} but leaves a clause undischarged",
-                    v.name, v.maturity.as_str()
+                    v.name,
+                    v.maturity.as_str()
                 ),
                 Maturity::Design => assert!(
                     !v.discharges_all_clauses(),

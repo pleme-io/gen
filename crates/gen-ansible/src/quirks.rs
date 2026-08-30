@@ -11,7 +11,17 @@ use serde::{Deserialize, Serialize};
 /// Typed quirks for known third-party upstream ansible collections.
 /// Each variant maps to a Nix dispatch arm in
 /// `substrate/lib/build/ansible/quirk-apply.nix`.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, gen_macros::TypedDispatcher, gen_macros::Discriminant, gen_macros::IsVariant)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    gen_macros::TypedDispatcher,
+    gen_macros::Discriminant,
+    gen_macros::IsVariant,
+)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum AnsibleQuirk {
     /// Drop a declared cross-collection dependency — used when a
@@ -22,7 +32,11 @@ pub enum AnsibleQuirk {
     /// Add a path to `build_ignore` — exclude from the built tarball.
     BuildIgnore { path: String },
     /// Inject a YAML/JSON patch into a vendored playbook/role file.
-    SubstituteSource { file: String, from: String, to: String },
+    SubstituteSource {
+        file: String,
+        from: String,
+        to: String,
+    },
 }
 
 pub fn registry() -> Vec<(&'static str, Vec<AnsibleQuirk>)> {

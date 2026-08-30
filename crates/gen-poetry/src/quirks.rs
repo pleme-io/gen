@@ -11,7 +11,17 @@ use serde::{Deserialize, Serialize};
 /// Typed quirks for known third-party upstream poetry packages.
 /// Each variant maps to a Nix dispatch arm in
 /// `substrate/lib/build/poetry/quirk-apply.nix`.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, gen_macros::TypedDispatcher, gen_macros::Discriminant, gen_macros::IsVariant)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    gen_macros::TypedDispatcher,
+    gen_macros::Discriminant,
+    gen_macros::IsVariant,
+)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum PoetryQuirk {
     /// Override the build-system backend for a wheel that ships
@@ -19,7 +29,11 @@ pub enum PoetryQuirk {
     OverrideBuildSystem { package: String, backend: String },
     /// Inject a poetry2nix `defaultPoetryOverrides` arm — apply a
     /// `prev.<package>.overridePythonAttrs` patch declaratively.
-    OverrideAttrs { package: String, attr: String, value: String },
+    OverrideAttrs {
+        package: String,
+        attr: String,
+        value: String,
+    },
     /// Skip the package's check phase.
     SkipCheck { package: String },
     /// Force wheel-or-sdist preference per-package — overrides the

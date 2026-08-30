@@ -20,7 +20,7 @@
 //! exactly the bug a hand-written fixture is least likely to catch, because you
 //! have to already suspect the graph shape to write it down.
 
-use gen_solve::{edge, MapUniverse, PackageUniverse, Resolution, SolveError, Solver, VersionSet};
+use gen_solve::{MapUniverse, PackageUniverse, Resolution, SolveError, Solver, VersionSet, edge};
 use gen_types::{ConstraintSpec, Dependency, Version};
 use proptest::prelude::*;
 
@@ -115,11 +115,7 @@ fn a_graph() -> impl Strategy<Value = (MapUniverse, Vec<Dependency>)> {
 /// with the solver's own algebra would pass even if the lowering were wrong;
 /// checking it against the matcher every adapter already trusts is evidence
 /// about both at once.
-fn violation(
-    universe: &MapUniverse,
-    root: &[Dependency],
-    resolved: &Resolution,
-) -> Option<String> {
+fn violation(universe: &MapUniverse, root: &[Dependency], resolved: &Resolution) -> Option<String> {
     // Every requirement in force: the root's, plus those of each picked
     // package at its picked version.
     let mut requirements: Vec<(String, &Dependency)> =

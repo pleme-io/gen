@@ -16,7 +16,7 @@
 //! consume these traits without caring which ecosystem produced
 //! them.
 
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 
 /// The typed shape an adapter's build spec exposes to substrate +
 /// tooling consumers. Every adapter's `BuildSpec` struct implements

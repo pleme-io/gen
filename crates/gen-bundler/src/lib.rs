@@ -14,7 +14,7 @@ pub mod error;
 pub mod invariants;
 pub mod quirks;
 
-pub use adapter::{ctx_for, BundlerAdapter};
+pub use adapter::{BundlerAdapter, ctx_for};
 pub use error::{BundlerError, Result};
 
 use std::path::{Path, PathBuf};
@@ -130,9 +130,7 @@ fn parse_gemfile(text: &str) -> GemfileParse {
             continue;
         }
         if let Some(rest) = line.strip_prefix("gem ") {
-            if let Some(dep) =
-                parse_gem_line(rest, group_stack.last(), platform_stack.last())
-            {
+            if let Some(dep) = parse_gem_line(rest, group_stack.last(), platform_stack.last()) {
                 deps.push(dep);
             }
             continue;
@@ -208,11 +206,9 @@ fn parse_gem_line(
     };
 
     let constraint = match &version_str {
-        Some(v) => parse_gemfile_constraint(&name, v).unwrap_or_else(|_| {
-            VersionConstraint {
-                spec: ConstraintSpec::Any,
-                native_syntax: Some(v.clone()),
-            }
+        Some(v) => parse_gemfile_constraint(&name, v).unwrap_or_else(|_| VersionConstraint {
+            spec: ConstraintSpec::Any,
+            native_syntax: Some(v.clone()),
         }),
         None => VersionConstraint::from_spec(ConstraintSpec::Any),
     };
@@ -255,10 +251,7 @@ fn parse_gemfile_constraint(name: &str, raw: &str) -> Result<VersionConstraint> 
         atoms.push(parse_gemfile_one(name, p)?);
     }
     let spec = if atoms.len() == 2 {
-        if let (
-            ConstraintSpec::GreaterEqual(lo),
-            ConstraintSpec::Less(hi),
-        ) = (&atoms[0], &atoms[1])
+        if let (ConstraintSpec::GreaterEqual(lo), ConstraintSpec::Less(hi)) = (&atoms[0], &atoms[1])
         {
             ConstraintSpec::Range {
                 lower_inclusive: lo.clone(),
@@ -399,7 +392,10 @@ gem 'sidekiq', '6.5.7'
         let rails = p.dependencies.iter().find(|d| d.name == "rails").unwrap();
         assert!(matches!(rails.constraint.spec, ConstraintSpec::Tilde(_)));
         let pg = p.dependencies.iter().find(|d| d.name == "pg").unwrap();
-        assert!(matches!(pg.constraint.spec, ConstraintSpec::GreaterEqual(_)));
+        assert!(matches!(
+            pg.constraint.spec,
+            ConstraintSpec::GreaterEqual(_)
+        ));
         let puma = p.dependencies.iter().find(|d| d.name == "puma").unwrap();
         assert!(matches!(puma.constraint.spec, ConstraintSpec::Any));
         let sk = p.dependencies.iter().find(|d| d.name == "sidekiq").unwrap();

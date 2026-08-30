@@ -11,9 +11,9 @@
 use std::collections::HashMap;
 use std::path::Path;
 
+use crate::build_spec::TargetTuple;
 use crate::error::GomodError;
 use crate::interp::GoBuildEnv;
-use crate::build_spec::TargetTuple;
 
 /// A [`GoBuildEnv`] backed by in-memory maps.
 #[derive(Clone, Debug, Default)]
@@ -52,7 +52,12 @@ impl GoBuildEnv for MockGoBuildEnv {
         self.list_by_tuple
             .get(&tuple.suffix())
             .cloned()
-            .ok_or_else(|| GomodError::GoList(format!("mock: no go list registered for {}", tuple.suffix())))
+            .ok_or_else(|| {
+                GomodError::GoList(format!(
+                    "mock: no go list registered for {}",
+                    tuple.suffix()
+                ))
+            })
     }
 
     fn read_file(&self, path: &Path) -> Result<Vec<u8>, GomodError> {

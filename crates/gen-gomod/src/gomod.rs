@@ -144,7 +144,12 @@ fn parse_replace_entry(s: &str) -> Option<ReplaceDirective> {
     if old_path.is_empty() || new_path.is_empty() {
         return None;
     }
-    Some(ReplaceDirective { old_path, old_version, new_path, new_version })
+    Some(ReplaceDirective {
+        old_path,
+        old_version,
+        new_path,
+        new_version,
+    })
 }
 
 /// `<path>` or `<path> <version>`. A local filesystem replacement
@@ -192,7 +197,10 @@ replace (
         assert_eq!(m.go_version, "1.26");
         assert_eq!(m.toolchain.as_deref(), Some("go1.26.4"));
         assert_eq!(m.requires.len(), 3);
-        assert!(m.requires.contains(&("github.com/single/dep".into(), "v2.0.0".into())));
+        assert!(
+            m.requires
+                .contains(&("github.com/single/dep".into(), "v2.0.0".into()))
+        );
         // in-tree filesystem replace (no version on the RHS).
         let fs_replace = m
             .replaces
@@ -202,7 +210,11 @@ replace (
         assert_eq!(fs_replace.new_path, "./go/src/client/sdktest/sdk-go");
         assert_eq!(fs_replace.new_version, None);
         // block replace with versions on both sides.
-        let mod_replace = m.replaces.iter().find(|r| r.old_path == "github.com/old/mod").unwrap();
+        let mod_replace = m
+            .replaces
+            .iter()
+            .find(|r| r.old_path == "github.com/old/mod")
+            .unwrap();
         assert_eq!(mod_replace.old_version.as_deref(), Some("v1.0.0"));
         assert_eq!(mod_replace.new_version.as_deref(), Some("v1.1.0"));
     }

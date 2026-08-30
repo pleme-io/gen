@@ -16,7 +16,7 @@
 //! Failures AGGREGATE before the assert — one run reports every broken row.
 
 use gen_secattest::concern::{
-    concern_slot, maturity_histogram, Concern, ConcernSlot, ShipMaturity, CONCERN_CATALOG,
+    CONCERN_CATALOG, Concern, ConcernSlot, ShipMaturity, concern_slot, maturity_histogram,
 };
 use gen_secattest::fixture;
 use gen_secattest::invariant::Attestable;
@@ -32,14 +32,38 @@ struct ConcernRow {
 /// The matrix. ONE row per concern in the catalog. Adding a concern slot
 /// without a row here fails `matrix_covers_every_concern`.
 const MATRIX: &[ConcernRow] = &[
-    ConcernRow { concern: Concern::Signing, expected_fail_closed: true },
-    ConcernRow { concern: Concern::Sbom, expected_fail_closed: true },
-    ConcernRow { concern: Concern::CveVex, expected_fail_closed: true },
-    ConcernRow { concern: Concern::ProvenanceVsa, expected_fail_closed: true },
-    ConcernRow { concern: Concern::Transparency, expected_fail_closed: false },
-    ConcernRow { concern: Concern::Guac, expected_fail_closed: false },
-    ConcernRow { concern: Concern::Scorecard, expected_fail_closed: false },
-    ConcernRow { concern: Concern::Admission, expected_fail_closed: false },
+    ConcernRow {
+        concern: Concern::Signing,
+        expected_fail_closed: true,
+    },
+    ConcernRow {
+        concern: Concern::Sbom,
+        expected_fail_closed: true,
+    },
+    ConcernRow {
+        concern: Concern::CveVex,
+        expected_fail_closed: true,
+    },
+    ConcernRow {
+        concern: Concern::ProvenanceVsa,
+        expected_fail_closed: true,
+    },
+    ConcernRow {
+        concern: Concern::Transparency,
+        expected_fail_closed: false,
+    },
+    ConcernRow {
+        concern: Concern::Guac,
+        expected_fail_closed: false,
+    },
+    ConcernRow {
+        concern: Concern::Scorecard,
+        expected_fail_closed: false,
+    },
+    ConcernRow {
+        concern: Concern::Admission,
+        expected_fail_closed: false,
+    },
 ];
 
 #[test]
@@ -53,7 +77,10 @@ fn matrix_covers_every_concern() {
         catalog_concerns, matrix_concerns,
         "concern matrix ⇄ catalog drift: every concern needs exactly one matrix row"
     );
-    assert!(MATRIX.len() >= 8, "matrix regressed below the eight known security concerns");
+    assert!(
+        MATRIX.len() >= 8,
+        "matrix regressed below the eight known security concerns"
+    );
 }
 
 #[test]
@@ -68,11 +95,17 @@ fn every_concern_is_present_control_mapped_and_correctly_gated() {
         };
         // present
         if slot.engine.is_empty() {
-            failures.push(format!("{:?}: no best-in-class OSS engine named (not present)", row.concern));
+            failures.push(format!(
+                "{:?}: no best-in-class OSS engine named (not present)",
+                row.concern
+            ));
         }
         // control-mapped
         if slot.controls.is_empty() {
-            failures.push(format!("{:?}: no 800-53 control mapping (not control-mapped)", row.concern));
+            failures.push(format!(
+                "{:?}: no 800-53 control mapping (not control-mapped)",
+                row.concern
+            ));
         }
         // fail-closed declared correctly
         if slot.fail_closed != row.expected_fail_closed {
@@ -115,7 +148,11 @@ fn fail_closed_concerns_actually_deny_the_run_path() {
             ));
         }
     }
-    assert!(failures.is_empty(), "fail-closed concerns that did not deny:\n  - {}", failures.join("\n  - "));
+    assert!(
+        failures.is_empty(),
+        "fail-closed concerns that did not deny:\n  - {}",
+        failures.join("\n  - ")
+    );
 }
 
 #[test]
@@ -130,8 +167,15 @@ fn no_verdict_slot_rounded_up() {
     //       (transparency/guac/scorecard/admission) cannot round its
     //       posture up to "denies the run path."
     let (design, wired, shipped) = maturity_histogram();
-    assert_eq!(design + wired + shipped, CONCERN_CATALOG.len(), "histogram must partition the catalog");
-    assert_eq!(shipped, 0, "no concern may claim Shipped — the honest ceiling (no e2e-proven enforcement yet)");
+    assert_eq!(
+        design + wired + shipped,
+        CONCERN_CATALOG.len(),
+        "histogram must partition the catalog"
+    );
+    assert_eq!(
+        shipped, 0,
+        "no concern may claim Shipped — the honest ceiling (no e2e-proven enforcement yet)"
+    );
     assert_eq!(
         (design, wired, shipped),
         (3, 5, 0),
@@ -150,8 +194,15 @@ fn no_verdict_slot_rounded_up() {
         // A Shipped maturity would require the concern be live-enforced AND
         // e2e-proven; none is. Belt-and-braces with the histogram assert above.
         if slot.maturity == ShipMaturity::Shipped {
-            rounded.push(format!("{:?}: maturity=Shipped is not earned yet", slot.concern));
+            rounded.push(format!(
+                "{:?}: maturity=Shipped is not earned yet",
+                slot.concern
+            ));
         }
     }
-    assert!(rounded.is_empty(), "rounded-up concern(s):\n  - {}", rounded.join("\n  - "));
+    assert!(
+        rounded.is_empty(),
+        "rounded-up concern(s):\n  - {}",
+        rounded.join("\n  - ")
+    );
 }

@@ -5,7 +5,7 @@
 //! fixtures those arms would be branches nothing ever exercises. That is the
 //! same anti-vacuity argument as the directive vector table.
 
-use gen_gomod::adopt::{assess, census, AdoptEnv, AdoptionRefusal, AdoptionVerdict, Census};
+use gen_gomod::adopt::{AdoptEnv, AdoptionRefusal, AdoptionVerdict, Census, assess, census};
 use std::collections::HashMap;
 
 struct MockAdoptEnv(HashMap<String, String>);
@@ -20,9 +20,15 @@ fn env() -> MockAdoptEnv {
     let mut m = HashMap::new();
     m.insert("ok".into(), "module example.com/ok\n\ngo 1.25.0\n".into());
     m.insert("bare".into(), "module example.com/bare\n\ngo 1.25\n".into());
-    m.insert("above".into(), "module example.com/above\n\ngo 1.27.0\n".into());
+    m.insert(
+        "above".into(),
+        "module example.com/above\n\ngo 1.27.0\n".into(),
+    );
     m.insert("nodir".into(), "module example.com/nodir\n".into());
-    m.insert("weird".into(), "module example.com/weird\n\ngo 1.2.3.4\n".into());
+    m.insert(
+        "weird".into(),
+        "module example.com/weird\n\ngo 1.2.3.4\n".into(),
+    );
     MockAdoptEnv(m)
 }
 
@@ -78,7 +84,14 @@ fn empty_input_is_not_a_green_census() {
     // The vacuity guard: a census over nothing reports scanned 0, and a caller
     // reading only `eligible == refused.len() == 0` would call that success.
     let c = census(&env(), &[], FLEET);
-    assert_eq!(c, Census { scanned: 0, eligible: 0, refused: vec![] });
+    assert_eq!(
+        c,
+        Census {
+            scanned: 0,
+            eligible: 0,
+            refused: vec![]
+        }
+    );
     assert_eq!(c.scanned, 0, "an empty census must be visibly empty");
 }
 

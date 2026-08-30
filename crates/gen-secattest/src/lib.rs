@@ -85,17 +85,13 @@ pub mod invariant;
 pub mod remediation;
 pub mod verdict;
 
-pub use catalog::{entry_for, maturity_histogram, VerdictKindEntry, CATALOG};
-pub use concern::{
-    concern_slot, Concern, ConcernSlot, Layer, ShipMaturity, CONCERN_CATALOG,
-};
+pub use catalog::{CATALOG, VerdictKindEntry, entry_for, maturity_histogram};
 pub use clause::{AttestTier, SecClause};
-pub use invariant::{
-    dedup_witness, verify, Attestable, DedupOutcome, VerdictViolation,
-};
+pub use concern::{CONCERN_CATALOG, Concern, ConcernSlot, Layer, ShipMaturity, concern_slot};
+pub use invariant::{Attestable, DedupOutcome, VerdictViolation, dedup_witness, verify};
 pub use remediation::{
-    remediation_for, remediation_for_cve_id, AppliesTo, CveFinding, Fix, RemediationEntry,
-    RemediationMaturity, REMEDIATION_CATALOG,
+    AppliesTo, CveFinding, Fix, REMEDIATION_CATALOG, RemediationEntry, RemediationMaturity,
+    remediation_for, remediation_for_cve_id,
 };
 pub use verdict::{
     AttestationAddr, CompleteVerdict, CveDbEpoch, CveSlot, EpochTtl, IncompleteVerdict,

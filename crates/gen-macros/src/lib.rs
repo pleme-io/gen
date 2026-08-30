@@ -39,7 +39,7 @@
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Data, DeriveInput, Fields, Lit, Meta};
+use syn::{Data, DeriveInput, Fields, Lit, Meta, parse_macro_input};
 
 /// `#[derive(SpecShape)]` — auto-implement `gen_types::Spec` on a
 /// struct whose fields follow the conventional gen build-spec shape:
@@ -74,7 +74,9 @@ pub fn derive_spec_shape(input: TokenStream) -> TokenStream {
         if !attr.path().is_ident("spec") {
             continue;
         }
-        let Meta::List(list) = &attr.meta else { continue };
+        let Meta::List(list) = &attr.meta else {
+            continue;
+        };
         let _ = list.parse_nested_meta(|meta| {
             let Some(ident) = meta.path.get_ident() else {
                 return Ok(());
@@ -172,7 +174,9 @@ pub fn derive_quirk_registry(input: TokenStream) -> TokenStream {
         if !attr.path().is_ident("quirks") {
             continue;
         }
-        let Meta::List(list) = &attr.meta else { continue };
+        let Meta::List(list) = &attr.meta else {
+            continue;
+        };
         let _ = list.parse_nested_meta(|meta| {
             let Some(ident) = meta.path.get_ident() else {
                 return Ok(());
@@ -655,12 +659,9 @@ pub fn derive_is_variant(input: TokenStream) -> TokenStream {
     let enum_name = input.ident.clone();
 
     let Data::Enum(de) = input.data.clone() else {
-        return syn::Error::new_spanned(
-            &enum_name,
-            "#[derive(IsVariant)] is only valid on enums",
-        )
-        .to_compile_error()
-        .into();
+        return syn::Error::new_spanned(&enum_name, "#[derive(IsVariant)] is only valid on enums")
+            .to_compile_error()
+            .into();
     };
 
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();

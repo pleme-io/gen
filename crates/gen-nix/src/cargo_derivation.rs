@@ -15,11 +15,9 @@
 
 use std::collections::BTreeMap;
 
-use gen_types::{
-    DependencyKind, Manifest, Package, PackageId, PackageSource, ResolvedPackage,
-};
+use gen_types::{DependencyKind, Manifest, Package, PackageId, PackageSource, ResolvedPackage};
 
-use crate::ast::{entry, AttrSetEntry, NixValue};
+use crate::ast::{AttrSetEntry, NixValue, entry};
 
 /// Vendored from `pleme-io/caixa-bitflags/Cargo.nix` (crate2nix
 /// 0.15.0) — the internal helper functions that drive
@@ -68,7 +66,8 @@ fn render_lambda_header() -> String {
   ? if builtins.pathExists ./crate-config.nix
     then pkgs.callPackage ./crate-config.nix {}
     else {}
-}:"#.to_string()
+}:"#
+    .to_string()
 }
 
 // ── Body assembly ────────────────────────────────────────────────────
@@ -333,18 +332,18 @@ fn render_resolved_crate(r: &ResolvedPackage) -> NixValue {
             entries.push(entry(
                 "src",
                 NixValue::Apply {
-                    func: Box::new(NixValue::AttrPath(vec![
-                        "pkgs".into(),
-                        "fetchgit".into(),
-                    ])),
+                    func: Box::new(NixValue::AttrPath(vec!["pkgs".into(), "fetchgit".into()])),
                     args: vec![NixValue::AttrSet {
                         recursive: false,
                         entries: vec![
                             entry("url", NixValue::str(url)),
                             entry("rev", NixValue::str(rev)),
-                            entry("sha256", NixValue::str(strip_sha_prefix(
-                                r.integrity.as_deref().unwrap_or(""),
-                            ))),
+                            entry(
+                                "sha256",
+                                NixValue::str(strip_sha_prefix(
+                                    r.integrity.as_deref().unwrap_or(""),
+                                )),
+                            ),
                         ],
                     }],
                 },
@@ -508,7 +507,12 @@ fn member_dep_to_nix(d: &gen_types::Dependency) -> NixValue {
     if !d.features_enabled.is_empty() {
         entries.push(entry(
             "features",
-            NixValue::List(d.features_enabled.iter().map(|f| NixValue::str(f)).collect()),
+            NixValue::List(
+                d.features_enabled
+                    .iter()
+                    .map(|f| NixValue::str(f))
+                    .collect(),
+            ),
         ));
     }
     NixValue::AttrSet {
@@ -532,4 +536,3 @@ fn strip_sha_prefix(h: &str) -> &str {
         .or_else(|| h.strip_prefix("sha512:"))
         .unwrap_or(h)
 }
-

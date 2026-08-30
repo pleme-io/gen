@@ -40,7 +40,10 @@ fn parse_classifies_kind_and_dep_only() {
     assert!(!pkgs[0].dep_only);
     // ImportMap captured.
     assert_eq!(
-        pkgs[0].import_map.get("example.com/app/pkg/util").map(String::as_str),
+        pkgs[0]
+            .import_map
+            .get("example.com/app/pkg/util")
+            .map(String::as_str),
         Some("example.com/app/vendor/example.com/app/pkg/util")
     );
     assert_eq!(pkgs[1].kind(), PackageKind::Module);
@@ -56,8 +59,18 @@ fn encoder_resolves_import_edge_through_import_map() {
         .with_list(&tuple, REWRITE_STREAM.trim())
         .with_file("/w/go.mod", "module example.com/app\n\ngo 1.25\n")
         .with_file("/w/cmd/app/main.go", "package main\nfunc main() {}\n")
-        .with_file("/w/vendor/example.com/app/pkg/util/util.go", "package util\n");
-    let spec = apply(&env, &EncodeCtx { root: common::ROOT.into(), tuple }).expect("encode");
+        .with_file(
+            "/w/vendor/example.com/app/pkg/util/util.go",
+            "package util\n",
+        );
+    let spec = apply(
+        &env,
+        &EncodeCtx {
+            root: common::ROOT.into(),
+            tuple,
+        },
+    )
+    .expect("encode");
 
     // The main's edge is rewritten through ImportMap to the vendored
     // actual package's node key — and that key exists (Go-I1 holds).
@@ -81,7 +94,10 @@ fn gate_a_edges_all_resolve() {
     // every import edge names a node present in the graph.
     for (key, p) in &spec.packages {
         for edge in &p.imports {
-            assert!(spec.packages.contains_key(edge), "node `{key}` edge `{edge}` unresolved");
+            assert!(
+                spec.packages.contains_key(edge),
+                "node `{key}` edge `{edge}` unresolved"
+            );
         }
     }
 }

@@ -68,21 +68,13 @@ mod tests {
 
     #[test]
     fn multi_member_workspace_is_multi() {
-        let w = Workspace::new(
-            "/x",
-            vec![PathBuf::from("a"), PathBuf::from("b")],
-            "cargo",
-        );
+        let w = Workspace::new("/x", vec![PathBuf::from("a"), PathBuf::from("b")], "cargo");
         assert!(w.is_multi_package());
     }
 
     #[test]
     fn round_trip_through_serde() {
-        let w = Workspace::new(
-            "/x",
-            vec![PathBuf::from("a"), PathBuf::from("b")],
-            "cargo",
-        );
+        let w = Workspace::new("/x", vec![PathBuf::from("a"), PathBuf::from("b")], "cargo");
         let j = serde_json::to_string(&w).unwrap();
         let parsed: Workspace = serde_json::from_str(&j).unwrap();
         assert_eq!(w, parsed);

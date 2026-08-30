@@ -41,7 +41,10 @@ fn package_args_serializes_to_chart_yaml_shape() {
     assert_eq!(v.get("kubeVersion"), Some(&serde_json::json!(">=1.22.0")));
     let deps = v.get("dependencies").unwrap().as_array().unwrap();
     assert_eq!(deps[0]["name"], serde_json::json!("redis"));
-    assert_eq!(deps[0]["repository"], serde_json::json!("https://charts.bitnami.com/bitnami"));
+    assert_eq!(
+        deps[0]["repository"],
+        serde_json::json!("https://charts.bitnami.com/bitnami")
+    );
     assert_eq!(deps[0]["alias"], serde_json::json!("cache"));
     assert_eq!(deps[0]["condition"], serde_json::json!("redis.enabled"));
 }
@@ -99,7 +102,10 @@ fn build_spec_implements_spec_trait() {
     assert_eq!(spec.schema_version(), SCHEMA_VERSION);
     assert_eq!(spec.root_key(), "argocd-5.51.4");
     let violations = <HelmInvariants as Invariants>::check(&spec);
-    assert!(violations.is_empty(), "minimal spec violated: {violations:?}");
+    assert!(
+        violations.is_empty(),
+        "minimal spec violated: {violations:?}"
+    );
 }
 
 #[test]

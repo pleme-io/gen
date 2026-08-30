@@ -85,7 +85,9 @@ pub enum BuildStepKind {
     /// runs it at the position the adapter requested. Name is the
     /// adapter's chosen label (e.g. `"strip"`, `"sign"`,
     /// `"cargo:rustc-link-lib"`).
-    Custom { name: String },
+    Custom {
+        name: String,
+    },
 }
 
 /// Declarative build command — NOT raw shell. Renderers translate
@@ -121,7 +123,10 @@ pub enum BuildCommand {
         args: Vec<String>,
     },
     /// A typed `make`-shaped target.
-    Make { target: String, env: indexmap::IndexMap<String, String> },
+    Make {
+        target: String,
+        env: indexmap::IndexMap<String, String>,
+    },
     /// A typed file copy step (Fetch / Install phase).
     Copy { from: String, to: String },
     /// A typed mkdir step.
@@ -131,10 +136,7 @@ pub enum BuildCommand {
     /// Adapter-supplied native command — used as the last resort
     /// when the typed variants don't cover it. Renderer is
     /// expected to translate, not pass through raw.
-    Native {
-        program: String,
-        args: Vec<String>,
-    },
+    Native { program: String, args: Vec<String> },
 }
 
 #[cfg(test)]

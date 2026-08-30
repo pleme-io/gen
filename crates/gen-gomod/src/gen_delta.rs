@@ -61,7 +61,10 @@ impl GoGenDelta {
     /// Distill from a full v2 build-spec. Errors rather than emit a
     /// degenerate delta (missing tie / no hashed nodes).
     pub fn distill(spec: &BuildSpec) -> Result<Self, GenDeltaError> {
-        let go_sum_sha256 = spec.go_sum_sha256.clone().ok_or(GenDeltaError::NoGoSumSha)?;
+        let go_sum_sha256 = spec
+            .go_sum_sha256
+            .clone()
+            .ok_or(GenDeltaError::NoGoSumSha)?;
         let source_hashes: BTreeMap<String, String> = spec
             .packages
             .iter()
@@ -71,7 +74,11 @@ impl GoGenDelta {
         if source_hashes.is_empty() {
             return Err(GenDeltaError::EmptyNodes);
         }
-        Ok(GoGenDelta { schema_version: DELTA_SCHEMA_VERSION, go_sum_sha256, source_hashes })
+        Ok(GoGenDelta {
+            schema_version: DELTA_SCHEMA_VERSION,
+            go_sum_sha256,
+            source_hashes,
+        })
     }
 
     pub fn to_json(&self) -> Result<String, GenDeltaError> {
@@ -140,11 +147,14 @@ mod golden {
 
     fn golden_delta() -> GoGenDelta {
         let mut source_hashes = BTreeMap::new();
-        source_hashes.insert("example.com/x/a#linux-amd64".to_string(), "aaaa".to_string());
+        source_hashes.insert(
+            "example.com/x/a#linux-amd64".to_string(),
+            "aaaa".to_string(),
+        );
         GoGenDelta {
             schema_version: 1,
-            go_sum_sha256:
-                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855".to_string(),
+            go_sum_sha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                .to_string(),
             source_hashes,
         }
     }
@@ -175,8 +185,12 @@ mod golden {
     #[test]
     fn golden_top_level_keys_are_the_declared_three() {
         let v: serde_json::Value = serde_json::from_str(GOLDEN).expect("golden parses");
-        let mut keys: Vec<&str> =
-            v.as_object().expect("object").keys().map(String::as_str).collect();
+        let mut keys: Vec<&str> = v
+            .as_object()
+            .expect("object")
+            .keys()
+            .map(String::as_str)
+            .collect();
         keys.sort_unstable();
         assert_eq!(
             keys,
@@ -210,7 +224,9 @@ mod tests {
             source: if kind == PackageKind::Std {
                 PackageSource::Std
             } else {
-                PackageSource::Vendored { relative_path: "a".into() }
+                PackageSource::Vendored {
+                    relative_path: "a".into(),
+                }
             },
             tree: BuildTree::Target,
             go_files: vec!["a.go".into()],
@@ -227,8 +243,14 @@ mod tests {
 
     fn spec_with(go_sum: Option<&str>) -> BuildSpec {
         let mut packages = BTreeMap::new();
-        packages.insert("example.com/x/a#linux-amd64".to_string(), node(PackageKind::Module, "aaaa"));
-        packages.insert("std/fmt#linux-amd64".to_string(), node(PackageKind::Std, ""));
+        packages.insert(
+            "example.com/x/a#linux-amd64".to_string(),
+            node(PackageKind::Module, "aaaa"),
+        );
+        packages.insert(
+            "std/fmt#linux-amd64".to_string(),
+            node(PackageKind::Std, ""),
+        );
         BuildSpec {
             version: SCHEMA_VERSION,
             renderer: Renderer::Incremental,
@@ -252,7 +274,11 @@ mod tests {
     fn distill_carries_hashes_and_tie_omits_std() {
         let d = GoGenDelta::distill(&spec_with(Some("deadbeef"))).unwrap();
         assert_eq!(d.go_sum_sha256, "deadbeef");
-        assert_eq!(d.source_hashes.len(), 1, "std node omitted, module node kept");
+        assert_eq!(
+            d.source_hashes.len(),
+            1,
+            "std node omitted, module node kept"
+        );
         assert!(d.source_hashes.contains_key("example.com/x/a#linux-amd64"));
     }
 

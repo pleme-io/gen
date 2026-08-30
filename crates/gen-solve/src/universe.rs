@@ -142,7 +142,11 @@ mod tests {
             .add_leaf("a", Version::new(1, 5, 0));
         assert_eq!(
             u.versions("a"),
-            vec![Version::new(2, 0, 0), Version::new(1, 5, 0), Version::new(1, 0, 0)]
+            vec![
+                Version::new(2, 0, 0),
+                Version::new(1, 5, 0),
+                Version::new(1, 0, 0)
+            ]
         );
     }
 
@@ -152,7 +156,10 @@ mod tests {
     fn an_absent_version_is_none_not_an_empty_edge_list() {
         let mut u = MapUniverse::new();
         u.add_leaf("a", Version::new(1, 0, 0));
-        assert_eq!(u.dependencies("a", &Version::new(1, 0, 0)), Some(Vec::new()));
+        assert_eq!(
+            u.dependencies("a", &Version::new(1, 0, 0)),
+            Some(Vec::new())
+        );
         assert_eq!(u.dependencies("a", &Version::new(9, 0, 0)), None);
         assert_eq!(u.dependencies("ghost", &Version::new(1, 0, 0)), None);
         assert!(u.versions("ghost").is_empty());

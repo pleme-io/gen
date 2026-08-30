@@ -22,20 +22,41 @@ fn package_args_serializes_to_swift_package_keys() {
     let v: serde_json::Value = serde_json::to_value(&args).unwrap();
     assert_eq!(v.get("pname"), Some(&serde_json::json!("AsyncHTTPClient")));
     assert_eq!(v.get("version"), Some(&serde_json::json!("1.18.0")));
-    assert_eq!(v.get("swiftDeps"), Some(&serde_json::json!("sha256-asyncdeps")));
+    assert_eq!(
+        v.get("swiftDeps"),
+        Some(&serde_json::json!("sha256-asyncdeps"))
+    );
     assert_eq!(v.get("configuration"), Some(&serde_json::json!("release")));
-    assert_eq!(v.get("products"), Some(&serde_json::json!(["AsyncHTTPClient"])));
-    assert_eq!(v.get("targets"), Some(&serde_json::json!(["AsyncHTTPClient"])));
-    assert_eq!(v.get("swiftPlatformVersion"), Some(&serde_json::json!("macOS 13")));
-    assert_eq!(v.get("pkgConfigDeps"), Some(&serde_json::json!(["openssl"])));
+    assert_eq!(
+        v.get("products"),
+        Some(&serde_json::json!(["AsyncHTTPClient"]))
+    );
+    assert_eq!(
+        v.get("targets"),
+        Some(&serde_json::json!(["AsyncHTTPClient"]))
+    );
+    assert_eq!(
+        v.get("swiftPlatformVersion"),
+        Some(&serde_json::json!("macOS 13"))
+    );
+    assert_eq!(
+        v.get("pkgConfigDeps"),
+        Some(&serde_json::json!(["openssl"]))
+    );
 }
 
 #[test]
 fn quirk_variants_round_trip() {
     for q in [
-        SwiftQuirk::PinToolchain { version: "5.10".into() },
-        SwiftQuirk::ForceConfiguration { configuration: "debug".into() },
-        SwiftQuirk::Ldflag { flag: "-lpthread".into() },
+        SwiftQuirk::PinToolchain {
+            version: "5.10".into(),
+        },
+        SwiftQuirk::ForceConfiguration {
+            configuration: "debug".into(),
+        },
+        SwiftQuirk::Ldflag {
+            flag: "-lpthread".into(),
+        },
         SwiftQuirk::SubstituteSource {
             file: "Package.swift".into(),
             from: "x".into(),
@@ -74,7 +95,10 @@ fn build_spec_implements_spec_trait() {
     assert_eq!(spec.schema_version(), SCHEMA_VERSION);
     assert_eq!(spec.root_key(), "AsyncHTTPClient-1.18.0");
     let violations = <SwiftInvariants as Invariants>::check(&spec);
-    assert!(violations.is_empty(), "minimal spec violated: {violations:?}");
+    assert!(
+        violations.is_empty(),
+        "minimal spec violated: {violations:?}"
+    );
 }
 
 #[test]

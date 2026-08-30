@@ -67,7 +67,10 @@ pub enum VerdictViolation {
     /// CM-8 SBOM.
     SbomEmpty { subject: AttestationAddr },
     /// The provenance slot's SLSA level is below the required minimum (SR-3/4).
-    SlsaBelowMinimum { found: SlsaLevel, minimum: SlsaLevel },
+    SlsaBelowMinimum {
+        found: SlsaLevel,
+        minimum: SlsaLevel,
+    },
 }
 
 impl VerdictViolation {
@@ -80,9 +83,10 @@ impl VerdictViolation {
             VerdictViolation::MissingSlot { subject, .. } => {
                 ("secattest-missing-slot", Some(subject.as_str().to_string()))
             }
-            VerdictViolation::SubjectMismatch { found, .. } => {
-                ("secattest-subject-mismatch", Some(found.as_str().to_string()))
-            }
+            VerdictViolation::SubjectMismatch { found, .. } => (
+                "secattest-subject-mismatch",
+                Some(found.as_str().to_string()),
+            ),
             VerdictViolation::SlotUnverified { kind, .. } => {
                 ("secattest-slot-unverified", Some(format!("{kind:?}")))
             }
@@ -298,9 +302,13 @@ mod tests {
         complete.signature.state = SlotState::Unchecked;
         let ctx = VerifyContext::strict(CveDbEpoch(100));
         let err = verify(&complete, &ctx).expect_err("an unchecked slot must be fail-closed");
-        assert!(err
-            .iter()
-            .any(|v| matches!(v, VerdictViolation::SlotUnverified { kind: VerdictKind::Signature, .. })));
+        assert!(err.iter().any(|v| matches!(
+            v,
+            VerdictViolation::SlotUnverified {
+                kind: VerdictKind::Signature,
+                ..
+            }
+        )));
     }
 
     #[test]
@@ -313,7 +321,10 @@ mod tests {
         let err = verify(&complete, &ctx).expect_err("a foreign subject must be rejected");
         assert!(err.iter().any(|v| matches!(
             v,
-            VerdictViolation::SubjectMismatch { slot: Some(VerdictKind::Provenance), .. }
+            VerdictViolation::SubjectMismatch {
+                slot: Some(VerdictKind::Provenance),
+                ..
+            }
         )));
     }
 
@@ -324,7 +335,10 @@ mod tests {
         let complete = fixture::complete_verified(&addr, CveDbEpoch(10));
         let ctx = VerifyContext::strict(CveDbEpoch(100));
         let err = verify(&complete, &ctx).expect_err("a stale scan must be fail-closed");
-        assert!(err.iter().any(|v| matches!(v, VerdictViolation::CveStale { .. })));
+        assert!(
+            err.iter()
+                .any(|v| matches!(v, VerdictViolation::CveStale { .. }))
+        );
     }
 
     #[test]
@@ -336,7 +350,10 @@ mod tests {
         complete.cve.raw = Severities::new(3, 5);
         complete.cve.vex_suppressed = Severities::new(3, 5);
         let ctx = VerifyContext::strict(CveDbEpoch(100));
-        assert!(verify(&complete, &ctx).is_ok(), "fully VEX-suppressed scan must admit");
+        assert!(
+            verify(&complete, &ctx).is_ok(),
+            "fully VEX-suppressed scan must admit"
+        );
     }
 
     #[test]
@@ -348,9 +365,10 @@ mod tests {
         complete.cve.vex_suppressed = Severities::new(1, 0);
         let ctx = VerifyContext::strict(CveDbEpoch(100));
         let err = verify(&complete, &ctx).expect_err("an exploitable critical must be fail-closed");
-        assert!(err
-            .iter()
-            .any(|v| matches!(v, VerdictViolation::CveExploitableOverBudget { .. })));
+        assert!(
+            err.iter()
+                .any(|v| matches!(v, VerdictViolation::CveExploitableOverBudget { .. }))
+        );
     }
 
     #[test]
@@ -362,7 +380,10 @@ mod tests {
         complete.sbom.component_count = 0; // empty sbom
         let ctx = VerifyContext::strict(CveDbEpoch(100));
         let err = verify(&complete, &ctx).expect_err("multiple broken clauses");
-        assert!(err.len() >= 3, "expected aggregated violations, got {err:?}");
+        assert!(
+            err.len() >= 3,
+            "expected aggregated violations, got {err:?}"
+        );
     }
 
     #[test]
@@ -373,6 +394,9 @@ mod tests {
         let out = dedup_witness([&shared, &shared, &other]);
         assert_eq!(out.computed, 2);
         assert_eq!(out.served, 3);
-        assert!(out.observed_dedup(), "a shared hash must be reused, not recomputed");
+        assert!(
+            out.observed_dedup(),
+            "a shared hash must be reused, not recomputed"
+        );
     }
 }

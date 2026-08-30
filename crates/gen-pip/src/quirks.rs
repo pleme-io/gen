@@ -11,7 +11,17 @@ use serde::{Deserialize, Serialize};
 /// Typed quirks for known third-party upstream pip packages.
 /// Each variant maps to a Nix dispatch arm in
 /// `substrate/lib/build/pip/quirk-apply.nix`.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, gen_macros::TypedDispatcher, gen_macros::Discriminant, gen_macros::IsVariant)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    gen_macros::TypedDispatcher,
+    gen_macros::Discriminant,
+    gen_macros::IsVariant,
+)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum PipQuirk {
     /// Pin the Python interpreter for this package (e.g.
@@ -26,7 +36,11 @@ pub enum PipQuirk {
     DropRequires { package: String },
     /// Inject a `setup.py`/`pyproject.toml` patch via
     /// `substituteInPlace`.
-    SubstituteSource { file: String, from: String, to: String },
+    SubstituteSource {
+        file: String,
+        from: String,
+        to: String,
+    },
 }
 
 pub fn registry() -> Vec<(&'static str, Vec<PipQuirk>)> {

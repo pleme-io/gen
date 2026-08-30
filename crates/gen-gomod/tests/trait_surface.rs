@@ -52,5 +52,8 @@ fn invariants_run_clean_against_minimal_spec() {
         go_sum_sha256: None,
     };
     let violations = <GomodInvariants as Invariants>::check(&spec);
-    assert!(violations.is_empty(), "minimal spec violated: {violations:?}");
+    assert!(
+        violations.is_empty(),
+        "minimal spec violated: {violations:?}"
+    );
 }

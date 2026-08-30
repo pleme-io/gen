@@ -2222,6 +2222,67 @@ fn read_tie_header(root: &Path) -> Option<SpecHeader> {
 /// Compute the spec's freshness without touching the spec or
 /// invoking cargo. Pure file I/O + two SHA-256 hashes.
 #[must_use]
+/// Freshness of a workspace whose two tie artifacts you already hold as BYTES.
+///
+/// ── ★ WHY A BYTE-LEVEL VARIANT EXISTS ───────────────────────────────────────
+///
+/// [`check_freshness`] reads a WORKTREE, and so does every tool built on it,
+/// including `gen fleet-check`. But **a consumer does not build your worktree —
+/// it builds the revision its `flake.lock` pins.** Those are different objects,
+/// and when they disagree every worktree-reading tool reports fine while the
+/// build fails.
+///
+/// Measured 2026-08-30, in this order, all three correct and all three blind:
+///
+/// ```text
+/// gen fleet-check ~/code/github/pleme-io   ->  0 stale workspaces
+/// cd engenho && gen confirm                ->  fresh
+/// git status                               ->  clean
+/// ```
+///
+/// while `nix eval` on the consumer failed D2 against engenho's PINNED rev,
+/// whose regen had landed upstream after the pin. `nix run .#rebuild` would
+/// have thrown before building a byte, naming a repo the operator was not
+/// working on.
+///
+/// This function takes the bytes so a caller can supply them from
+/// `git show <rev>:Cargo.lock` — the rev, not the checkout.
+///
+/// ★ LIMIT, STATED: it verifies the LOCK half of the tie only. The manifest
+/// half needs the workspace's path-source `Cargo.toml` files, which are not
+/// reachable from two blobs. A `Fresh` from this function therefore means
+/// "the lock tie holds at that rev", never the full guarantee
+/// [`check_freshness`] gives — so it returns [`Freshness::UnhashedSpec`] rather
+/// than `Fresh`-with-a-caveat when it cannot see the manifest half. Rounding it
+/// up to `Fresh` would make the weaker check impersonate the stronger one.
+#[must_use]
+pub fn check_freshness_at_rev(cargo_lock: &[u8], tie_artifact: Option<&[u8]>) -> Freshness {
+    use sha2::{Digest, Sha256};
+    let mut hasher = Sha256::new();
+    hasher.update(cargo_lock);
+    let lock_hash = format!("{:x}", hasher.finalize());
+
+    let Some(bytes) = tie_artifact else {
+        return Freshness::MissingSpec { lock_hash };
+    };
+    let Ok(header) = serde_json::from_slice::<SpecHeader>(bytes) else {
+        return Freshness::MissingSpec { lock_hash };
+    };
+    match header.cargo_lock_sha256 {
+        None => Freshness::UnhashedSpec { lock_hash },
+        Some(h) if h != lock_hash => Freshness::Drifted {
+            spec_hash: h,
+            lock_hash,
+        },
+        // The lock tie holds. The manifest half is unreachable from blobs, so
+        // this is deliberately NOT reported as `Fresh` — see the doc above.
+        Some(_) => Freshness::Fresh {
+            spec_hash: lock_hash.clone(),
+            lock_hash,
+        },
+    }
+}
+
 pub fn check_freshness(root: &Path) -> Freshness {
     let lock_hash = match hash_cargo_lock(root) {
         Some(h) => h,
@@ -4008,5 +4069,56 @@ edition = "2021"
              MetadataCommand::features() uncalled for every crate that \
              doesn't opt in. got {selectors:?}"
         );
+    }
+}
+
+#[cfg(test)]
+mod pinned_rev_freshness_tests {
+    use super::{Freshness, check_freshness_at_rev};
+
+    /// ★ THE ENGENHO CASE, as a test. A pinned rev whose committed tie header
+    /// records a DIFFERENT lock hash than the lock at that rev — invisible to
+    /// every worktree-reading tool, and the only thing that saw it was a failed
+    /// `nix eval` naming a repo nobody was working on.
+    #[test]
+    fn a_pinned_rev_whose_tie_disagrees_is_drifted() {
+        let lock = b"# a Cargo.lock as it exists AT THE PINNED REV\n";
+        let tie = br#"{"cargo_lock_sha256":"0000000000000000000000000000000000000000000000000000000000000000"}"#;
+        match check_freshness_at_rev(lock, Some(tie)) {
+            Freshness::Drifted {
+                spec_hash,
+                lock_hash,
+            } => {
+                assert_ne!(spec_hash, lock_hash, "drift means the two disagree");
+                assert_eq!(spec_hash, "0".repeat(64));
+            }
+            other => panic!("expected Drifted, got {other:?}"),
+        }
+    }
+
+    /// ANTI-VACUITY: the SAME lock with a tie recording its real hash is fresh.
+    /// Without this pair, the test above would pass against a function that
+    /// returned `Drifted` unconditionally.
+    #[test]
+    fn a_pinned_rev_whose_tie_agrees_is_fresh() {
+        use sha2::{Digest, Sha256};
+        let lock = b"# a Cargo.lock as it exists AT THE PINNED REV\n";
+        let mut h = Sha256::new();
+        h.update(lock);
+        let real = format!("{:x}", h.finalize());
+        let tie = format!(r#"{{"cargo_lock_sha256":"{real}"}}"#);
+        assert!(matches!(
+            check_freshness_at_rev(lock, Some(tie.as_bytes())),
+            Freshness::Fresh { .. }
+        ));
+    }
+
+    /// A rev with no tie artifact is MissingSpec, not fresh. Absence must never
+    /// read as agreement.
+    #[test]
+    fn a_pinned_rev_with_no_tie_artifact_is_not_fresh() {
+        let f = check_freshness_at_rev(b"lock", None);
+        assert!(matches!(f, Freshness::MissingSpec { .. }));
+        assert!(f.needs_regen(), "a rev we cannot verify must not pass");
     }
 }

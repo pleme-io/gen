@@ -57,7 +57,10 @@ pub struct PackageArgs {
     #[serde(rename = "preferWheels", skip_serializing_if = "Option::is_none")]
     pub prefer_wheels: Option<bool>,
     /// Editable installs (path-deps) — name -> path inside project.
-    #[serde(rename = "editablePackageSources", skip_serializing_if = "IndexMap::is_empty")]
+    #[serde(
+        rename = "editablePackageSources",
+        skip_serializing_if = "IndexMap::is_empty"
+    )]
     pub editable_package_sources: IndexMap<String, String>,
     /// Disable the check phase (poetry2nix default = true).
     #[serde(rename = "doCheck", skip_serializing_if = "Option::is_none")]

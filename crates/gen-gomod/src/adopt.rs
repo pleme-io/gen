@@ -14,7 +14,7 @@
 //! *refused with no reason* has no representation. A census whose refusals
 //! degrade to a count is one that cannot tell you what to fix.
 
-use crate::directive::{classify, Verdict};
+use crate::directive::{Verdict, classify};
 
 /// Why a module cannot be adopted yet. Closed: a new refusal is a new arm and
 /// a match arm everywhere, which is the point.

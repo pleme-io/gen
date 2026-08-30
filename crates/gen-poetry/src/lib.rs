@@ -11,4 +11,4 @@ pub mod invariants;
 pub mod quirks;
 
 pub use adapter::PoetryAdapter;
-pub use error::{Result, PoetryError};
+pub use error::{PoetryError, Result};

@@ -41,5 +41,8 @@ fn invariants_run_clean_against_minimal_spec() {
         workspace_members: vec![],
     };
     let violations = <SwiftInvariants as Invariants>::check(&spec);
-    assert!(violations.is_empty(), "minimal spec violated: {violations:?}");
+    assert!(
+        violations.is_empty(),
+        "minimal spec violated: {violations:?}"
+    );
 }

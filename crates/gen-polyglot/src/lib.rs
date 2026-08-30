@@ -186,7 +186,11 @@ edition = "2024"
 "#,
         )
         .unwrap();
-        fs::write(dir.join("package.json"), r#"{"name":"p","version":"0.1.0"}"#).unwrap();
+        fs::write(
+            dir.join("package.json"),
+            r#"{"name":"p","version":"0.1.0"}"#,
+        )
+        .unwrap();
         fs::write(dir.join("Gemfile"), "gem 'rake'\n").unwrap();
         let cfg = GenConfig::prescribed_default();
         let w = parse(&dir, &cfg).unwrap();

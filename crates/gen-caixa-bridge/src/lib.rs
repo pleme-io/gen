@@ -83,10 +83,14 @@ pub enum CaixaBridgeError {
 impl CaixaToGen {
     pub fn route(&self) -> Result<AdapterRoute, CaixaBridgeError> {
         if !self.source_root.exists() {
-            return Err(CaixaBridgeError::MissingSourceRoot(self.source_root.clone()));
+            return Err(CaixaBridgeError::MissingSourceRoot(
+                self.source_root.clone(),
+            ));
         }
         if PathBuf::from(&self.nix_output).is_absolute() {
-            return Err(CaixaBridgeError::AbsoluteOutputPath(self.nix_output.clone()));
+            return Err(CaixaBridgeError::AbsoluteOutputPath(
+                self.nix_output.clone(),
+            ));
         }
         // Operator override wins.
         if let Some(force) = &self.force_adapter {

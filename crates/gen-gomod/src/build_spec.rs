@@ -122,7 +122,11 @@ impl TargetTuple {
     pub fn new(goos: impl Into<String>, goarch: impl Into<String>, mut tags: Vec<String>) -> Self {
         tags.sort();
         tags.dedup();
-        Self { goos: goos.into(), goarch: goarch.into(), tags }
+        Self {
+            goos: goos.into(),
+            goarch: goarch.into(),
+            tags,
+        }
     }
 
     /// The build host's tuple, in Go naming (macos→darwin,
@@ -265,7 +269,11 @@ pub struct ModuleSpec {
     pub dep_mode: DepMode,
     /// Coarse/fallback only. The M1 incremental path never fetches
     /// (`-mod=vendor`, `GOPROXY=off`) ⇒ `None`.
-    #[serde(rename = "vendorHash", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "vendorHash",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub vendor_hash: Option<String>,
 }
 
@@ -337,7 +345,9 @@ pub enum PackageKind {
 /// Which build tree a node compiles into (Go-I2). Mirrors gen-cargo's
 /// `BuildTree`. Workload + std → `Target`; build-tooling / cgo-host →
 /// `Host`.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, gen_macros::IsVariant)]
+#[derive(
+    Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, gen_macros::IsVariant,
+)]
 #[serde(rename_all = "kebab-case")]
 pub enum BuildTree {
     /// Built for the workload's arch. Default — every M1 node.
@@ -565,11 +575,28 @@ mod tests {
 
     #[test]
     fn source_hash_is_order_independent_and_content_sensitive() {
-        let a = vec![("b.go".to_string(), b"two".to_vec()), ("a.go".to_string(), b"one".to_vec())];
-        let b = vec![("a.go".to_string(), b"one".to_vec()), ("b.go".to_string(), b"two".to_vec())];
-        assert_eq!(source_hash(&a), source_hash(&b), "path order must not change the hash");
-        let c = vec![("a.go".to_string(), b"one!".to_vec()), ("b.go".to_string(), b"two".to_vec())];
-        assert_ne!(source_hash(&a), source_hash(&c), "a one-byte edit must change the hash");
+        let a = vec![
+            ("b.go".to_string(), b"two".to_vec()),
+            ("a.go".to_string(), b"one".to_vec()),
+        ];
+        let b = vec![
+            ("a.go".to_string(), b"one".to_vec()),
+            ("b.go".to_string(), b"two".to_vec()),
+        ];
+        assert_eq!(
+            source_hash(&a),
+            source_hash(&b),
+            "path order must not change the hash"
+        );
+        let c = vec![
+            ("a.go".to_string(), b"one!".to_vec()),
+            ("b.go".to_string(), b"two".to_vec()),
+        ];
+        assert_ne!(
+            source_hash(&a),
+            source_hash(&c),
+            "a one-byte edit must change the hash"
+        );
     }
 
     #[test]
@@ -585,11 +612,23 @@ mod tests {
         let mut pkgs = BTreeMap::new();
         pkgs.insert(
             "example.com/x/a#linux-amd64".to_string(),
-            GoTargetEdges { imports: vec!["std/fmt#linux-amd64".into()], import_map: BTreeMap::new() },
+            GoTargetEdges {
+                imports: vec!["std/fmt#linux-amd64".into()],
+                import_map: BTreeMap::new(),
+            },
         );
         let mut full: IndexMap<String, GoTargetResolve> = IndexMap::new();
-        full.insert("#linux-amd64".to_string(), GoTargetResolve { packages: pkgs.clone() });
+        full.insert(
+            "#linux-amd64".to_string(),
+            GoTargetResolve {
+                packages: pkgs.clone(),
+            },
+        );
         let compact = GoCompactTargetResolves::from_full(full.clone());
-        assert_eq!(compact.expand(), full, "from_full ∘ expand must be identity");
+        assert_eq!(
+            compact.expand(),
+            full,
+            "from_full ∘ expand must be identity"
+        );
     }
 }

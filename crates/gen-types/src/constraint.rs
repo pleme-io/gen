@@ -19,7 +19,10 @@ pub enum ConstraintSpec {
     /// Match exactly one version: `=1.2.3`.
     Exact(Version),
     /// Inclusive lower bound, exclusive upper bound: `>=1.2.3,<2.0.0`.
-    Range { lower_inclusive: Version, upper_exclusive: Version },
+    Range {
+        lower_inclusive: Version,
+        upper_exclusive: Version,
+    },
     /// `~1.2.3` — patch-level: `>=1.2.3,<1.3.0`. Caller-friendly
     /// alias for the common "approximately equal to" shape.
     Tilde(Version),
@@ -107,13 +110,13 @@ impl VersionConstraint {
 fn match_constraint(c: &ConstraintSpec, v: &Version) -> bool {
     match c {
         ConstraintSpec::Exact(target) => v == target,
-        ConstraintSpec::Range { lower_inclusive, upper_exclusive } => {
-            v >= lower_inclusive && v < upper_exclusive
-        }
+        ConstraintSpec::Range {
+            lower_inclusive,
+            upper_exclusive,
+        } => v >= lower_inclusive && v < upper_exclusive,
         ConstraintSpec::Tilde(base) => {
             // ~1.2.3 → >=1.2.3, <1.3.0
-            v >= base
-                && v < &Version::new(base.major, base.minor + 1, 0)
+            v >= base && v < &Version::new(base.major, base.minor + 1, 0)
         }
         ConstraintSpec::Caret(base) => {
             // ^1.2.3 → >=1.2.3, <2.0.0 (when major > 0)

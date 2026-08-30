@@ -26,7 +26,9 @@ fn pure_dispatcher() -> gen_platform::SealedDispatcher<CrateQuirk, Ctx, Override
     Dispatcher::<CrateQuirk, Ctx, Override>::new()
         .with_helper("force-cfg", |q, _| {
             if let CrateQuirk::ForceCfg { cfg } = q {
-                Override { flag: Some(cfg.clone()) }
+                Override {
+                    flag: Some(cfg.clone()),
+                }
             } else {
                 Override::default()
             }
@@ -71,7 +73,9 @@ fn impure_dispatcher_fails_determinism() {
     let d = Dispatcher::<CrateQuirk, Ctx, Override>::new()
         .with_helper("force-cfg", |_, ctx| {
             ctx.counter += 1;
-            Override { flag: Some(ctx.counter.to_string()) }
+            Override {
+                flag: Some(ctx.counter.to_string()),
+            }
         })
         .with_helper("fold-normal-into-build", |_, _| Override::default())
         .with_helper("substitute-source", |_, _| Override::default())

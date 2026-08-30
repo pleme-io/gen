@@ -17,7 +17,7 @@ use std::path::{Path, PathBuf};
 
 use crate::build_spec::{BuildSpec, TargetTuple};
 use crate::error::GomodError;
-use crate::interp::{apply, EncodeCtx, GoBuildEnv, RealGoBuildEnv};
+use crate::interp::{EncodeCtx, GoBuildEnv, RealGoBuildEnv, apply};
 
 /// Canonical filename the substrate `package-builder.nix` interpreter
 /// reads. The gomod peer of gen-cargo's `Cargo.build-spec.json`.
@@ -42,10 +42,19 @@ pub fn generate_with_env(
     root: &Path,
     tuple: TargetTuple,
 ) -> Result<PathBuf, GomodError> {
-    let spec = apply(env, &EncodeCtx { root: root.to_path_buf(), tuple })?;
+    let spec = apply(
+        env,
+        &EncodeCtx {
+            root: root.to_path_buf(),
+            tuple,
+        },
+    )?;
     let body = to_json(&spec)?;
     let out = root.join(SPEC_FILENAME);
-    std::fs::write(&out, body).map_err(|source| GomodError::Io { path: out.clone(), source })?;
+    std::fs::write(&out, body).map_err(|source| GomodError::Io {
+        path: out.clone(),
+        source,
+    })?;
     Ok(out)
 }
 

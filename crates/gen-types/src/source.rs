@@ -100,7 +100,12 @@ mod tests {
 
     #[test]
     fn path_and_local_are_not_content_addressed() {
-        assert!(!PackageSource::Path { path: "../foo".into() }.is_content_addressed());
+        assert!(
+            !PackageSource::Path {
+                path: "../foo".into()
+            }
+            .is_content_addressed()
+        );
         assert!(
             !PackageSource::Local {
                 path: "../foo".into(),

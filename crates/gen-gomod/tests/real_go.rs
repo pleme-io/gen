@@ -11,7 +11,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use gen_gomod::build_spec::{PackageKind, TargetTuple};
-use gen_gomod::interp::{apply, EncodeCtx, RealGoBuildEnv};
+use gen_gomod::interp::{EncodeCtx, RealGoBuildEnv, apply};
 use gen_gomod::invariants;
 
 /// Build the Gate-A fixture on disk (2 mains sharing a pure-Go+embed
@@ -44,10 +44,18 @@ fn gate_a_encodes_with_real_go() {
     .unwrap();
 
     // Dep-free ⇒ no vendor dir needed; use -mod=mod for this smoke test.
-    let env = RealGoBuildEnv { mod_mode: "mod".to_string() };
+    let env = RealGoBuildEnv {
+        mod_mode: "mod".to_string(),
+    };
     let tuple = TargetTuple::host();
-    let spec = apply(&env, &EncodeCtx { root: dir.clone(), tuple: tuple.clone() })
-        .expect("real go list encode");
+    let spec = apply(
+        &env,
+        &EncodeCtx {
+            root: dir.clone(),
+            tuple: tuple.clone(),
+        },
+    )
+    .expect("real go list encode");
 
     let greet = format!("example.com/fix/internal/greet{}", tuple.suffix());
     let hello = format!("example.com/fix/cmd/hello{}", tuple.suffix());
@@ -56,7 +64,10 @@ fn gate_a_encodes_with_real_go() {
     assert!(spec.renderer.is_incremental());
     assert!(spec.packages.contains_key(&greet), "greet node present");
     assert_eq!(spec.packages[&greet].kind, PackageKind::Module);
-    assert!(!spec.packages[&greet].embed.files.is_empty(), "embed captured");
+    assert!(
+        !spec.packages[&greet].embed.files.is_empty(),
+        "embed captured"
+    );
     // both mains share the ONE greet node.
     assert!(spec.packages[&hello].imports.contains(&greet));
     assert!(spec.packages[&bye].imports.contains(&greet));

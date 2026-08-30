@@ -83,10 +83,16 @@ impl std::fmt::Display for ContentAddrError {
                 write!(f, "content address must be 64 hex chars, got {n}")
             }
             ContentAddrError::NotHex(c) => {
-                write!(f, "content address contains a non-lowercase-hex character: {c:?}")
+                write!(
+                    f,
+                    "content address contains a non-lowercase-hex character: {c:?}"
+                )
             }
             ContentAddrError::Genesis => {
-                write!(f, "content address is the all-zero genesis sentinel (no source hashed)")
+                write!(
+                    f,
+                    "content address is the all-zero genesis sentinel (no source hashed)"
+                )
             }
         }
     }
@@ -209,7 +215,10 @@ mod tests {
         let ok: Result<ContentAddr, _> = serde_json::from_str("\"deadbeef\"");
         assert!(ok.is_ok());
         let bad: Result<ContentAddr, _> = serde_json::from_str("\"\"");
-        assert!(bad.is_err(), "empty content address must be rejected at deserialize");
+        assert!(
+            bad.is_err(),
+            "empty content address must be rejected at deserialize"
+        );
     }
 
     #[test]
@@ -219,7 +228,10 @@ mod tests {
         // same node, same deps → same address (pure).
         let n1 = ContentAddr::merkle(b"n", vec![&a, &b]);
         let n2 = ContentAddr::merkle(b"n", vec![&b, &a]); // deps reordered
-        assert_eq!(n1, n2, "address must be a function of the dep SET, not order");
+        assert_eq!(
+            n1, n2,
+            "address must be a function of the dep SET, not order"
+        );
         // different source → different address.
         let n3 = ContentAddr::merkle(b"n-prime", vec![&a, &b]);
         assert_ne!(n1, n3);
@@ -241,7 +253,10 @@ mod tests {
 
     #[test]
     fn parse_digest_rejects_wrong_length() {
-        assert_eq!(ContentAddr::parse_digest("abc"), Err(ContentAddrError::WrongLength(3)));
+        assert_eq!(
+            ContentAddr::parse_digest("abc"),
+            Err(ContentAddrError::WrongLength(3))
+        );
         assert!(matches!(
             ContentAddr::parse_digest(&"a".repeat(63)),
             Err(ContentAddrError::WrongLength(63))
@@ -253,15 +268,24 @@ mod tests {
         // uppercase is a non-canonical spelling of the same bytes — a cache
         // key must have exactly one form, so uppercase is rejected.
         let upper = "A".repeat(64);
-        assert!(matches!(ContentAddr::parse_digest(&upper), Err(ContentAddrError::NotHex('A'))));
+        assert!(matches!(
+            ContentAddr::parse_digest(&upper),
+            Err(ContentAddrError::NotHex('A'))
+        ));
         let bad = "z".repeat(64);
-        assert!(matches!(ContentAddr::parse_digest(&bad), Err(ContentAddrError::NotHex('z'))));
+        assert!(matches!(
+            ContentAddr::parse_digest(&bad),
+            Err(ContentAddrError::NotHex('z'))
+        ));
     }
 
     #[test]
     fn parse_digest_rejects_genesis_sentinel() {
         let genesis = "0".repeat(64);
-        assert_eq!(ContentAddr::parse_digest(&genesis), Err(ContentAddrError::Genesis));
+        assert_eq!(
+            ContentAddr::parse_digest(&genesis),
+            Err(ContentAddrError::Genesis)
+        );
     }
 
     #[test]

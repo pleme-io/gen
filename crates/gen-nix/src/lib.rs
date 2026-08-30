@@ -11,8 +11,8 @@ pub mod cargo_derivation;
 pub mod render;
 
 pub use ast::{
-    dotted_entry, entry, AttrKey, AttrPath, AttrSetEntry, LambdaParams, LetBinding, NixBinOp,
-    NixUnaryOp, NixValue, ParamField, StrPart,
+    AttrKey, AttrPath, AttrSetEntry, LambdaParams, LetBinding, NixBinOp, NixUnaryOp, NixValue,
+    ParamField, StrPart, dotted_entry, entry,
 };
 pub use cargo_derivation::{render_workspace, render_workspace_to_cargo_nix};
 pub use render::render;
@@ -84,11 +84,7 @@ mod tests {
 
     #[test]
     fn renders_short_atomic_list_inline() {
-        let v = NixValue::List(vec![
-            NixValue::Int(1),
-            NixValue::Int(2),
-            NixValue::Int(3),
-        ]);
+        let v = NixValue::List(vec![NixValue::Int(1), NixValue::Int(2), NixValue::Int(3)]);
         assert_eq!(r(&v), "[ 1 2 3 ]");
     }
 
@@ -387,7 +383,9 @@ mod tests {
         let pkg = Package {
             name: "demo".into(),
             version: Version::new(0, 1, 0),
-            source: PackageSource::Path { path: "./crates/demo".into() },
+            source: PackageSource::Path {
+                path: "./crates/demo".into(),
+            },
             registry: Registry::CratesIo,
             dependencies: vec![],
             features: vec![],
@@ -449,7 +447,9 @@ mod tests {
         let pkg = Package {
             name: "demo".into(),
             version: Version::new(0, 1, 0),
-            source: PackageSource::Path { path: "./crates/demo".into() },
+            source: PackageSource::Path {
+                path: "./crates/demo".into(),
+            },
             registry: Registry::CratesIo,
             dependencies: vec![],
             features: vec![],

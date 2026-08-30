@@ -86,12 +86,7 @@ mod tests {
 
     #[test]
     fn round_trip_through_serde() {
-        let m = Manifest::new(
-            "/x",
-            Workspace::single_package("/x", "cargo"),
-            vec![],
-            None,
-        );
+        let m = Manifest::new("/x", Workspace::single_package("/x", "cargo"), vec![], None);
         let j = serde_json::to_string(&m).unwrap();
         let parsed: Manifest = serde_json::from_str(&j).unwrap();
         assert_eq!(m, parsed);

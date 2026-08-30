@@ -49,7 +49,10 @@ pub struct PackageArgs {
     #[serde(rename = "build-system", skip_serializing_if = "Vec::is_empty")]
     pub build_system: Vec<String>,
     /// Runtime dependencies — propagated to consumers of this package.
-    #[serde(rename = "propagatedBuildInputs", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        rename = "propagatedBuildInputs",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub propagated_build_inputs: Vec<String>,
     /// Build-time native deps (compilers, codegen tools).
     #[serde(rename = "nativeBuildInputs", skip_serializing_if = "Vec::is_empty")]

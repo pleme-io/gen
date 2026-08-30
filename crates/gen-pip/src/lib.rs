@@ -11,4 +11,4 @@ pub mod invariants;
 pub mod quirks;
 
 pub use adapter::PipAdapter;
-pub use error::{Result, PipError};
+pub use error::{PipError, Result};

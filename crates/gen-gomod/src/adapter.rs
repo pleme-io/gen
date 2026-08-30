@@ -40,8 +40,7 @@ impl GomodAdapter {
             tuple: Self::tuple_for(ctx),
         };
         let env = RealGoBuildEnv::default();
-        interp::apply(&env, &ectx)
-            .map_err(|e| AdapterError::Internal(format!("gomod encode: {e}")))
+        interp::apply(&env, &ectx).map_err(|e| AdapterError::Internal(format!("gomod encode: {e}")))
     }
 }
 
@@ -56,7 +55,9 @@ impl Adapter for GomodAdapter {
     fn lock(&self, _ctx: &AdapterCtx) -> AdapterResult<LockOutcome> {
         // `go mod vendor` / `go mod tidy` — the resolver invocation
         // (network) — lands with the lock verb in a later milestone.
-        Err(AdapterError::Unsupported("gomod lock not implemented yet".into()))
+        Err(AdapterError::Unsupported(
+            "gomod lock not implemented yet".into(),
+        ))
     }
 
     fn build(&self, ctx: &AdapterCtx) -> AdapterResult<gen_types::AdapterBuildSpec> {
@@ -71,7 +72,9 @@ impl Adapter for GomodAdapter {
     }
 
     fn plan(&self, _ctx: &AdapterCtx, _intent: &PlanIntent) -> AdapterResult<Plan> {
-        Err(AdapterError::Unsupported("gomod plan not implemented yet".into()))
+        Err(AdapterError::Unsupported(
+            "gomod plan not implemented yet".into(),
+        ))
     }
 
     fn confirm(&self, ctx: &AdapterCtx) -> AdapterResult<ConfirmReport> {
@@ -86,19 +89,30 @@ impl Adapter for GomodAdapter {
             for v in &violations {
                 let (name, locus) = crate::invariants::violation_locus(v);
                 let message = serde_json::to_string(v).unwrap_or_else(|_| format!("{v:?}"));
-                broken.push(InvariantBreak { name: name.to_string(), message, locus });
+                broken.push(InvariantBreak {
+                    name: name.to_string(),
+                    message,
+                    locus,
+                });
             }
         }
 
-        Ok(ConfirmReport { invariants_held: held, invariants_broken: broken })
+        Ok(ConfirmReport {
+            invariants_held: held,
+            invariants_broken: broken,
+        })
     }
 
     fn diff(&self, _ctx: &AdapterCtx, _against: &DiffRef) -> AdapterResult<DiffReport> {
-        Err(AdapterError::Unsupported("gomod diff not implemented yet".into()))
+        Err(AdapterError::Unsupported(
+            "gomod diff not implemented yet".into(),
+        ))
     }
 
     fn sbom(&self, _ctx: &AdapterCtx, _format: SbomFormat) -> AdapterResult<Sbom> {
-        Err(AdapterError::Unsupported("gomod sbom not implemented yet".into()))
+        Err(AdapterError::Unsupported(
+            "gomod sbom not implemented yet".into(),
+        ))
     }
 
     fn quirks_registry(&self) -> Vec<gen_types::AdapterQuirkEntry> {
@@ -107,7 +121,10 @@ impl Adapter for GomodAdapter {
             .into_iter()
             .map(|(p, qs)| gen_types::AdapterQuirkEntry {
                 package: p.to_string(),
-                quirks: qs.into_iter().filter_map(|q| serde_json::to_value(&q).ok()).collect(),
+                quirks: qs
+                    .into_iter()
+                    .filter_map(|q| serde_json::to_value(&q).ok())
+                    .collect(),
             })
             .collect()
     }
@@ -125,7 +142,10 @@ impl Adapter for GomodAdapter {
 }
 
 pub fn ctx_for(workspace_root: PathBuf) -> AdapterCtx {
-    AdapterCtx { workspace_root, target: None }
+    AdapterCtx {
+        workspace_root,
+        target: None,
+    }
 }
 
 // Distributed-slice registration. gen-cli discovers this adapter at link

@@ -27,8 +27,7 @@ use gen_types::TypedDispatcher;
 
 /// One per-kind helper as installed in the composed dispatcher.
 /// Box of Fn over the untyped JSON variant + context.
-type ComposedHelper<C, O> =
-    Box<dyn Fn(&serde_json::Value, &mut C) -> O + Send + Sync + 'static>;
+type ComposedHelper<C, O> = Box<dyn Fn(&serde_json::Value, &mut C) -> O + Send + Sync + 'static>;
 
 /// Composition of multiple `SealedDispatcher`s over disjoint
 /// variant universes. Operates on `serde_json::Value` variants
@@ -101,14 +100,15 @@ where
         source: SealedDispatcher<V, C, O>,
     ) -> Result<Self, DispatcherError>
     where
-        V: TypedDispatcher
-            + serde::Serialize
-            + serde::de::DeserializeOwned
-            + 'static,
+        V: TypedDispatcher + serde::Serialize + serde::de::DeserializeOwned + 'static,
         C: 'static,
         O: 'static,
     {
-        let kinds = source.saturation_witness().into_iter().map(String::from).collect::<Vec<_>>();
+        let kinds = source
+            .saturation_witness()
+            .into_iter()
+            .map(String::from)
+            .collect::<Vec<_>>();
         for k in &kinds {
             if self.helpers.contains_key(k) {
                 return Err(DispatcherError::DuplicateHelper { kind: k.clone() });
@@ -175,12 +175,11 @@ where
     {
         let mut out = Vec::with_capacity(variants.len());
         for v in variants {
-            let kind = v
-                .get("kind")
-                .and_then(|k| k.as_str())
-                .ok_or_else(|| DispatcherError::UnknownKind {
+            let kind = v.get("kind").and_then(|k| k.as_str()).ok_or_else(|| {
+                DispatcherError::UnknownKind {
                     kind: "<no kind field>".to_string(),
-                })?;
+                }
+            })?;
             let Some(h) = self.helpers.get(kind) else {
                 return Err(DispatcherError::UnknownKind {
                     kind: kind.to_string(),

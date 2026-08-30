@@ -14,7 +14,7 @@
 //! print via gen-bazel's renderer. Same AST surface, different name
 //! resolution.
 
-use gen_bazel::{render_file, KwArg, StarlarkStmt, StarlarkValue};
+use gen_bazel::{KwArg, StarlarkStmt, StarlarkValue, render_file};
 use gen_types::{Manifest, Package};
 
 /// Render a typed Manifest to a Buck2 BUCK file body. One
@@ -77,7 +77,9 @@ mod tests {
             registry: Registry::CratesIo,
             dependencies: vec![Dependency {
                 name: "serde".into(),
-                constraint: VersionConstraint::from_spec(ConstraintSpec::Caret(Version::new(1, 0, 0))),
+                constraint: VersionConstraint::from_spec(ConstraintSpec::Caret(Version::new(
+                    1, 0, 0,
+                ))),
                 kind: DependencyKind::Direct,
                 features_enabled: vec![],
                 default_features: true,
@@ -92,7 +94,12 @@ mod tests {
             homepage: None,
             repository: None,
         };
-        Manifest::new("/x", Workspace::single_package("/x", "cargo"), vec![p], None)
+        Manifest::new(
+            "/x",
+            Workspace::single_package("/x", "cargo"),
+            vec![p],
+            None,
+        )
     }
 
     #[test]

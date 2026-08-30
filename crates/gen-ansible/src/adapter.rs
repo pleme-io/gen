@@ -12,31 +12,47 @@ use gen_types::{
 pub struct AnsibleAdapter;
 
 impl Adapter for AnsibleAdapter {
-    fn name(&self) -> &'static str { "ansible" }
-    fn manifest_files(&self) -> &'static [&'static str] { &["galaxy.yml"] }
+    fn name(&self) -> &'static str {
+        "ansible"
+    }
+    fn manifest_files(&self) -> &'static [&'static str] {
+        &["galaxy.yml"]
+    }
 
     fn lock(&self, _ctx: &AdapterCtx) -> AdapterResult<LockOutcome> {
-        Err(AdapterError::Unsupported("ansible lock not implemented".into()))
+        Err(AdapterError::Unsupported(
+            "ansible lock not implemented".into(),
+        ))
     }
 
     fn build(&self, _ctx: &AdapterCtx) -> AdapterResult<gen_types::AdapterBuildSpec> {
-        Err(AdapterError::Unsupported("ansible build not implemented".into()))
+        Err(AdapterError::Unsupported(
+            "ansible build not implemented".into(),
+        ))
     }
 
     fn plan(&self, _ctx: &AdapterCtx, _intent: &PlanIntent) -> AdapterResult<Plan> {
-        Err(AdapterError::Unsupported("ansible plan not implemented".into()))
+        Err(AdapterError::Unsupported(
+            "ansible plan not implemented".into(),
+        ))
     }
 
     fn confirm(&self, _ctx: &AdapterCtx) -> AdapterResult<ConfirmReport> {
-        Err(AdapterError::Unsupported("ansible confirm not implemented".into()))
+        Err(AdapterError::Unsupported(
+            "ansible confirm not implemented".into(),
+        ))
     }
 
     fn diff(&self, _ctx: &AdapterCtx, _against: &DiffRef) -> AdapterResult<DiffReport> {
-        Err(AdapterError::Unsupported("ansible diff not implemented".into()))
+        Err(AdapterError::Unsupported(
+            "ansible diff not implemented".into(),
+        ))
     }
 
     fn sbom(&self, _ctx: &AdapterCtx, _format: SbomFormat) -> AdapterResult<Sbom> {
-        Err(AdapterError::Unsupported("ansible sbom not implemented".into()))
+        Err(AdapterError::Unsupported(
+            "ansible sbom not implemented".into(),
+        ))
     }
 
     fn quirks_registry(&self) -> Vec<gen_types::AdapterQuirkEntry> {
@@ -45,7 +61,10 @@ impl Adapter for AnsibleAdapter {
             .into_iter()
             .map(|(p, qs)| gen_types::AdapterQuirkEntry {
                 package: p.to_string(),
-                quirks: qs.into_iter().filter_map(|q| serde_json::to_value(&q).ok()).collect(),
+                quirks: qs
+                    .into_iter()
+                    .filter_map(|q| serde_json::to_value(&q).ok())
+                    .collect(),
             })
             .collect()
     }
@@ -63,7 +82,10 @@ impl Adapter for AnsibleAdapter {
 }
 
 pub fn ctx_for(workspace_root: PathBuf) -> AdapterCtx {
-    AdapterCtx { workspace_root, target: None }
+    AdapterCtx {
+        workspace_root,
+        target: None,
+    }
 }
 
 // Distributed-slice registration. gen-cli discovers this adapter

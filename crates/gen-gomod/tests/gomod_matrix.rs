@@ -7,7 +7,7 @@
 mod common;
 
 use gen_gomod::build_spec::{BuildSpec, TargetTuple};
-use gen_gomod::interp::{apply, EncodeCtx};
+use gen_gomod::interp::{EncodeCtx, apply};
 use gen_gomod::invariants;
 use gen_gomod::testkit::MockGoBuildEnv;
 
@@ -41,7 +41,8 @@ fn matrix() -> Vec<Row> {
                 require(s.packages.len() == 5, "internal-shared: 5 nodes")?;
                 require(s.workspace_members.len() == 2, "internal-shared: 2 mains")?;
                 require(
-                    s.packages.contains_key("example.com/fix/internal/greet#linux-amd64"),
+                    s.packages
+                        .contains_key("example.com/fix/internal/greet#linux-amd64"),
                     "internal-shared: one shared greet node",
                 )
             },
@@ -54,7 +55,10 @@ fn matrix() -> Vec<Row> {
                     .packages
                     .get("example.com/fix/internal/greet#linux-amd64")
                     .ok_or("embed: greet node present")?;
-                require(!greet.embed.files.is_empty(), "embed: greet carries embed files")
+                require(
+                    !greet.embed.files.is_empty(),
+                    "embed: greet carries embed files",
+                )
             },
         },
         Row {
@@ -66,21 +70,22 @@ fn matrix() -> Vec<Row> {
                     .get("github.com/foo/bar#linux-amd64")
                     .ok_or("vendored: node present")?;
                 let rel = match &vend.source {
-                    gen_gomod::build_spec::PackageSource::Vendored { relative_path } => relative_path,
+                    gen_gomod::build_spec::PackageSource::Vendored { relative_path } => {
+                        relative_path
+                    }
                     _ => return Err("vendored: node has a Vendored source".into()),
                 };
-                require(rel == "vendor/github.com/foo/bar", "vendored: relative_path under vendor/")
+                require(
+                    rel == "vendor/github.com/foo/bar",
+                    "vendored: relative_path under vendor/",
+                )
             },
         },
     ]
 }
 
 fn require(cond: bool, msg: &str) -> Result<(), String> {
-    if cond {
-        Ok(())
-    } else {
-        Err(msg.to_string())
-    }
+    if cond { Ok(()) } else { Err(msg.to_string()) }
 }
 
 #[test]
@@ -113,7 +118,10 @@ fn every_supported_shape_encodes_and_holds_invariants() {
 #[test]
 fn matrix_covers_all_supported() {
     // M1 supports: dep-free, internal-shared, embed, vendored+replace.
-    assert!(matrix().len() >= 4, "every supported shape needs a matrix row");
+    assert!(
+        matrix().len() >= 4,
+        "every supported shape needs a matrix row"
+    );
 }
 
 // ── ECOSYSTEM-INTAKE dispatcher coverage: every typed quirk variant is
@@ -124,7 +132,11 @@ fn dispatcher_reflection_covers_every_quirk_variant() {
     use gen_gomod::quirks::GomodQuirk;
     use gen_types::{Adapter, TypedDispatcher};
     let a = gen_gomod::adapter::GomodAdapter;
-    let reflected: Vec<String> = a.dispatcher_reflection().into_iter().map(|d| d.kind).collect();
+    let reflected: Vec<String> = a
+        .dispatcher_reflection()
+        .into_iter()
+        .map(|d| d.kind)
+        .collect();
     let declared = GomodQuirk::variant_kinds();
     assert_eq!(
         reflected.len(),
@@ -132,6 +144,9 @@ fn dispatcher_reflection_covers_every_quirk_variant() {
         "reflected {reflected:?} vs declared {declared:?}"
     );
     for kind in declared {
-        assert!(reflected.iter().any(|k| k == kind), "quirk `{kind}` missing from reflection");
+        assert!(
+            reflected.iter().any(|k| k == kind),
+            "quirk `{kind}` missing from reflection"
+        );
     }
 }

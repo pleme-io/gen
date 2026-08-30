@@ -13,13 +13,25 @@ use serde::{Deserialize, Serialize};
 /// `substrate/lib/build/helm/quirk-apply.nix`.
 // Note: `Eq` is intentionally NOT derived — variants carry
 // `serde_json::Value` which can hold floats (no Eq impl).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, gen_macros::TypedDispatcher, gen_macros::Discriminant, gen_macros::IsVariant)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    gen_macros::TypedDispatcher,
+    gen_macros::Discriminant,
+    gen_macros::IsVariant,
+)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum HelmQuirk {
     /// Override a values.yaml entry at chart-render time. Used when
     /// an upstream chart's default value is broken under the FluxCD
     /// reconciler's posture (e.g. missing a required image tag).
-    OverrideValue { path: String, value: serde_json::Value },
+    OverrideValue {
+        path: String,
+        value: serde_json::Value,
+    },
     /// Skip the chart's pre-install or post-install Hook resource —
     /// some charts ship hooks that require cluster privileges
     /// pleme-io's RBAC doesn't grant.
@@ -27,7 +39,12 @@ pub enum HelmQuirk {
     /// Patch a rendered manifest by JSONPath replacement. Heavier
     /// than OverrideValue (which patches at values-merge time); used
     /// when the chart's templating engine doesn't expose the field.
-    PatchManifest { resource_kind: String, name: String, jsonpath: String, value: serde_json::Value },
+    PatchManifest {
+        resource_kind: String,
+        name: String,
+        jsonpath: String,
+        value: serde_json::Value,
+    },
     /// Force a specific image tag — convenient when a chart's
     /// default tag has been pulled or has known CVEs.
     ForceImageTag { container: String, tag: String },

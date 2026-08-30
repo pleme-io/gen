@@ -76,7 +76,10 @@ pub enum MissReason {
     NoSubstituters,
     /// Probe failed with a transport-level error (DNS, TCP, TLS, …).
     /// Engine treats this as a miss + triggers a local build.
-    TransportError { substituter_url: String, detail: String },
+    TransportError {
+        substituter_url: String,
+        detail: String,
+    },
 }
 
 /// Aggregate report — one probe per supplied key.
@@ -264,7 +267,10 @@ mod tests {
         let outcome = c.probe(&k("foo"));
         match outcome {
             CacheOutcome::Miss {
-                reason: MissReason::TransportError { substituter_url, .. },
+                reason:
+                    MissReason::TransportError {
+                        substituter_url, ..
+                    },
             } => {
                 assert!(substituter_url.contains("cache.example.org"));
                 assert!(substituter_url.ends_with(".narinfo"));
@@ -277,7 +283,10 @@ mod tests {
     fn probe_url_is_substituter_plus_hash_narinfo() {
         let key = k("demo");
         let url = AtticClient::probe_url("https://cache.example.org/foo", &key);
-        assert_eq!(url, format!("https://cache.example.org/foo/{}.narinfo", key.hash.hex()));
+        assert_eq!(
+            url,
+            format!("https://cache.example.org/foo/{}.narinfo", key.hash.hex())
+        );
     }
 
     #[test]
@@ -285,7 +294,10 @@ mod tests {
         let key = k("demo");
         let url = AtticClient::probe_url("https://cache.example.org/", &key);
         let after_scheme = url.strip_prefix("https://").unwrap();
-        assert!(!after_scheme.contains("//"), "host+path should not contain `//`: {after_scheme}");
+        assert!(
+            !after_scheme.contains("//"),
+            "host+path should not contain `//`: {after_scheme}"
+        );
     }
 
     #[test]

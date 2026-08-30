@@ -12,7 +12,7 @@
 //! `error[E0603]: module 'gen_delta' is private`. See the commit message.
 
 use gen_gomod::delta_mode::{
-    apply, DeltaEnv, DeltaMode, DeltaOutcome, DeltaPolicy, RetirementReason,
+    DeltaEnv, DeltaMode, DeltaOutcome, DeltaPolicy, RetirementReason, apply,
 };
 use std::path::{Path, PathBuf};
 
@@ -47,7 +47,9 @@ fn retired_policy_mints_no_witness() {
 fn active_policy_mints_a_witness() {
     // Proves the refusal is conditional, not hard-wired — without this, an
     // `activate` that always returned None would pass every other test.
-    let p = DeltaPolicy { mode: DeltaMode::Active };
+    let p = DeltaPolicy {
+        mode: DeltaMode::Active,
+    };
     assert!(p.activate().is_some());
 }
 
@@ -61,7 +63,9 @@ fn retired_policy_writes_nothing() {
 
     assert_eq!(
         out,
-        DeltaOutcome::Skipped { reason: RetirementReason::NoConsumer }
+        DeltaOutcome::Skipped {
+            reason: RetirementReason::NoConsumer
+        }
     );
     // The assertion that matters: an observed write count, not a missing file.
     assert_eq!(env.writes.len(), 0, "retired policy must not write");
@@ -70,7 +74,9 @@ fn retired_policy_writes_nothing() {
 #[test]
 fn active_policy_writes_once() {
     let mut env = MockDeltaEnv::default();
-    let p = DeltaPolicy { mode: DeltaMode::Active };
+    let p = DeltaPolicy {
+        mode: DeltaMode::Active,
+    };
     let out = apply(p, &mut env, Path::new("/tmp/x"), || Ok("{}".to_string()))
         .expect("active apply succeeds");
 
@@ -83,8 +89,14 @@ fn active_policy_writes_once() {
 fn declared_spec_agrees_with_the_code() {
     // The (def…) form and DeltaPolicy::RETIRED must not drift.
     let spec = include_str!("../specs/go-delta.lisp");
-    assert!(spec.contains(":mode \"retired\""), "spec must declare retired");
-    assert!(spec.contains(":reason \"no-consumer\""), "spec must declare the reason");
+    assert!(
+        spec.contains(":mode \"retired\""),
+        "spec must declare retired"
+    );
+    assert!(
+        spec.contains(":reason \"no-consumer\""),
+        "spec must declare the reason"
+    );
     assert_eq!(
         DeltaPolicy::RETIRED.mode,
         DeltaMode::Retired(RetirementReason::NoConsumer),

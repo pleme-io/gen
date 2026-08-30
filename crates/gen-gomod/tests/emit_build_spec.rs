@@ -14,9 +14,9 @@ use std::fs;
 use std::path::PathBuf;
 
 use gen_gomod::build_spec::{Renderer, TargetTuple};
-use gen_gomod::emit::{generate_with_env, SPEC_FILENAME};
+use gen_gomod::emit::{SPEC_FILENAME, generate_with_env};
 use gen_gomod::testkit::MockGoBuildEnv;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 /// A distinct writable temp root per test invocation.
 fn temp_root(tag: &str) -> PathBuf {
@@ -70,8 +70,14 @@ fn dep_free_env(root: &std::path::Path, tuple: &TargetTuple) -> MockGoBuildEnv {
     let objs = [main, std_pkg("fmt", "print.go")];
     MockGoBuildEnv::new()
         .with_list(tuple, stream(&objs))
-        .with_file(format!("{root_s}/go.mod"), "module example.com/tool\n\ngo 1.25\n")
-        .with_file(format!("{root_s}/cmd/tool/main.go"), "package main\nfunc main() {}\n")
+        .with_file(
+            format!("{root_s}/go.mod"),
+            "module example.com/tool\n\ngo 1.25\n",
+        )
+        .with_file(
+            format!("{root_s}/cmd/tool/main.go"),
+            "package main\nfunc main() {}\n",
+        )
 }
 
 /// The core proof: `gen build .` on a Go module emits `Go.build-spec.json`.
@@ -99,7 +105,10 @@ fn gen_build_emits_go_build_spec_json() {
     // 3. The graph is real: the main node + its std/fmt dep are present,
     //    keyed at the target tuple.
     assert_eq!(spec.root_package, "example.com/tool/cmd/tool#linux-amd64");
-    assert!(spec.packages.contains_key("example.com/tool/cmd/tool#linux-amd64"));
+    assert!(
+        spec.packages
+            .contains_key("example.com/tool/cmd/tool#linux-amd64")
+    );
     assert!(spec.packages.contains_key("std/fmt#linux-amd64"));
 
     // 4. The emitted spec satisfies its own invariants (0 violations).
@@ -118,19 +127,21 @@ fn emit_is_byte_deterministic() {
     let tuple = TargetTuple::new("linux", "amd64", vec![]);
 
     let root_a = temp_root("det-a");
-    let out_a = generate_with_env(&dep_free_env(&root_a, &tuple), &root_a, tuple.clone())
-        .expect("emit a");
+    let out_a =
+        generate_with_env(&dep_free_env(&root_a, &tuple), &root_a, tuple.clone()).expect("emit a");
     // Read then normalize out the (identical) root path — the spec body
     // carries no absolute paths (relative_path is under the module root),
     // so the two bodies are directly comparable.
     let body_a = fs::read_to_string(&out_a).expect("read a");
 
     let root_b = temp_root("det-b");
-    let out_b =
-        generate_with_env(&dep_free_env(&root_b, &tuple), &root_b, tuple).expect("emit b");
+    let out_b = generate_with_env(&dep_free_env(&root_b, &tuple), &root_b, tuple).expect("emit b");
     let body_b = fs::read_to_string(&out_b).expect("read b");
 
-    assert_eq!(body_a, body_b, "same module ⇒ byte-identical Go.build-spec.json");
+    assert_eq!(
+        body_a, body_b,
+        "same module ⇒ byte-identical Go.build-spec.json"
+    );
 
     let _ = fs::remove_dir_all(&root_a);
     let _ = fs::remove_dir_all(&root_b);

@@ -78,10 +78,16 @@ fn package_args_serializes_to_camel_case_buildnpmpackage_keys() {
 #[test]
 fn quirk_variants_serialize_with_kind_tag() {
     for q in [
-        NpmQuirk::NpmInstallFlag { flag: "--legacy-peer-deps".into() },
+        NpmQuirk::NpmInstallFlag {
+            flag: "--legacy-peer-deps".into(),
+        },
         NpmQuirk::SkipPostinstall,
-        NpmQuirk::PinNodejs { version: "20".into() },
-        NpmQuirk::OverrideRegistry { url: "https://r".into() },
+        NpmQuirk::PinNodejs {
+            version: "20".into(),
+        },
+        NpmQuirk::OverrideRegistry {
+            url: "https://r".into(),
+        },
         NpmQuirk::SubstituteSource {
             file: "src/foo.js".into(),
             from: "a".into(),
@@ -89,7 +95,10 @@ fn quirk_variants_serialize_with_kind_tag() {
         },
     ] {
         let v: serde_json::Value = serde_json::to_value(&q).unwrap();
-        assert!(v.get("kind").is_some(), "quirk must carry `kind` tag: {q:?}");
+        assert!(
+            v.get("kind").is_some(),
+            "quirk must carry `kind` tag: {q:?}"
+        );
         // Round-trip through serde.
         let back: NpmQuirk = serde_json::from_value(v).unwrap();
         assert_eq!(q, back);
@@ -115,8 +124,16 @@ fn invariants_catch_missing_pname() {
         workspace_members: vec!["broken-1.0.0".into()],
     };
     let violations = <NpmInvariants as Invariants>::check(&spec);
-    assert!(violations.iter().any(|v| matches!(v, Violation::MissingPname { .. })));
-    assert!(violations.iter().any(|v| matches!(v, Violation::MissingVersion { .. })));
+    assert!(
+        violations
+            .iter()
+            .any(|v| matches!(v, Violation::MissingPname { .. }))
+    );
+    assert!(
+        violations
+            .iter()
+            .any(|v| matches!(v, Violation::MissingVersion { .. }))
+    );
 }
 
 #[test]
@@ -128,7 +145,10 @@ fn invariants_catch_stale_schema_version() {
         workspace_members: vec![],
     };
     let v = <NpmInvariants as Invariants>::check(&spec);
-    assert!(v.iter().any(|x| matches!(x, Violation::StaleSchemaVersion { .. })));
+    assert!(
+        v.iter()
+            .any(|x| matches!(x, Violation::StaleSchemaVersion { .. }))
+    );
 }
 
 #[test]

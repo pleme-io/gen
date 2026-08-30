@@ -5,12 +5,21 @@ use crate::build_spec::BuildSpec;
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "rule", rename_all = "kebab-case")]
 pub enum Violation {
-    StaleSchemaVersion { found: u32, expected: u32 },
-    MissingPname { package_key: String },
-    MissingVersion { package_key: String },
+    StaleSchemaVersion {
+        found: u32,
+        expected: u32,
+    },
+    MissingPname {
+        package_key: String,
+    },
+    MissingVersion {
+        package_key: String,
+    },
     /// `bundlerApp` requires `exes` non-empty; a spec declaring app
     /// shape without exes is mis-shaped.
-    AppMissingExes { package_key: String },
+    AppMissingExes {
+        package_key: String,
+    },
 }
 
 pub fn check(spec: &BuildSpec) -> Vec<Violation> {

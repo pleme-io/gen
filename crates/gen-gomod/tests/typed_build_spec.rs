@@ -32,10 +32,16 @@ fn coarse_package_args_serializes_to_build_go_module_keys() {
     };
     let v: serde_json::Value = serde_json::to_value(&args).unwrap();
     assert_eq!(v.get("pname"), Some(&serde_json::json!("kubectl")));
-    assert_eq!(v.get("vendorHash"), Some(&serde_json::json!("sha256-abc123")));
+    assert_eq!(
+        v.get("vendorHash"),
+        Some(&serde_json::json!("sha256-abc123"))
+    );
     assert_eq!(v.get("proxyVendor"), Some(&serde_json::json!(true)));
     assert_eq!(v.get("tags"), Some(&serde_json::json!(["netgo"])));
-    assert_eq!(v.get("subPackages"), Some(&serde_json::json!(["cmd/kubectl"])));
+    assert_eq!(
+        v.get("subPackages"),
+        Some(&serde_json::json!(["cmd/kubectl"]))
+    );
     assert_eq!(v.get("doCheck"), Some(&serde_json::json!(false)));
     let envv = v.get("env").unwrap().as_object().unwrap();
     assert_eq!(envv.get("CGO_ENABLED"), Some(&serde_json::json!("0")));
@@ -44,11 +50,17 @@ fn coarse_package_args_serializes_to_build_go_module_keys() {
 #[test]
 fn quirk_variants_round_trip() {
     for q in [
-        GomodQuirk::ForceVendorHash { hash: "sha256-xyz".into() },
+        GomodQuirk::ForceVendorHash {
+            hash: "sha256-xyz".into(),
+        },
         GomodQuirk::BuildTag { tag: "fips".into() },
         GomodQuirk::Ldflag { flag: "-w".into() },
         GomodQuirk::CgoOff,
-        GomodQuirk::SubstituteSource { file: "go.mod".into(), from: "x".into(), to: "y".into() },
+        GomodQuirk::SubstituteSource {
+            file: "go.mod".into(),
+            from: "x".into(),
+            to: "y".into(),
+        },
     ] {
         let v: serde_json::Value = serde_json::to_value(&q).unwrap();
         assert!(v.get("kind").is_some());
@@ -77,7 +89,9 @@ fn v2_build_spec_implements_spec_trait() {
         PackageSpec {
             import_path: "example.com/x/cmd/hello".into(),
             kind: PackageKind::Main,
-            source: PackageSource::Vendored { relative_path: "cmd/hello".into() },
+            source: PackageSource::Vendored {
+                relative_path: "cmd/hello".into(),
+            },
             tree: BuildTree::Target,
             go_files: vec!["main.go".into()],
             build_tags: vec![],
@@ -104,7 +118,10 @@ fn v2_build_spec_implements_spec_trait() {
     assert_eq!(spec.root_key(), key);
     assert!(spec.renderer.is_incremental());
     let violations = <GomodInvariants as Invariants>::check(&spec);
-    assert!(violations.is_empty(), "minimal v2 spec violated: {violations:?}");
+    assert!(
+        violations.is_empty(),
+        "minimal v2 spec violated: {violations:?}"
+    );
 }
 
 #[test]
@@ -115,7 +132,10 @@ fn coarse_build_spec_still_implements_spec_trait() {
         coarse::PackageSpec {
             name: "kubectl".into(),
             version: "1.29.0".into(),
-            args: PackageArgs { pname: Some("kubectl".into()), ..Default::default() },
+            args: PackageArgs {
+                pname: Some("kubectl".into()),
+                ..Default::default()
+            },
             quirks: vec![],
         },
     );

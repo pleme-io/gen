@@ -40,14 +40,8 @@ enum ReadyState {
 fn severity_per_variant() {
     assert_eq!(ReadyState::Ready.severity(), 0);
     assert_eq!(ReadyState::Unknown.severity(), 1);
-    assert_eq!(
-        ReadyState::InProgress { reason: "x".into() }.severity(),
-        2,
-    );
-    assert_eq!(
-        ReadyState::Failed { reason: "y".into() }.severity(),
-        3,
-    );
+    assert_eq!(ReadyState::InProgress { reason: "x".into() }.severity(), 2,);
+    assert_eq!(ReadyState::Failed { reason: "y".into() }.severity(), 3,);
 }
 
 #[test]

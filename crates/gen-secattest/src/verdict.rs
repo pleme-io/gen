@@ -393,10 +393,18 @@ impl CompleteVerdict {
     #[must_use]
     pub fn required_slots(&self) -> [(VerdictKind, &AttestationAddr, &SlotState); 4] {
         [
-            (VerdictKind::Signature, &self.signature.subject, &self.signature.state),
+            (
+                VerdictKind::Signature,
+                &self.signature.subject,
+                &self.signature.state,
+            ),
             (VerdictKind::Sbom, &self.sbom.subject, &self.sbom.state),
             (VerdictKind::Cve, &self.cve.subject, &self.cve.state),
-            (VerdictKind::Provenance, &self.provenance.subject, &self.provenance.state),
+            (
+                VerdictKind::Provenance,
+                &self.provenance.subject,
+                &self.provenance.state,
+            ),
         ]
     }
 }
@@ -411,9 +419,7 @@ impl<'de> Deserialize<'de> for CompleteVerdict {
         D: serde::Deserializer<'de>,
     {
         let partial = PartialVerdict::deserialize(d)?;
-        partial
-            .into_complete()
-            .map_err(serde::de::Error::custom)
+        partial.into_complete().map_err(serde::de::Error::custom)
     }
 }
 

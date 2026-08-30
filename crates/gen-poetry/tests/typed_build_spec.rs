@@ -21,11 +21,18 @@ fn package_args_serializes_to_poetry2nix_keys() {
     let v: serde_json::Value = serde_json::to_value(&args).unwrap();
     assert_eq!(v.get("projectDir"), Some(&serde_json::json!("./")));
     assert_eq!(v.get("python"), Some(&serde_json::json!("python311")));
-    assert_eq!(v.get("groups"), Some(&serde_json::json!(["main", "production"])));
+    assert_eq!(
+        v.get("groups"),
+        Some(&serde_json::json!(["main", "production"]))
+    );
     assert_eq!(v.get("extras"), Some(&serde_json::json!(["postgres"])));
     assert_eq!(v.get("preferWheels"), Some(&serde_json::json!(true)));
     assert_eq!(v.get("doCheck"), Some(&serde_json::json!(false)));
-    let eps = v.get("editablePackageSources").unwrap().as_object().unwrap();
+    let eps = v
+        .get("editablePackageSources")
+        .unwrap()
+        .as_object()
+        .unwrap();
     assert_eq!(eps.get("my-lib"), Some(&serde_json::json!("./libs/my-lib")));
 }
 
@@ -41,8 +48,13 @@ fn quirk_variants_round_trip() {
             attr: "preBuild".into(),
             value: "true".into(),
         },
-        PoetryQuirk::SkipCheck { package: "flaky-pkg".into() },
-        PoetryQuirk::PreferWheel { package: "scipy".into(), prefer: true },
+        PoetryQuirk::SkipCheck {
+            package: "flaky-pkg".into(),
+        },
+        PoetryQuirk::PreferWheel {
+            package: "scipy".into(),
+            prefer: true,
+        },
     ] {
         let v: serde_json::Value = serde_json::to_value(&q).unwrap();
         assert!(v.get("kind").is_some());
@@ -75,7 +87,10 @@ fn build_spec_implements_spec_trait() {
     assert_eq!(spec.schema_version(), SCHEMA_VERSION);
     assert_eq!(spec.root_key(), "myapp-0.1.0");
     let violations = <PoetryInvariants as Invariants>::check(&spec);
-    assert!(violations.is_empty(), "minimal spec violated: {violations:?}");
+    assert!(
+        violations.is_empty(),
+        "minimal spec violated: {violations:?}"
+    );
 }
 
 #[test]

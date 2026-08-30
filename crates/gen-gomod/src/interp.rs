@@ -26,7 +26,7 @@ use indexmap::IndexMap;
 use crate::build_spec::{
     self, BuildSpec, BuildTree, DepMode, EmbedSpec, GoCompactTargetResolves, GoPackageArgs,
     GoTargetEdges, GoTargetResolve, ModuleSpec, PackageKind, PackageModuleRef, PackageSource,
-    PackageSpec, Renderer, TargetTuple, SCHEMA_VERSION,
+    PackageSpec, Renderer, SCHEMA_VERSION, TargetTuple,
 };
 use crate::error::GomodError;
 use crate::golist::parse_stream;
@@ -56,7 +56,9 @@ pub struct RealGoBuildEnv {
 
 impl Default for RealGoBuildEnv {
     fn default() -> Self {
-        Self { mod_mode: "vendor".to_string() }
+        Self {
+            mod_mode: "vendor".to_string(),
+        }
     }
 }
 
@@ -80,13 +82,24 @@ impl GoBuildEnv for RealGoBuildEnv {
         // records the module as vendored, so vendorHash resolves null and
         // buildGoModule then fails the identical error one layer later.
         let vendored = root.join("vendor").join("modules.txt").is_file();
-        let mod_mode = if vendored { self.mod_mode.as_str() } else { "mod" };
+        let mod_mode = if vendored {
+            self.mod_mode.as_str()
+        } else {
+            "mod"
+        };
         cmd.current_dir(root)
             .env("GOOS", &tuple.goos)
             .env("GOARCH", &tuple.goarch)
             .env("CGO_ENABLED", "0")
             .env("GOFLAGS", format!("-mod={mod_mode}"))
-            .env("GOPROXY", if vendored { "off" } else { "https://proxy.golang.org,direct" })
+            .env(
+                "GOPROXY",
+                if vendored {
+                    "off"
+                } else {
+                    "https://proxy.golang.org,direct"
+                },
+            )
             // No interactive prompts, ever.
             .env("GIT_TERMINAL_PROMPT", "0");
         let out = cmd
@@ -103,7 +116,10 @@ impl GoBuildEnv for RealGoBuildEnv {
     }
 
     fn read_file(&self, path: &Path) -> Result<Vec<u8>, GomodError> {
-        std::fs::read(path).map_err(|source| GomodError::Io { path: path.to_path_buf(), source })
+        std::fs::read(path).map_err(|source| GomodError::Io {
+            path: path.to_path_buf(),
+            source,
+        })
     }
 }
 
@@ -156,8 +172,10 @@ pub fn apply(env: &dyn GoBuildEnv, ctx: &EncodeCtx) -> Result<BuildSpec, GomodEr
     }
 
     // import-path → kind index, for resolving edges to node keys.
-    let kind_of: HashMap<&str, PackageKind> =
-        listed.iter().map(|p| (p.import_path.as_str(), p.kind())).collect();
+    let kind_of: HashMap<&str, PackageKind> = listed
+        .iter()
+        .map(|p| (p.import_path.as_str(), p.kind()))
+        .collect();
 
     let mut packages: std::collections::BTreeMap<String, PackageSpec> =
         std::collections::BTreeMap::new();
@@ -237,13 +255,20 @@ pub fn apply(env: &dyn GoBuildEnv, ctx: &EncodeCtx) -> Result<BuildSpec, GomodEr
                 version: m.version.clone(),
             }),
             source_hash,
-            args: GoPackageArgs { gcflags: Vec::new(), ldflags: Vec::new(), env: env_map },
+            args: GoPackageArgs {
+                gcflags: Vec::new(),
+                ldflags: Vec::new(),
+                env: env_map,
+            },
             quirks: Vec::new(),
         };
 
         resolve.insert(
             key.clone(),
-            GoTargetEdges { imports: import_keys, import_map: p.import_map.clone() },
+            GoTargetEdges {
+                imports: import_keys,
+                import_map: p.import_map.clone(),
+            },
         );
         if matches!(kind, PackageKind::Main) && !p.dep_only {
             mains.push(key.clone());

@@ -207,11 +207,7 @@ where
     /// # Errors
     /// Returns `DispatcherError::UnknownKind` if a variant's
     /// serialized kind has no registered helper.
-    pub fn try_apply_each(
-        &self,
-        variants: &[V],
-        ctx: &mut C,
-    ) -> Result<Vec<O>, DispatcherError>
+    pub fn try_apply_each(&self, variants: &[V], ctx: &mut C) -> Result<Vec<O>, DispatcherError>
     where
         V: serde::Serialize,
     {
@@ -290,8 +286,7 @@ where
         // same variants, and the last application of each kind wins
         // — so r2's tail (last len(variants) entries) should equal
         // r1.
-        r2.len() == 2 * r1.len()
-            && r2.iter().skip(r1.len()).cloned().collect::<Vec<_>>() == r1
+        r2.len() == 2 * r1.len() && r2.iter().skip(r1.len()).cloned().collect::<Vec<_>>() == r1
     }
 }
 

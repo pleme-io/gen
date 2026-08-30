@@ -5,7 +5,9 @@
 //! asserts "the happy graph resolves" grades itself on the easy half — the
 //! search is the easy half.
 
-use gen_solve::{edge, edge_of_kind, Conflict, Follow, MapUniverse, SolveError, Solver, VersionSet};
+use gen_solve::{
+    Conflict, Follow, MapUniverse, SolveError, Solver, VersionSet, edge, edge_of_kind,
+};
 use gen_types::{
     Combinator, CompoundConstraint, ConstraintSpec, Dependency, DependencyKind, Version,
     VersionConstraint,
@@ -300,7 +302,11 @@ fn the_default_follows_every_declared_edge() {
     u.add(
         "app",
         v(1, 0, 0),
-        vec![edge_of_kind("only-dev", caret(9, 0, 0), DependencyKind::Dev)],
+        vec![edge_of_kind(
+            "only-dev",
+            caret(9, 0, 0),
+            DependencyKind::Dev,
+        )],
     );
     let root = [edge("app", ConstraintSpec::Any)];
 

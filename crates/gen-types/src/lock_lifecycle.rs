@@ -37,7 +37,7 @@
 
 use std::path::Path;
 
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 
 /// Typed lock-lifecycle primitive — one impl per adapter.
 ///
@@ -180,7 +180,8 @@ mod tests {
             }
         }
         fn store(&self, s: MockState) {
-            self.state.store(s.encode(), std::sync::atomic::Ordering::SeqCst);
+            self.state
+                .store(s.encode(), std::sync::atomic::Ordering::SeqCst);
         }
         fn load(&self) -> MockState {
             MockState::decode(self.state.load(std::sync::atomic::Ordering::SeqCst))
@@ -193,13 +194,21 @@ mod tests {
     impl LockLifecyclePrimitive for MockLifecycle {
         type State = MockState;
         type Diff = MockDiff;
-        fn ecosystem(&self) -> &'static str { "mock" }
-        fn current_state(&self, _: &Path) -> Self::State { self.load() }
+        fn ecosystem(&self) -> &'static str {
+            "mock"
+        }
+        fn current_state(&self, _: &Path) -> Self::State {
+            self.load()
+        }
         fn requires_operator_action(&self, s: &Self::State) -> bool {
             matches!(s, MockState::Drifted | MockState::MissingLock)
         }
-        fn is_locked(&self, s: &Self::State) -> bool { matches!(s, MockState::Locked) }
-        fn is_missing_lock(&self, s: &Self::State) -> bool { matches!(s, MockState::MissingLock) }
+        fn is_locked(&self, s: &Self::State) -> bool {
+            matches!(s, MockState::Locked)
+        }
+        fn is_missing_lock(&self, s: &Self::State) -> bool {
+            matches!(s, MockState::MissingLock)
+        }
         fn snapshot(&self, _: &Path) -> Result<(), LockError> {
             self.store(MockState::Locked);
             Ok(())

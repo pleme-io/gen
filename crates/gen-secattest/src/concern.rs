@@ -288,7 +288,10 @@ pub const CONCERN_CATALOG: &[&ConcernSlot] = &[
 /// Look up a concern's slot.
 #[must_use]
 pub fn concern_slot(concern: Concern) -> Option<&'static ConcernSlot> {
-    CONCERN_CATALOG.iter().copied().find(|s| s.concern == concern)
+    CONCERN_CATALOG
+        .iter()
+        .copied()
+        .find(|s| s.concern == concern)
 }
 
 /// The live-enforcement maturity histogram — `(design, wired, shipped)`.
@@ -333,7 +336,11 @@ mod tests {
             .filter_map(|s| s.layer.pipeline_order())
             .collect();
         orders.sort_unstable();
-        assert_eq!(orders, vec![0, 1, 2, 3, 4, 5], "the six ordered pipeline layers must all be present exactly once");
+        assert_eq!(
+            orders,
+            vec![0, 1, 2, 3, 4, 5],
+            "the six ordered pipeline layers must all be present exactly once"
+        );
     }
 
     #[test]
@@ -352,15 +359,26 @@ mod tests {
             );
         }
         let fc = CONCERN_CATALOG.iter().filter(|s| s.fail_closed).count();
-        assert_eq!(fc, 4, "exactly four fail-closed concerns (the four required verdict kinds)");
+        assert_eq!(
+            fc, 4,
+            "exactly four fail-closed concerns (the four required verdict kinds)"
+        );
     }
 
     #[test]
     fn every_concern_is_control_mapped() {
         // control-mapped: no concern ships without a NIST 800-53 crosswalk.
         for s in CONCERN_CATALOG {
-            assert!(!s.controls.is_empty(), "concern {:?} has no 800-53 control mapping", s.concern);
-            assert!(!s.engine.is_empty(), "concern {:?} has no named OSS engine", s.concern);
+            assert!(
+                !s.controls.is_empty(),
+                "concern {:?} has no 800-53 control mapping",
+                s.concern
+            );
+            assert!(
+                !s.engine.is_empty(),
+                "concern {:?} has no named OSS engine",
+                s.concern
+            );
         }
     }
 
@@ -371,7 +389,11 @@ mod tests {
         // before); GUAC/Scorecard/Admission are DESIGN. NOTHING is Shipped
         // (the honest ceiling — no live-enforced + e2e-proven concern yet).
         let (design, wired, shipped) = maturity_histogram();
-        assert_eq!(design + wired + shipped, CONCERN_CATALOG.len(), "histogram must partition the catalog");
+        assert_eq!(
+            design + wired + shipped,
+            CONCERN_CATALOG.len(),
+            "histogram must partition the catalog"
+        );
         assert_eq!(
             (design, wired, shipped),
             (3, 5, 0),

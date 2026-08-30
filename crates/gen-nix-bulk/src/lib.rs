@@ -17,7 +17,7 @@
 //! renderers are intentionally symmetric: same input Manifest, same
 //! typed NixValue output, different shape.
 
-use gen_nix::{ast::*, NixValue};
+use gen_nix::{NixValue, ast::*};
 use gen_types::{Manifest, Package};
 
 /// Render the workspace as a per-tree (crane-shape) Nix expression.
@@ -73,7 +73,9 @@ fn render_body(manifest: &Manifest) -> String {
                                 entry("name", NixValue::str("all-workspace-members")),
                                 entry(
                                     "paths",
-                                    NixValue::Raw("builtins.attrValues workspaceMembers".to_string()),
+                                    NixValue::Raw(
+                                        "builtins.attrValues workspaceMembers".to_string(),
+                                    ),
                                 ),
                             ],
                         }],
@@ -93,12 +95,14 @@ fn build_cargo_artifacts() -> NixValue {
         ])),
         args: vec![NixValue::AttrSet {
             recursive: false,
-            entries: vec![
-                AttrSetEntry::Inherit {
-                    from: None,
-                    names: vec!["src".into(), "buildInputs".into(), "nativeBuildInputs".into()],
-                },
-            ],
+            entries: vec![AttrSetEntry::Inherit {
+                from: None,
+                names: vec![
+                    "src".into(),
+                    "buildInputs".into(),
+                    "nativeBuildInputs".into(),
+                ],
+            }],
         }],
     }
 }
@@ -133,10 +137,7 @@ fn build_member_derivation(p: &Package) -> NixValue {
                 },
                 entry("pname", NixValue::str(&p.name)),
                 entry("version", NixValue::str(p.version.to_string())),
-                entry(
-                    "cargoExtraArgs",
-                    NixValue::str(format!("-p {}", p.name)),
-                ),
+                entry("cargoExtraArgs", NixValue::str(format!("-p {}", p.name))),
             ],
         }],
     }
@@ -152,9 +153,7 @@ mod tests {
         let p = Package {
             name: "demo".into(),
             version: Version::new(0, 1, 0),
-            source: PackageSource::Path {
-                path: ".".into(),
-            },
+            source: PackageSource::Path { path: ".".into() },
             registry: Registry::CratesIo,
             dependencies: vec![],
             features: vec![],

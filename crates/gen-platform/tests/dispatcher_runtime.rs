@@ -63,7 +63,9 @@ fn happy_path_seal_then_apply() {
 
     let mut ctx = Ctx::default();
     let variants = vec![
-        CrateQuirk::ForceCfg { cfg: "supports_64bit".into() },
+        CrateQuirk::ForceCfg {
+            cfg: "supports_64bit".into(),
+        },
         CrateQuirk::SubstituteSource {
             file: "build.rs".into(),
             from: "old".into(),
@@ -86,7 +88,8 @@ fn seal_fails_on_missing_coverage() {
         .with_helper("force-cfg", |_, _| Override::default())
         // missing fold-normal-into-build + substitute-source
         ;
-    let DispatcherError::MissingCoverage { missing } = d.into_sealed().err().expect("missing coverage must error")
+    let DispatcherError::MissingCoverage { missing } =
+        d.into_sealed().err().expect("missing coverage must error")
     else {
         panic!("wrong error variant");
     };

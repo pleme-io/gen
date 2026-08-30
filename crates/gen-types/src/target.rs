@@ -178,7 +178,10 @@ fn eval_cfg_expr(expr: &str, target: &Target) -> bool {
         .unwrap_or(expr)
         .trim();
     match inner {
-        "unix" => matches!(target.os.as_str(), "linux" | "macos" | "freebsd" | "netbsd" | "openbsd"),
+        "unix" => matches!(
+            target.os.as_str(),
+            "linux" | "macos" | "freebsd" | "netbsd" | "openbsd"
+        ),
         "windows" => target.os == "windows",
         "macos" => target.os == "macos",
         "linux" => target.os == "linux",
@@ -186,7 +189,9 @@ fn eval_cfg_expr(expr: &str, target: &Target) -> bool {
             // target_os = "linux" — extract the quoted name.
             s.split('"').nth(1).is_some_and(|os| os == target.os)
         }
-        s if s.starts_with("target_arch") => s.split('"').nth(1).is_some_and(|cpu| cpu == target.cpu),
+        s if s.starts_with("target_arch") => {
+            s.split('"').nth(1).is_some_and(|cpu| cpu == target.cpu)
+        }
         // Conservative default: unknown predicates are treated as
         // active. Engine has the full evaluator; this stub returns
         // true so deps don't get silently dropped.
@@ -300,6 +305,9 @@ mod tests {
     #[test]
     fn host_builder_returns_known_os() {
         let h = Target::host();
-        assert!(matches!(h.os.as_str(), "linux" | "macos" | "windows" | "unknown"));
+        assert!(matches!(
+            h.os.as_str(),
+            "linux" | "macos" | "windows" | "unknown"
+        ));
     }
 }

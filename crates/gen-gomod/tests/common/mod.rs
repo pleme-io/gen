@@ -9,7 +9,7 @@
 use gen_gomod::build_spec::TargetTuple;
 use gen_gomod::interp::EncodeCtx;
 use gen_gomod::testkit::MockGoBuildEnv;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 pub const ROOT: &str = "/w";
 
@@ -71,18 +71,36 @@ pub fn gate_a(banner: &str, tuple: &TargetTuple) -> (MockGoBuildEnv, EncodeCtx) 
         "Imports": ["example.com/fix/internal/greet"],
         "Module": {"Path": "example.com/fix", "Main": true}
     });
-    let objs = [greet, hello, bye, std_pkg("fmt", "print.go"), std_pkg("embed", "embed.go")];
+    let objs = [
+        greet,
+        hello,
+        bye,
+        std_pkg("fmt", "print.go"),
+        std_pkg("embed", "embed.go"),
+    ];
 
     let env = MockGoBuildEnv::new()
         .with_list(tuple, stream(&objs))
         .with_file("/w/go.mod", "module example.com/fix\n\ngo 1.25\n")
         .with_file("/w/internal/greet/greet.go", "package greet\n")
-        .with_file("/w/internal/greet/greet_linux.go", "package greet\nconst P = \"linux\"\n")
-        .with_file("/w/internal/greet/greet_darwin.go", "package greet\nconst P = \"darwin\"\n")
+        .with_file(
+            "/w/internal/greet/greet_linux.go",
+            "package greet\nconst P = \"linux\"\n",
+        )
+        .with_file(
+            "/w/internal/greet/greet_darwin.go",
+            "package greet\nconst P = \"darwin\"\n",
+        )
         .with_file("/w/internal/greet/banner.txt", banner)
         .with_file("/w/cmd/hello/main.go", "package main\nfunc main() {}\n")
         .with_file("/w/cmd/bye/main.go", "package main\nfunc main() {}\n");
-    (env, EncodeCtx { root: ROOT.into(), tuple: tuple.clone() })
+    (
+        env,
+        EncodeCtx {
+            root: ROOT.into(),
+            tuple: tuple.clone(),
+        },
+    )
 }
 
 /// A dep-free single-main module (`cmd/tool` importing only `fmt`).
@@ -101,7 +119,13 @@ pub fn dep_free(tuple: &TargetTuple) -> (MockGoBuildEnv, EncodeCtx) {
         .with_list(tuple, stream(&objs))
         .with_file("/w/go.mod", "module example.com/tool\n\ngo 1.25\n")
         .with_file("/w/cmd/tool/main.go", "package main\nfunc main() {}\n");
-    (env, EncodeCtx { root: ROOT.into(), tuple: tuple.clone() })
+    (
+        env,
+        EncodeCtx {
+            root: ROOT.into(),
+            tuple: tuple.clone(),
+        },
+    )
 }
 
 /// A fixture exercising Go-I3 for BOTH a vendored dep (`vendor/…`) and an
@@ -143,10 +167,22 @@ pub fn vendored_and_replace(tuple: &TargetTuple) -> (MockGoBuildEnv, EncodeCtx) 
     let env = MockGoBuildEnv::new()
         .with_list(tuple, stream(&objs))
         .with_file("/w/go.mod", "module example.com/monorepo\n\ngo 1.26\n")
-        .with_file("/w/go/src/microservices/service-a/main.go", "package main\nfunc main() {}\n")
+        .with_file(
+            "/w/go/src/microservices/service-a/main.go",
+            "package main\nfunc main() {}\n",
+        )
         .with_file("/w/vendor/github.com/foo/bar/bar.go", "package bar\n")
-        .with_file("/w/go/src/client/sdktest/sdk-go/client.go", "package sdkgo\n");
-    (env, EncodeCtx { root: ROOT.into(), tuple: tuple.clone() })
+        .with_file(
+            "/w/go/src/client/sdktest/sdk-go/client.go",
+            "package sdkgo\n",
+        );
+    (
+        env,
+        EncodeCtx {
+            root: ROOT.into(),
+            tuple: tuple.clone(),
+        },
+    )
 }
 
 /// Gate-A but the shared `greet` package has a cgo file — used to prove

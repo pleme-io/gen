@@ -11,4 +11,4 @@ pub mod invariants;
 pub mod quirks;
 
 pub use adapter::HelmAdapter;
-pub use error::{Result, HelmError};
+pub use error::{HelmError, Result};

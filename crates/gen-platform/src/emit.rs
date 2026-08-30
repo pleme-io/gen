@@ -46,9 +46,7 @@ pub fn to_helpers_skeleton(entry: &DispatcherEntry) -> String {
     out.push_str("# function bodies in the `let` block below to drive the\n");
     out.push_str("# matching builder.\n");
     out.push_str("#\n");
-    out.push_str(
-        "# Refresh via:\n#   gen dispatchers helpers-skeleton \\\n#     --label ",
-    );
+    out.push_str("# Refresh via:\n#   gen dispatchers helpers-skeleton \\\n#     --label ");
     out.push_str(entry.label);
     out.push_str(" --format nix\n");
     out.push_str("{ lib }:\nlet\n");
@@ -93,12 +91,8 @@ pub fn to_helpers_skeleton(entry: &DispatcherEntry) -> String {
             ));
         } else {
             let inherit_str = fields.join(" ");
-            out.push_str(&format!(
-                "    \"{kind}\" = quirk: {helper_name} {{\n"
-            ));
-            out.push_str(&format!(
-                "      inherit (quirk) {inherit_str};\n"
-            ));
+            out.push_str(&format!("    \"{kind}\" = quirk: {helper_name} {{\n"));
+            out.push_str(&format!("      inherit (quirk) {inherit_str};\n"));
             out.push_str("    };\n");
         }
     }

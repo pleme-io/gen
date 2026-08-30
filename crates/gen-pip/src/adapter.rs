@@ -12,15 +12,21 @@ use gen_types::{
 pub struct PipAdapter;
 
 impl Adapter for PipAdapter {
-    fn name(&self) -> &'static str { "pip" }
-    fn manifest_files(&self) -> &'static [&'static str] { &["pyproject.toml"] }
+    fn name(&self) -> &'static str {
+        "pip"
+    }
+    fn manifest_files(&self) -> &'static [&'static str] {
+        &["pyproject.toml"]
+    }
 
     fn lock(&self, _ctx: &AdapterCtx) -> AdapterResult<LockOutcome> {
         Err(AdapterError::Unsupported("pip lock not implemented".into()))
     }
 
     fn build(&self, _ctx: &AdapterCtx) -> AdapterResult<gen_types::AdapterBuildSpec> {
-        Err(AdapterError::Unsupported("pip build not implemented".into()))
+        Err(AdapterError::Unsupported(
+            "pip build not implemented".into(),
+        ))
     }
 
     fn plan(&self, _ctx: &AdapterCtx, _intent: &PlanIntent) -> AdapterResult<Plan> {
@@ -28,7 +34,9 @@ impl Adapter for PipAdapter {
     }
 
     fn confirm(&self, _ctx: &AdapterCtx) -> AdapterResult<ConfirmReport> {
-        Err(AdapterError::Unsupported("pip confirm not implemented".into()))
+        Err(AdapterError::Unsupported(
+            "pip confirm not implemented".into(),
+        ))
     }
 
     fn diff(&self, _ctx: &AdapterCtx, _against: &DiffRef) -> AdapterResult<DiffReport> {
@@ -45,7 +53,10 @@ impl Adapter for PipAdapter {
             .into_iter()
             .map(|(p, qs)| gen_types::AdapterQuirkEntry {
                 package: p.to_string(),
-                quirks: qs.into_iter().filter_map(|q| serde_json::to_value(&q).ok()).collect(),
+                quirks: qs
+                    .into_iter()
+                    .filter_map(|q| serde_json::to_value(&q).ok())
+                    .collect(),
             })
             .collect()
     }
@@ -63,7 +74,10 @@ impl Adapter for PipAdapter {
 }
 
 pub fn ctx_for(workspace_root: PathBuf) -> AdapterCtx {
-    AdapterCtx { workspace_root, target: None }
+    AdapterCtx {
+        workspace_root,
+        target: None,
+    }
 }
 
 // Distributed-slice registration. gen-cli discovers this adapter

@@ -12,15 +12,9 @@ pub enum StarlarkStmt {
         symbols: Vec<String>,
     },
     /// `func(arg1, arg2, kw=val, ...)`
-    Call {
-        func: String,
-        args: Vec<KwArg>,
-    },
+    Call { func: String, args: Vec<KwArg> },
     /// `name = value`
-    Assign {
-        name: String,
-        value: StarlarkValue,
-    },
+    Assign { name: String, value: StarlarkValue },
 }
 
 /// Argument to a Starlark call. Either positional or keyword. The

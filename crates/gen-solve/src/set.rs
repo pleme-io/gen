@@ -338,7 +338,8 @@ impl VersionSet {
     /// Lower one [`ConstraintSpec`] spelling into the algebra.
     #[must_use]
     pub fn of_spec(spec: &ConstraintSpec) -> Self {
-        let one = |lo: Bound, hi: Bound| Self::of_intervals(Interval::new(lo, hi).into_iter().collect());
+        let one =
+            |lo: Bound, hi: Bound| Self::of_intervals(Interval::new(lo, hi).into_iter().collect());
         match spec {
             ConstraintSpec::Exact(v) => Self::exactly(v.clone()),
             ConstraintSpec::Range {
@@ -492,7 +493,10 @@ mod tests {
             upper_exclusive: v(2, 0, 0),
         });
         assert_eq!(caret, range);
-        assert_ne!(caret, VersionSet::of_spec(&ConstraintSpec::Caret(v(2, 0, 0))));
+        assert_ne!(
+            caret,
+            VersionSet::of_spec(&ConstraintSpec::Caret(v(2, 0, 0)))
+        );
     }
 
     /// A disjunction stays two runs when a gap separates them, and collapses to
@@ -518,7 +522,10 @@ mod tests {
 
         let separated = VersionSet::of_compound(&CompoundConstraint {
             combinator: Combinator::Or,
-            atoms: vec![ConstraintSpec::Caret(v(1, 0, 0)), ConstraintSpec::Caret(v(3, 0, 0))],
+            atoms: vec![
+                ConstraintSpec::Caret(v(1, 0, 0)),
+                ConstraintSpec::Caret(v(3, 0, 0)),
+            ],
         });
         assert_eq!(separated.intervals().len(), 2, "{separated}");
         assert!(!separated.contains(&v(2, 5, 0)));
@@ -543,10 +550,18 @@ mod tests {
     fn intersection_distributes_over_a_disjunction() {
         let either = VersionSet::of_compound(&CompoundConstraint {
             combinator: Combinator::Or,
-            atoms: vec![ConstraintSpec::Caret(v(1, 0, 0)), ConstraintSpec::Caret(v(3, 0, 0))],
+            atoms: vec![
+                ConstraintSpec::Caret(v(1, 0, 0)),
+                ConstraintSpec::Caret(v(3, 0, 0)),
+            ],
         });
-        let narrowed = either.intersect(&VersionSet::of_spec(&ConstraintSpec::GreaterEqual(v(2, 0, 0))));
-        assert_eq!(narrowed, VersionSet::of_spec(&ConstraintSpec::Caret(v(3, 0, 0))));
+        let narrowed = either.intersect(&VersionSet::of_spec(&ConstraintSpec::GreaterEqual(v(
+            2, 0, 0,
+        ))));
+        assert_eq!(
+            narrowed,
+            VersionSet::of_spec(&ConstraintSpec::Caret(v(3, 0, 0)))
+        );
     }
 
     /// An empty fold returns the identity of its combinator, not a special

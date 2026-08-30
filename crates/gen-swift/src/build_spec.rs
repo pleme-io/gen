@@ -55,7 +55,10 @@ pub struct PackageArgs {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub targets: Vec<String>,
     /// Minimum platform version (e.g. `"macOS 13"`).
-    #[serde(rename = "swiftPlatformVersion", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "swiftPlatformVersion",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub swift_platform_version: Option<String>,
     /// Linker flags forwarded to `swift build -Xlinker …`.
     #[serde(skip_serializing_if = "Vec::is_empty")]

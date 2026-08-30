@@ -29,8 +29,8 @@
 //! Failures AGGREGATE before the assert — one run reports every broken row.
 
 use gen_secattest::remediation::{
-    maturity_histogram, remediation_for, remediation_for_cve_id, CveFinding, Fix,
-    RemediationMaturity, REMEDIATION_CATALOG,
+    CveFinding, Fix, REMEDIATION_CATALOG, RemediationMaturity, maturity_histogram, remediation_for,
+    remediation_for_cve_id,
 };
 
 /// One row of the matrix: a known finding + its expected CVE id string (the
@@ -52,7 +52,8 @@ fn matrix_covers_every_known_finding() {
     // The forcing function: matrix rows, catalog entries, and CveFinding::ALL
     // are the SAME set — a new finding cannot ship any one of the three
     // without the other two landing in the same commit.
-    let mut catalog_findings: Vec<CveFinding> = REMEDIATION_CATALOG.iter().map(|e| e.finding).collect();
+    let mut catalog_findings: Vec<CveFinding> =
+        REMEDIATION_CATALOG.iter().map(|e| e.finding).collect();
     let mut matrix_findings: Vec<CveFinding> = MATRIX.iter().map(|r| r.finding).collect();
     let mut all_findings: Vec<CveFinding> = CveFinding::ALL.to_vec();
     catalog_findings.sort_unstable();
@@ -67,7 +68,10 @@ fn matrix_covers_every_known_finding() {
         catalog_findings, all_findings,
         "remediation catalog ⇄ CveFinding::ALL drift: every known finding needs exactly one catalog entry"
     );
-    assert!(MATRIX.len() >= 1, "matrix regressed below the one known seed finding");
+    assert!(
+        MATRIX.len() >= 1,
+        "matrix regressed below the one known seed finding"
+    );
 }
 
 #[test]
@@ -106,10 +110,15 @@ fn every_row_has_a_present_named_and_mapped_fix() {
             Fix::VersionPin { fixed_version } => !fixed_version.is_empty(),
             Fix::NixOverlay { overlay_name } => !overlay_name.is_empty(),
             Fix::SourcePatch { patch_ref } => !patch_ref.is_empty(),
-            Fix::FlakeInputRepin { input_name, to_rev } => !input_name.is_empty() && !to_rev.is_empty(),
+            Fix::FlakeInputRepin { input_name, to_rev } => {
+                !input_name.is_empty() && !to_rev.is_empty()
+            }
         };
         if !fix_is_named {
-            failures.push(format!("{:?}: fix mechanism has an empty payload (not named)", row.finding));
+            failures.push(format!(
+                "{:?}: fix mechanism has an empty payload (not named)",
+                row.finding
+            ));
         }
 
         // dependency-edge-mapped: applies_to is fully named.
@@ -150,7 +159,8 @@ fn a_cve_id_lookup_resolves_the_same_entry_as_a_finding_lookup() {
     // silently diverge.
     for row in MATRIX {
         let by_finding = remediation_for(row.finding).expect("finding lookup must resolve");
-        let by_cve_id = remediation_for_cve_id(row.expected_cve_id).expect("cve_id lookup must resolve");
+        let by_cve_id =
+            remediation_for_cve_id(row.expected_cve_id).expect("cve_id lookup must resolve");
         assert_eq!(
             by_finding.finding, by_cve_id.finding,
             "finding-lookup and cve_id-lookup diverged for {:?}",
@@ -184,14 +194,22 @@ fn no_entry_is_shipped_claiming_shipped_confirmation_it_has_not_earned() {
     let mut rounded: Vec<String> = Vec::new();
     for e in REMEDIATION_CATALOG {
         if e.maturity == RemediationMaturity::VerifiedOnce && e.verified_consumers.is_empty() {
-            rounded.push(format!("{:?}: claims VerifiedOnce with zero verified_consumers", e.finding));
+            rounded.push(format!(
+                "{:?}: claims VerifiedOnce with zero verified_consumers",
+                e.finding
+            ));
         }
-        if e.maturity == RemediationMaturity::PropagatedFleetWide && e.verified_consumers.len() < 2 {
+        if e.maturity == RemediationMaturity::PropagatedFleetWide && e.verified_consumers.len() < 2
+        {
             rounded.push(format!(
                 "{:?}: claims PropagatedFleetWide with < 2 verified_consumers",
                 e.finding
             ));
         }
     }
-    assert!(rounded.is_empty(), "rounded-up remediation maturity claim(s):\n  - {}", rounded.join("\n  - "));
+    assert!(
+        rounded.is_empty(),
+        "rounded-up remediation maturity claim(s):\n  - {}",
+        rounded.join("\n  - ")
+    );
 }

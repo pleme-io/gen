@@ -28,14 +28,22 @@ fn package_args_serializes_to_galaxy_yml_keys() {
     assert_eq!(v.get("version"), Some(&serde_json::json!("1.0.0")));
     assert_eq!(v.get("license"), Some(&serde_json::json!(["MIT"])));
     let dv = v.get("dependencies").unwrap().as_object().unwrap();
-    assert_eq!(dv.get("community.general"), Some(&serde_json::json!(">=8.0.0")));
-    assert_eq!(v.get("build_ignore"), Some(&serde_json::json!(["tests/output", "*.swp"])));
+    assert_eq!(
+        dv.get("community.general"),
+        Some(&serde_json::json!(">=8.0.0"))
+    );
+    assert_eq!(
+        v.get("build_ignore"),
+        Some(&serde_json::json!(["tests/output", "*.swp"]))
+    );
 }
 
 #[test]
 fn quirk_variants_round_trip() {
     for q in [
-        AnsibleQuirk::DropDependency { collection: "broken.collection".into() },
+        AnsibleQuirk::DropDependency {
+            collection: "broken.collection".into(),
+        },
         AnsibleQuirk::PinDependency {
             collection: "community.general".into(),
             version: "==8.0.0".into(),
@@ -80,7 +88,10 @@ fn build_spec_implements_spec_trait() {
     assert_eq!(spec.schema_version(), SCHEMA_VERSION);
     assert_eq!(spec.root_key(), "plemeio.substrate-1.0.0");
     let violations = <AnsibleInvariants as Invariants>::check(&spec);
-    assert!(violations.is_empty(), "minimal spec violated: {violations:?}");
+    assert!(
+        violations.is_empty(),
+        "minimal spec violated: {violations:?}"
+    );
 }
 
 #[test]

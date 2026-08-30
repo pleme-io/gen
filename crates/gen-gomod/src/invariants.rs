@@ -66,7 +66,9 @@ pub fn check(spec: &BuildSpec) -> Vec<Violation> {
     }
 
     if !spec.root_package.is_empty() && !spec.packages.contains_key(&spec.root_package) {
-        out.push(Violation::RootNotInPackages { key: spec.root_package.clone() });
+        out.push(Violation::RootNotInPackages {
+            key: spec.root_package.clone(),
+        });
     }
 
     for m in &spec.workspace_members {
@@ -98,9 +100,7 @@ pub fn check(spec: &BuildSpec) -> Vec<Violation> {
 
         // Go-I3 — relative_path stays inside the workspace src.
         if let PackageSource::Vendored { relative_path } = &p.source {
-            if relative_path.starts_with('/')
-                || relative_path.split('/').any(|c| c == "..")
-            {
+            if relative_path.starts_with('/') || relative_path.split('/').any(|c| c == "..") {
                 out.push(Violation::RelativePathEscapes {
                     key: key.clone(),
                     relative_path: relative_path.clone(),

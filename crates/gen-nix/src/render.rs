@@ -33,9 +33,7 @@ fn write_value(out: &mut String, value: &NixValue, level: usize, parent_prec: u8
         NixValue::Ident(s) => out.push_str(s),
         NixValue::AttrPath(parts) => out.push_str(&parts.join(".")),
         NixValue::List(items) => write_list(out, items, level),
-        NixValue::AttrSet { recursive, entries } => {
-            write_attrset(out, *recursive, entries, level)
-        }
+        NixValue::AttrSet { recursive, entries } => write_attrset(out, *recursive, entries, level),
         NixValue::Lambda { params, body } => write_lambda(out, params, body, level),
         NixValue::Apply { func, args } => write_apply(out, func, args, level, parent_prec),
         NixValue::Let { bindings, body } => write_let(out, bindings, body, level),
@@ -57,7 +55,9 @@ fn write_value(out: &mut String, value: &NixValue, level: usize, parent_prec: u8
             out.push_str(" else ");
             write_value(out, else_branch, level, u8::MAX);
         }
-        NixValue::BinOp { op, left, right } => write_binop(out, *op, left, right, level, parent_prec),
+        NixValue::BinOp { op, left, right } => {
+            write_binop(out, *op, left, right, level, parent_prec)
+        }
         NixValue::UnaryOp { op, operand } => {
             out.push_str(op.as_str());
             write_value(out, operand, level, 0);
@@ -268,7 +268,13 @@ fn write_param_field(out: &mut String, f: &ParamField, level: usize) {
     }
 }
 
-fn write_apply(out: &mut String, func: &NixValue, args: &[NixValue], level: usize, parent_prec: u8) {
+fn write_apply(
+    out: &mut String,
+    func: &NixValue,
+    args: &[NixValue],
+    level: usize,
+    parent_prec: u8,
+) {
     // Application binds tighter than most things; parenthesize when
     // parent has precedence < 5 (multiplicative/additive).
     let needs_parens = parent_prec < 5;

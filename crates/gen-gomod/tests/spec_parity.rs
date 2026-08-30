@@ -71,7 +71,9 @@ fn declared_invariant_ids(src: &str) -> BTreeSet<String> {
 /// The symbols inside a `:kinds ( … )` form (lower-cased leaf symbols).
 fn kinds_form(src: &str) -> BTreeSet<String> {
     let src = strip_comments(src);
-    let at = src.find(":kinds").expect(":kinds form present in the algorithm spec");
+    let at = src
+        .find(":kinds")
+        .expect(":kinds form present in the algorithm spec");
     let rest = &src[at + ":kinds".len()..];
     let open = rest.find('(').expect(":kinds followed by a ( list");
     let close = rest[open..].find(')').expect(":kinds list closes");
@@ -165,12 +167,14 @@ fn disposition(id: &str) -> Option<Disposition> {
         "Go-I7" => SubstrateDelta,
         "Go-I8" => EncoderViolation(&["node-missing-source-hash"]),
         "Go-I9" => EncoderViolation(&["embed-patterns-without-files"]),
-        "Go-I10" => {
-            EncoderViolation(&["std-node-has-vendored-source", "non-std-node-has-std-source"])
-        }
-        "Go-I11" => {
-            EncoderViolation(&["workspace-member-not-in-packages", "workspace-member-not-main"])
-        }
+        "Go-I10" => EncoderViolation(&[
+            "std-node-has-vendored-source",
+            "non-std-node-has-std-source",
+        ]),
+        "Go-I11" => EncoderViolation(&[
+            "workspace-member-not-in-packages",
+            "workspace-member-not-main",
+        ]),
         // Go-I12 (cgo/asm exclusion) — the interpreter fails closed at
         // encode; the M1 PackageKind enum has no Cgo/Tool arm, so it is
         // ALSO structural. Represent as the fail-closed phase (the
@@ -304,7 +308,9 @@ fn every_fail_closed_phase_is_a_declared_lisp_phase() {
 #[test]
 fn adapter_spec_schema_version_matches_rust() {
     let src = strip_comments(ADAPTER_LISP);
-    let at = src.find(":schema-version").expect(":schema-version in adapter.lisp");
+    let at = src
+        .find(":schema-version")
+        .expect(":schema-version in adapter.lisp");
     let after = src[at + ":schema-version".len()..].trim_start();
     let num: String = after.chars().take_while(char::is_ascii_digit).collect();
     let declared: u32 = num.parse().expect(":schema-version is a number");

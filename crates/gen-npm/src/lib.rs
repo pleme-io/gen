@@ -12,7 +12,7 @@ pub mod invariants;
 pub mod quirks;
 pub mod raw;
 
-pub use adapter::{ctx_for, NpmAdapter};
+pub use adapter::{NpmAdapter, ctx_for};
 pub use error::{NpmError, Result};
 
 use std::path::{Path, PathBuf};
@@ -65,7 +65,12 @@ pub fn parse(root: &Path) -> Result<Manifest> {
         adapter: "npm".to_string(),
         shared_metadata: IndexMap::new(),
     };
-    Ok(Manifest::new(root.to_path_buf(), workspace, packages, lockfile))
+    Ok(Manifest::new(
+        root.to_path_buf(),
+        workspace,
+        packages,
+        lockfile,
+    ))
 }
 
 fn parse_member(root: &Path, member: &Path) -> Result<Package> {
@@ -100,10 +105,11 @@ fn read_lockfile(root: &Path) -> Result<Option<Lockfile>> {
             path: pnpm.clone(),
             source,
         })?;
-        let parsed: raw::PnpmLock = serde_yaml::from_str(&text).map_err(|source| NpmError::Yaml {
-            path: pnpm.clone(),
-            source,
-        })?;
+        let parsed: raw::PnpmLock =
+            serde_yaml::from_str(&text).map_err(|source| NpmError::Yaml {
+                path: pnpm.clone(),
+                source,
+            })?;
         return Ok(Some(convert_pnpm_lock(&parsed)));
     }
     let npm = root.join("package-lock.json");
@@ -112,10 +118,11 @@ fn read_lockfile(root: &Path) -> Result<Option<Lockfile>> {
             path: npm.clone(),
             source,
         })?;
-        let parsed: raw::PackageLock = serde_json::from_str(&text).map_err(|source| NpmError::Json {
-            path: npm.clone(),
-            source,
-        })?;
+        let parsed: raw::PackageLock =
+            serde_json::from_str(&text).map_err(|source| NpmError::Json {
+                path: npm.clone(),
+                source,
+            })?;
         return Ok(Some(convert_npm_lock(&parsed)));
     }
     Ok(None)
@@ -124,12 +131,11 @@ fn read_lockfile(root: &Path) -> Result<Option<Lockfile>> {
 fn convert_package(p: &raw::PackageJson, manifest_path: &Path) -> Result<Package> {
     let name = p.name.clone().unwrap_or_else(|| "<unnamed>".to_string());
     let version_str = p.version.clone().unwrap_or_else(|| "0.0.0".to_string());
-    let version = Version::parse(&pad_npm_version(&version_str)).ok_or_else(|| {
-        NpmError::BadVersion {
+    let version =
+        Version::parse(&pad_npm_version(&version_str)).ok_or_else(|| NpmError::BadVersion {
             raw: version_str.clone(),
             context: format!("package `{name}` version"),
-        }
-    })?;
+        })?;
 
     let mut deps = Vec::new();
     for (n, c) in &p.dependencies {
@@ -227,11 +233,7 @@ fn parse_npm_constraint(name: &str, raw: &str) -> Result<VersionConstraint> {
     let spec = if parts.len() == 2 {
         let lo = parse_npm_one(name, parts[0])?;
         let hi = parse_npm_one(name, parts[1])?;
-        if let (
-            ConstraintSpec::GreaterEqual(a),
-            ConstraintSpec::Less(b),
-        ) = (&lo, &hi)
-        {
+        if let (ConstraintSpec::GreaterEqual(a), ConstraintSpec::Less(b)) = (&lo, &hi) {
             ConstraintSpec::Range {
                 lower_inclusive: a.clone(),
                 upper_exclusive: b.clone(),
@@ -317,7 +319,12 @@ fn convert_npm_lock(raw: &raw::PackageLock) -> Lockfile {
             version: version.clone(),
             registry: Registry::Npm,
         };
-        let source = if p.resolved.as_deref().map(|s| s.starts_with("git+")).unwrap_or(false) {
+        let source = if p
+            .resolved
+            .as_deref()
+            .map(|s| s.starts_with("git+"))
+            .unwrap_or(false)
+        {
             PackageSource::Git {
                 url: p.resolved.clone().unwrap_or_default(),
                 rev: String::new(),
@@ -341,9 +348,7 @@ fn convert_npm_lock(raw: &raw::PackageLock) -> Lockfile {
             },
         );
     }
-    let hash = ContentHash::of(
-        &serde_json::to_vec(&resolved).unwrap_or_default(),
-    );
+    let hash = ContentHash::of(&serde_json::to_vec(&resolved).unwrap_or_default());
     Lockfile {
         resolved,
         content_addressed_hash: hash,
@@ -385,9 +390,7 @@ fn convert_pnpm_lock(raw: &raw::PnpmLock) -> Lockfile {
             },
         );
     }
-    let hash = ContentHash::of(
-        &serde_json::to_vec(&resolved).unwrap_or_default(),
-    );
+    let hash = ContentHash::of(&serde_json::to_vec(&resolved).unwrap_or_default());
     Lockfile {
         resolved,
         content_addressed_hash: hash,
@@ -485,8 +488,15 @@ mod tests {
             .iter()
             .find(|d| d.name == "react" && matches!(d.kind, DependencyKind::Peer))
             .unwrap();
-        assert!(matches!(peer.constraint.spec, ConstraintSpec::GreaterEqual(_)));
-        let opt = p.dependencies.iter().find(|d| d.name == "fsevents").unwrap();
+        assert!(matches!(
+            peer.constraint.spec,
+            ConstraintSpec::GreaterEqual(_)
+        ));
+        let opt = p
+            .dependencies
+            .iter()
+            .find(|d| d.name == "fsevents")
+            .unwrap();
         assert!(matches!(opt.kind, DependencyKind::Optional));
     }
 
@@ -622,7 +632,10 @@ packages:
         let m = parse(&dir).unwrap();
         let p = m.find_package("p").unwrap();
         assert_eq!(p.version, Version::new(1, 0, 0));
-        assert!(matches!(p.dependencies[0].constraint.spec, ConstraintSpec::Exact(_)));
+        assert!(matches!(
+            p.dependencies[0].constraint.spec,
+            ConstraintSpec::Exact(_)
+        ));
     }
 
     #[test]

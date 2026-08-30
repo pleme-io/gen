@@ -259,8 +259,11 @@ fn render_cargo_toml(s: &AdapterSpec) -> String {
     };
     let lock_dep = match s.lockfile_format {
         LockfileFormat::Yaml => "serde_yaml = { workspace = true }\n",
-        LockfileFormat::Toml | LockfileFormat::Json | LockfileFormat::LineOriented
-        | LockfileFormat::GoSum | LockfileFormat::None => "",
+        LockfileFormat::Toml
+        | LockfileFormat::Json
+        | LockfileFormat::LineOriented
+        | LockfileFormat::GoSum
+        | LockfileFormat::None => "",
     };
     format!(
         r#"[package]
@@ -455,7 +458,10 @@ mod tests {
         let s = cargo_spec();
         assert_eq!(s.name, "cargo");
         assert_eq!(s.manifest_markers, vec!["Cargo.toml".to_string()]);
-        assert!(matches!(s.constraint_family, ConstraintFamily::SemverCaretDefault));
+        assert!(matches!(
+            s.constraint_family,
+            ConstraintFamily::SemverCaretDefault
+        ));
     }
 
     #[test]
@@ -468,7 +474,10 @@ mod tests {
     #[test]
     fn bundler_spec_is_well_formed() {
         let s = bundler_spec();
-        assert!(matches!(s.target_predicate_shape, TargetPredicateShape::BundlerPlatforms));
+        assert!(matches!(
+            s.target_predicate_shape,
+            TargetPredicateShape::BundlerPlatforms
+        ));
     }
 
     #[test]

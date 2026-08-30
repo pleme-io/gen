@@ -62,7 +62,11 @@ pub enum PdcViolation {
     /// corrupted spec; a defensive detector, not the realization of dedup
     /// (that is the interpreter's C1 ceiling). (Absorbed from the standalone
     /// supercache-contract codification.)
-    AddressCollision { addr: String, key_a: String, key_b: String },
+    AddressCollision {
+        addr: String,
+        key_a: String,
+        key_b: String,
+    },
 }
 
 impl PdcViolation {
@@ -82,9 +86,7 @@ impl PdcViolation {
             PdcViolation::UnresolvedEdge { from, .. } => {
                 ("pdc-unresolved-edge", Some(from.clone()))
             }
-            PdcViolation::DependencyCycle { key } => {
-                ("pdc-dependency-cycle", Some(key.clone()))
-            }
+            PdcViolation::DependencyCycle { key } => ("pdc-dependency-cycle", Some(key.clone())),
             PdcViolation::KindNotAdmitted { key, .. } => {
                 ("pdc-kind-not-admitted", Some(key.clone()))
             }
@@ -272,7 +274,9 @@ fn run_fixpoint(spec: &PdcSpec, violations: &mut Vec<PdcViolation>) -> (usize, u
         match colour.get(key) {
             Some(Colour::Grey) => {
                 // Back-edge → cycle. Record once; unwind with None.
-                violations.push(PdcViolation::DependencyCycle { key: key.to_string() });
+                violations.push(PdcViolation::DependencyCycle {
+                    key: key.to_string(),
+                });
                 return None;
             }
             // Black-but-not-memoized ⇒ an address-less node (Std) already
@@ -286,7 +290,10 @@ fn run_fixpoint(spec: &PdcSpec, violations: &mut Vec<PdcViolation>) -> (usize, u
         }
         colour.insert(key, Colour::Grey);
 
-        let node = spec.nodes.get(key).expect("edges resolve (checked) ⇒ key present");
+        let node = spec
+            .nodes
+            .get(key)
+            .expect("edges resolve (checked) ⇒ key present");
         // Compute children first (post-order) so their addresses fold in.
         let mut child_addrs: Vec<ContentAddr> = Vec::new();
         for dep in &node.deps {
@@ -399,7 +406,9 @@ mod tests {
         let spec = spec_of(vec![("copy-a", a), ("copy-b", b)], &[]);
         let out = check(&spec, &[SourceClass::Registry]);
         assert!(
-            !out.violations.iter().any(|v| matches!(v, PdcViolation::AddressCollision { .. })),
+            !out.violations
+                .iter()
+                .any(|v| matches!(v, PdcViolation::AddressCollision { .. })),
             "identical-source dedup must be silent, not flagged"
         );
     }
@@ -426,16 +435,24 @@ mod tests {
         let spec = spec_of(vec![("dep", dep), ("dependent", dependent)], &[]);
         let out = check(&spec, &[SourceClass::Registry]);
         assert!(
-            out.violations.iter().any(|v| matches!(v, PdcViolation::AddressCollision { .. })),
+            out.violations
+                .iter()
+                .any(|v| matches!(v, PdcViolation::AddressCollision { .. })),
             "a self-referential address collapse must be caught"
         );
     }
 
     #[test]
     fn violation_locus_is_stable_kebab() {
-        let v = PdcViolation::UnresolvedEdge { from: "x".into(), missing: "y".into() };
+        let v = PdcViolation::UnresolvedEdge {
+            from: "x".into(),
+            missing: "y".into(),
+        };
         assert_eq!(v.locus(), ("pdc-unresolved-edge", Some("x".to_string())));
-        let s = PdcViolation::StaleSchema { found: 1, expected: 2 };
+        let s = PdcViolation::StaleSchema {
+            found: 1,
+            expected: 2,
+        };
         assert_eq!(s.locus(), ("pdc-stale-schema", None));
         let c = PdcViolation::AddressCollision {
             addr: "a".into(),
@@ -459,7 +476,14 @@ mod tests {
             is_member: true,
         };
         let spec = spec_of(vec![("root", root), ("leaf", leaf)], &["root"]);
-        let out = check(&spec, &[SourceClass::WorkspaceMember, SourceClass::Registry]);
-        assert!(out.is_valid(), "conformant spec must stay PDC-clean: {:?}", out.violations);
+        let out = check(
+            &spec,
+            &[SourceClass::WorkspaceMember, SourceClass::Registry],
+        );
+        assert!(
+            out.is_valid(),
+            "conformant spec must stay PDC-clean: {:?}",
+            out.violations
+        );
     }
 }

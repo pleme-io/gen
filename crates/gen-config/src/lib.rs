@@ -244,15 +244,28 @@ mod tests {
     #[test]
     fn prescribed_default_has_fleet_substituters() {
         let c = GenConfig::prescribed_default();
-        assert!(c.cache.substituters.iter().any(|s| s.contains("cache.nixos.org")));
-        assert!(c.cache.substituters.iter().any(|s| s.contains("plo.quero.cloud")));
+        assert!(
+            c.cache
+                .substituters
+                .iter()
+                .any(|s| s.contains("cache.nixos.org"))
+        );
+        assert!(
+            c.cache
+                .substituters
+                .iter()
+                .any(|s| s.contains("plo.quero.cloud"))
+        );
     }
 
     #[test]
     fn prescribed_default_routes_cargo() {
         let c = GenConfig::prescribed_default();
         assert_eq!(
-            c.workspace.adapter_routing.get("Cargo.toml").map(String::as_str),
+            c.workspace
+                .adapter_routing
+                .get("Cargo.toml")
+                .map(String::as_str),
             Some("cargo")
         );
     }
@@ -260,8 +273,14 @@ mod tests {
     #[test]
     fn discovered_seeds_target_from_host() {
         let c = GenConfig::discovered();
-        assert!(matches!(c.target.os.as_str(), "linux" | "macos" | "windows" | "unknown"));
-        assert!(matches!(c.target.cpu.as_str(), "x86_64" | "aarch64" | "unknown"));
+        assert!(matches!(
+            c.target.os.as_str(),
+            "linux" | "macos" | "windows" | "unknown"
+        ));
+        assert!(matches!(
+            c.target.cpu.as_str(),
+            "x86_64" | "aarch64" | "unknown"
+        ));
     }
 
     #[test]

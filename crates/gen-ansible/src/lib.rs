@@ -11,4 +11,4 @@ pub mod invariants;
 pub mod quirks;
 
 pub use adapter::AnsibleAdapter;
-pub use error::{Result, AnsibleError};
+pub use error::{AnsibleError, Result};

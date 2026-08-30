@@ -24,7 +24,7 @@ use gen_secattest::catalog::CATALOG;
 use gen_secattest::fixture::{self, FixtureArtifact};
 use gen_secattest::invariant::Attestable;
 use gen_secattest::verdict::{CveDbEpoch, VerdictKind, VerifyContext};
-use gen_secattest::{verify, SlotState, Severities};
+use gen_secattest::{Severities, SlotState, verify};
 
 /// One row of the matrix: a verdict kind + whether it is REQUIRED for
 /// completeness (the catalog cross-checks it).
@@ -36,13 +36,34 @@ struct MatrixRow {
 /// The matrix. ONE row per verdict kind in the catalog. Adding a catalog
 /// entry without a row here fails `matrix_covers_every_catalogued_kind`.
 const MATRIX: &[MatrixRow] = &[
-    MatrixRow { kind: VerdictKind::Signature, expected_required: true },
-    MatrixRow { kind: VerdictKind::Sbom, expected_required: true },
-    MatrixRow { kind: VerdictKind::Cve, expected_required: true },
-    MatrixRow { kind: VerdictKind::Provenance, expected_required: true },
-    MatrixRow { kind: VerdictKind::Vex, expected_required: false },
-    MatrixRow { kind: VerdictKind::Scorecard, expected_required: false },
-    MatrixRow { kind: VerdictKind::Vsa, expected_required: false },
+    MatrixRow {
+        kind: VerdictKind::Signature,
+        expected_required: true,
+    },
+    MatrixRow {
+        kind: VerdictKind::Sbom,
+        expected_required: true,
+    },
+    MatrixRow {
+        kind: VerdictKind::Cve,
+        expected_required: true,
+    },
+    MatrixRow {
+        kind: VerdictKind::Provenance,
+        expected_required: true,
+    },
+    MatrixRow {
+        kind: VerdictKind::Vex,
+        expected_required: false,
+    },
+    MatrixRow {
+        kind: VerdictKind::Scorecard,
+        expected_required: false,
+    },
+    MatrixRow {
+        kind: VerdictKind::Vsa,
+        expected_required: false,
+    },
 ];
 
 const NOW: CveDbEpoch = CveDbEpoch(100);
@@ -60,7 +81,10 @@ fn matrix_covers_every_catalogued_kind() {
         catalog_kinds, matrix_kinds,
         "SecAttest matrix ⇄ catalog drift: every catalogued kind needs exactly one matrix row"
     );
-    assert!(MATRIX.len() >= 7, "matrix regressed below the seven known verdict kinds");
+    assert!(
+        MATRIX.len() >= 7,
+        "matrix regressed below the seven known verdict kinds"
+    );
 }
 
 #[test]
@@ -78,7 +102,11 @@ fn matrix_required_flags_agree_with_the_catalog() {
             ));
         }
     }
-    assert!(failures.is_empty(), "required-flag drift:\n  - {}", failures.join("\n  - "));
+    assert!(
+        failures.is_empty(),
+        "required-flag drift:\n  - {}",
+        failures.join("\n  - ")
+    );
     let required = MATRIX.iter().filter(|r| r.expected_required).count();
     assert_eq!(required, 4, "exactly four required completeness slots");
 }
@@ -146,27 +174,42 @@ fn the_law_admits_clean_and_denies_broken() {
 
     // Clean → admits.
     let clean = fixture::complete_verified(&addr, NOW);
-    assert!(verify(&clean, &ctx).is_ok(), "a complete-verified-fresh verdict must admit");
+    assert!(
+        verify(&clean, &ctx).is_ok(),
+        "a complete-verified-fresh verdict must admit"
+    );
 
     // S3 unverified → deny.
     let mut unver = fixture::complete_verified(&addr, NOW);
     unver.provenance.state = SlotState::Unchecked;
-    assert!(verify(&unver, &ctx).is_err(), "an unchecked slot must be fail-closed");
+    assert!(
+        verify(&unver, &ctx).is_err(),
+        "an unchecked slot must be fail-closed"
+    );
 
     // S4 tampered subject → deny.
     let mut tampered = fixture::complete_verified(&addr, NOW);
     tampered.signature.subject = fixture::addr("attacker-artifact");
-    assert!(verify(&tampered, &ctx).is_err(), "a replayed foreign subject must be rejected");
+    assert!(
+        verify(&tampered, &ctx).is_err(),
+        "a replayed foreign subject must be rejected"
+    );
 
     // S5 stale → deny.
     let stale = fixture::complete_verified(&addr, CveDbEpoch(1));
-    assert!(verify(&stale, &ctx).is_err(), "a stale CVE scan must be fail-closed");
+    assert!(
+        verify(&stale, &ctx).is_err(),
+        "a stale CVE scan must be fail-closed"
+    );
 
     // CVE⊖VEX over budget → deny.
     let mut hot = fixture::complete_verified(&addr, NOW);
     hot.cve.raw = Severities::new(1, 0);
     hot.cve.vex_suppressed = Severities::new(0, 0);
-    assert!(verify(&hot, &ctx).is_err(), "an exploitable critical must be fail-closed");
+    assert!(
+        verify(&hot, &ctx).is_err(),
+        "an exploitable critical must be fail-closed"
+    );
 }
 
 #[test]
@@ -195,5 +238,8 @@ fn an_empty_attestation_address_is_rejected_at_the_wire() {
     // empty subject is rejected at the deserialize boundary — no forked seal.
     let json = "{\"subject\":\"\"}";
     let partial: Result<gen_secattest::PartialVerdict, _> = serde_json::from_str(json);
-    assert!(partial.is_err(), "an empty attestation address must be parse-rejected (PDC clause 1)");
+    assert!(
+        partial.is_err(),
+        "an empty attestation address must be parse-rejected (PDC clause 1)"
+    );
 }

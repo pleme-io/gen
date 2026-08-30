@@ -9,7 +9,7 @@
 //! the shape the substrate expects.
 
 use gen_cargo::quirks::CrateQuirk;
-use gen_platform::{to_helpers_skeleton, TypedDispatcherTrait};
+use gen_platform::{TypedDispatcherTrait, to_helpers_skeleton};
 
 fn synth_entry() -> gen_platform::DispatcherEntry {
     gen_platform::DispatcherEntry {
@@ -38,7 +38,10 @@ fn skeleton_has_lib_arg() {
 #[test]
 fn skeleton_emits_helpers_table() {
     let s = to_helpers_skeleton(&synth_entry());
-    assert!(s.contains("helpers = {"), "missing helpers table; got:\n{s}");
+    assert!(
+        s.contains("helpers = {"),
+        "missing helpers table; got:\n{s}"
+    );
     assert!(s.contains("};\n}"), "missing closing braces; got:\n{s}");
 }
 
@@ -57,7 +60,10 @@ fn skeleton_contains_every_kind_string() {
 #[test]
 fn skeleton_uses_camel_case_apply_fn_names() {
     let s = to_helpers_skeleton(&synth_entry());
-    assert!(s.contains("forceCfgApply"), "missing forceCfgApply; got:\n{s}");
+    assert!(
+        s.contains("forceCfgApply"),
+        "missing forceCfgApply; got:\n{s}"
+    );
     assert!(
         s.contains("foldNormalIntoBuildApply"),
         "missing foldNormalIntoBuildApply; got:\n{s}"
@@ -115,8 +121,7 @@ fn skeleton_kind_count_matches_dispatcher() {
     let expected = CrateQuirk::variant_count();
     let actual = s.matches('"').filter(|_| true).count() / 2; // pairs of quotes wrap each kind
     assert_eq!(
-        actual,
-        expected,
+        actual, expected,
         "expected {expected} kinds in skeleton, found {actual}; skeleton:\n{s}"
     );
 }

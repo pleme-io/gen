@@ -37,7 +37,10 @@ fn encodes_internal_shared_graph() {
 
     // root = smallest main (bye < hello); members = both mains, sorted.
     assert_eq!(spec.root_package, bye);
-    assert_eq!(spec.workspace_members, vec![bye.to_string(), hello.to_string()]);
+    assert_eq!(
+        spec.workspace_members,
+        vec![bye.to_string(), hello.to_string()]
+    );
     assert_eq!(spec.packages[greet].kind, PackageKind::Module);
     assert_eq!(spec.packages[hello].kind, PackageKind::Main);
 }
@@ -50,7 +53,10 @@ fn shared_internal_compiles_once() {
     let greet = "example.com/fix/internal/greet#linux-amd64";
     // exactly one greet node; both mains name that same key as an import.
     assert!(spec.packages.contains_key(greet));
-    for main in ["example.com/fix/cmd/hello#linux-amd64", "example.com/fix/cmd/bye#linux-amd64"] {
+    for main in [
+        "example.com/fix/cmd/hello#linux-amd64",
+        "example.com/fix/cmd/bye#linux-amd64",
+    ] {
         assert!(
             spec.packages[main].imports.contains(&greet.to_string()),
             "{main} must import the single shared greet node"
@@ -114,7 +120,10 @@ fn std_nodes_are_std_source_and_unhashed() {
     let fmtn = &spec.packages["std/fmt#linux-amd64"];
     assert_eq!(fmtn.kind, PackageKind::Std);
     assert!(matches!(fmtn.source, PackageSource::Std));
-    assert!(fmtn.source_hash.is_empty(), "std content-addressed by the std-tree, not per-file");
+    assert!(
+        fmtn.source_hash.is_empty(),
+        "std content-addressed by the std-tree, not per-file"
+    );
     assert!(fmtn.tree.is_target());
 }
 
@@ -125,7 +134,9 @@ fn vendored_and_replace_relative_paths() {
     let spec = apply(&env, &ctx).expect("encode");
     let vend = &spec.packages["github.com/foo/bar#linux-amd64"];
     match &vend.source {
-        PackageSource::Vendored { relative_path } => assert_eq!(relative_path, "vendor/github.com/foo/bar"),
+        PackageSource::Vendored { relative_path } => {
+            assert_eq!(relative_path, "vendor/github.com/foo/bar")
+        }
         s => panic!("expected vendored source, got {s:?}"),
     }
     // the replaced module resolves its Dir to the in-tree replacement.
@@ -137,7 +148,10 @@ fn vendored_and_replace_relative_paths() {
         s => panic!("expected vendored source, got {s:?}"),
     }
     // provenance carries the vendored dep's module version.
-    assert_eq!(vend.module.as_ref().and_then(|m| m.version.as_deref()), Some("v1.2.3"));
+    assert_eq!(
+        vend.module.as_ref().and_then(|m| m.version.as_deref()),
+        Some("v1.2.3")
+    );
 }
 
 // ── Go-I12: a cgo node is rejected at encode time (fail closed) ──────
@@ -146,7 +160,13 @@ fn cgo_node_is_rejected() {
     let (env, ctx) = common::gate_a_with_cgo(&linux());
     let err = apply(&env, &ctx).expect_err("cgo subgraph must be rejected in M1");
     assert!(
-        matches!(&err, gen_gomod::GomodError::Interp { phase: "reject-cgo", .. }),
+        matches!(
+            &err,
+            gen_gomod::GomodError::Interp {
+                phase: "reject-cgo",
+                ..
+            }
+        ),
         "expected reject-cgo, got {err:?}"
     );
 }
@@ -166,10 +186,15 @@ fn dep_free_go_sum_tie_is_empty_hash() {
 // ── the encoded spec always satisfies its own invariants ─────────────
 #[test]
 fn encoded_specs_satisfy_invariants() {
-    for (env, ctx) in [common::gate_a("v1", &linux()).0, common::dep_free(&linux()).0]
-        .into_iter()
-        .zip([common::gate_a("v1", &linux()).1, common::dep_free(&linux()).1])
-    {
+    for (env, ctx) in [
+        common::gate_a("v1", &linux()).0,
+        common::dep_free(&linux()).0,
+    ]
+    .into_iter()
+    .zip([
+        common::gate_a("v1", &linux()).1,
+        common::dep_free(&linux()).1,
+    ]) {
         let spec = apply(&env, &ctx).expect("encode");
         let v = invariants::check(&spec);
         assert!(v.is_empty(), "encoded spec violated invariants: {v:?}");
@@ -200,7 +225,10 @@ fn serialized_spec_is_byte_stable() {
     let (env, ctx) = common::gate_a("v1", &linux());
     let a = serde_json::to_string(&apply(&env, &ctx).unwrap()).unwrap();
     let b = serde_json::to_string(&apply(&env, &ctx).unwrap()).unwrap();
-    assert_eq!(a, b, "two encodes of identical input must be byte-identical");
+    assert_eq!(
+        a, b,
+        "two encodes of identical input must be byte-identical"
+    );
     // and the payload round-trips.
     let back: gen_gomod::build_spec::BuildSpec = serde_json::from_str(&a).unwrap();
     assert!(matches!(back.renderer, Renderer::Incremental));

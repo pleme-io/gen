@@ -26,19 +26,27 @@ fn cargo_dispatcher() -> gen_platform::SealedDispatcher<CrateQuirk, Ctx, Overrid
     Dispatcher::<CrateQuirk, Ctx, Override>::new()
         .with_helper("force-cfg", |_, ctx| {
             ctx.cargo_calls += 1;
-            Override { tag: "cargo:force-cfg".into() }
+            Override {
+                tag: "cargo:force-cfg".into(),
+            }
         })
         .with_helper("fold-normal-into-build", |_, ctx| {
             ctx.cargo_calls += 1;
-            Override { tag: "cargo:fold".into() }
+            Override {
+                tag: "cargo:fold".into(),
+            }
         })
         .with_helper("substitute-source", |_, ctx| {
             ctx.cargo_calls += 1;
-            Override { tag: "cargo:sub".into() }
+            Override {
+                tag: "cargo:sub".into(),
+            }
         })
         .with_helper("native-build-inputs", |_, ctx| {
             ctx.cargo_calls += 1;
-            Override { tag: "cargo:native-build-inputs".into() }
+            Override {
+                tag: "cargo:native-build-inputs".into(),
+            }
         })
         .into_sealed()
         .unwrap()
@@ -48,23 +56,33 @@ fn npm_dispatcher() -> gen_platform::SealedDispatcher<NpmQuirk, Ctx, Override> {
     Dispatcher::<NpmQuirk, Ctx, Override>::new()
         .with_helper("npm-install-flag", |_, ctx| {
             ctx.npm_calls += 1;
-            Override { tag: "npm:flag".into() }
+            Override {
+                tag: "npm:flag".into(),
+            }
         })
         .with_helper("skip-postinstall", |_, ctx| {
             ctx.npm_calls += 1;
-            Override { tag: "npm:skip-pi".into() }
+            Override {
+                tag: "npm:skip-pi".into(),
+            }
         })
         .with_helper("pin-nodejs", |_, ctx| {
             ctx.npm_calls += 1;
-            Override { tag: "npm:pin".into() }
+            Override {
+                tag: "npm:pin".into(),
+            }
         })
         .with_helper("override-registry", |_, ctx| {
             ctx.npm_calls += 1;
-            Override { tag: "npm:reg".into() }
+            Override {
+                tag: "npm:reg".into(),
+            }
         })
         .with_helper("substitute-source", |_, ctx| {
             ctx.npm_calls += 1;
-            Override { tag: "npm:sub".into() }
+            Override {
+                tag: "npm:sub".into(),
+            }
         })
         .into_sealed()
         .unwrap()
@@ -93,9 +111,13 @@ fn composition_succeeds_on_disjoint_kinds() {
     // minus its own SubstituteSource.
     let cargo_partial = Dispatcher::<CrateQuirk, Ctx, Override>::new()
         .with_helper("force-cfg", |_, _| Override { tag: "c:fc".into() })
-        .with_helper("fold-normal-into-build", |_, _| Override { tag: "c:fn".into() })
+        .with_helper("fold-normal-into-build", |_, _| Override {
+            tag: "c:fn".into(),
+        })
         .with_helper("substitute-source", |_, _| Override { tag: "c:ss".into() })
-        .with_helper("native-build-inputs", |_, _| Override { tag: "c:nbi".into() })
+        .with_helper("native-build-inputs", |_, _| Override {
+            tag: "c:nbi".into(),
+        })
         .into_sealed()
         .unwrap();
 

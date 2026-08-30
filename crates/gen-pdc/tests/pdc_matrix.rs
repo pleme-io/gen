@@ -19,8 +19,8 @@
 //! Failures aggregate BEFORE the assert — one run reports every broken row,
 //! not just the first (CLOSED-LOOP MASS-SYNTHESIS rule 1).
 
-use gen_pdc::catalog::{Maturity, CATALOG};
-use gen_pdc::check::{check, PdcCheckOutcome};
+use gen_pdc::catalog::{CATALOG, Maturity};
+use gen_pdc::check::{PdcCheckOutcome, check};
 use gen_pdc::fixture;
 use gen_pdc::spec::PdcSpec;
 
@@ -82,7 +82,10 @@ fn matrix_covers_every_catalogued_ecosystem() {
         "PDC matrix ⇄ catalog drift: every catalogued ecosystem needs exactly one matrix row"
     );
     // And the matrix must be at least as large as the current fleet.
-    assert!(MATRIX.len() >= 4, "matrix regressed below the four known ecosystems");
+    assert!(
+        MATRIX.len() >= 4,
+        "matrix regressed below the four known ecosystems"
+    );
 }
 
 #[test]
@@ -100,7 +103,11 @@ fn matrix_maturity_agrees_with_catalog() {
             ));
         }
     }
-    assert!(failures.is_empty(), "maturity drift:\n  - {}", failures.join("\n  - "));
+    assert!(
+        failures.is_empty(),
+        "maturity drift:\n  - {}",
+        failures.join("\n  - ")
+    );
 }
 
 #[test]

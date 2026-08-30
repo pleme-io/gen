@@ -80,6 +80,9 @@ enum WebhookKind {
 #[test]
 fn per_variant_override_works_both_directions() {
     assert_eq!(WebhookKind::DockerHub.kind(), "dockerhub");
-    assert_eq!(WebhookKind::from_str("dockerhub"), Ok(WebhookKind::DockerHub));
+    assert_eq!(
+        WebhookKind::from_str("dockerhub"),
+        Ok(WebhookKind::DockerHub)
+    );
     assert!(WebhookKind::from_str("docker-hub").is_err());
 }

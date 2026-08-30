@@ -149,15 +149,8 @@ const VSA: VerdictKindEntry = entry(
 /// The full verdict-kind catalog. Order: required slots first (S1), then the
 /// refinements (VEX, Scorecard, VSA) — stable for diffs. Adding a kind = a
 /// `const` + one entry here + one matrix row (same commit; the matrix enforces).
-pub const CATALOG: &[&VerdictKindEntry] = &[
-    &SIGNATURE,
-    &SBOM,
-    &CVE,
-    &PROVENANCE,
-    &VEX,
-    &SCORECARD,
-    &VSA,
-];
+pub const CATALOG: &[&VerdictKindEntry] =
+    &[&SIGNATURE, &SBOM, &CVE, &PROVENANCE, &VEX, &SCORECARD, &VSA];
 
 /// Look up a kind's catalog entry.
 #[must_use]
@@ -190,9 +183,16 @@ mod tests {
         // kind cannot ship without an entry, and no entry names a phantom kind.
         for kind in VerdictKind::ALL {
             let n = CATALOG.iter().filter(|e| e.kind == kind).count();
-            assert_eq!(n, 1, "kind {kind:?} must have exactly one catalog entry (found {n})");
+            assert_eq!(
+                n, 1,
+                "kind {kind:?} must have exactly one catalog entry (found {n})"
+            );
         }
-        assert_eq!(CATALOG.len(), VerdictKind::ALL.len(), "catalog has extra/duplicate entries");
+        assert_eq!(
+            CATALOG.len(),
+            VerdictKind::ALL.len(),
+            "catalog has extra/duplicate entries"
+        );
     }
 
     #[test]
@@ -212,14 +212,23 @@ mod tests {
             .filter(|e| e.required_for_completeness)
             .map(|e| e.kind)
             .collect();
-        assert_eq!(required.len(), 4, "exactly four required completeness slots");
+        assert_eq!(
+            required.len(),
+            4,
+            "exactly four required completeness slots"
+        );
     }
 
     #[test]
     fn timeless_flags_match_the_dedup_partition() {
         // Timeless ⟺ dedup-eligible. Only CVE + VEX are time-bound.
         for e in CATALOG {
-            assert_eq!(e.timeless, e.kind.is_timeless(), "timeless drift for {:?}", e.kind);
+            assert_eq!(
+                e.timeless,
+                e.kind.is_timeless(),
+                "timeless drift for {:?}",
+                e.kind
+            );
         }
     }
 
@@ -228,7 +237,12 @@ mod tests {
         // The catalog's in-toto predicateType must equal the typed one — the
         // envelope standardization stays single-sourced.
         for e in CATALOG {
-            assert_eq!(e.predicate_type, e.kind.predicate_type(), "predicate drift for {:?}", e.kind);
+            assert_eq!(
+                e.predicate_type,
+                e.kind.predicate_type(),
+                "predicate drift for {:?}",
+                e.kind
+            );
         }
     }
 
@@ -264,7 +278,11 @@ mod tests {
         // live (e.g. sui cache signing, then B1 VEX + B2 OSV), promote its
         // maturity DELIBERATELY and update this assertion.
         let (design, m1, shipped) = maturity_histogram();
-        assert_eq!(design + m1 + shipped, CATALOG.len(), "histogram must partition the catalog");
+        assert_eq!(
+            design + m1 + shipped,
+            CATALOG.len(),
+            "histogram must partition the catalog"
+        );
         assert_eq!(
             (design, m1, shipped),
             (7, 0, 0),

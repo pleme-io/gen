@@ -73,7 +73,10 @@ impl DependencyKind {
     /// release-build cache hits).
     #[must_use]
     pub const fn is_runtime(self) -> bool {
-        matches!(self, Self::Direct | Self::Optional | Self::Peer | Self::Replaces)
+        matches!(
+            self,
+            Self::Direct | Self::Optional | Self::Peer | Self::Replaces
+        )
     }
 }
 

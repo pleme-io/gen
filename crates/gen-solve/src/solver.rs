@@ -1,6 +1,6 @@
 //! Backtracking resolution with requirement-chain conflict attribution.
 
-use crate::set::{newest_first, VersionSet};
+use crate::set::{VersionSet, newest_first};
 use crate::universe::{Follow, PackageUniverse};
 use core::fmt;
 use gen_types::Version;

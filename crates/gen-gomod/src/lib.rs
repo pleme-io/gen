@@ -13,7 +13,10 @@
 //!   every side effect behind the [`interp::GoBuildEnv`] trait.
 
 pub mod adapter;
+pub mod adopt;
 pub mod build_spec;
+pub mod delta_mode;
+pub mod directive;
 pub mod emit;
 pub mod error;
 /// RETIRED PRODUCER — `pub(crate)`, deliberately, since 2026-08-08.
@@ -24,9 +27,6 @@ pub mod error;
 /// writer now requires an `ActiveDelta` witness from `delta_mode`, which the
 /// declared policy refuses to mint. See `delta_mode` for the full argument.
 pub(crate) mod gen_delta;
-pub mod delta_mode;
-pub mod adopt;
-pub mod directive;
 pub mod golist;
 pub mod gomod;
 pub mod interp;
@@ -36,6 +36,6 @@ pub mod testkit;
 
 pub use adapter::GomodAdapter;
 pub use build_spec::{BuildSpec, PackageKind, PackageSpec, SCHEMA_VERSION};
-pub use emit::{generate_and_write, generate_for_target_and_write, SPEC_FILENAME};
+pub use emit::{SPEC_FILENAME, generate_and_write, generate_for_target_and_write};
 pub use error::{GomodError, Result};
-pub use interp::{apply, EncodeCtx, GoBuildEnv, RealGoBuildEnv};
+pub use interp::{EncodeCtx, GoBuildEnv, RealGoBuildEnv, apply};

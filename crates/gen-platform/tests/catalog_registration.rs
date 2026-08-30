@@ -2,7 +2,7 @@
 //! enum via `register_dispatcher!`, iterate the catalog, look up
 //! by label, verify reflection round-trip.
 
-use gen_platform::{catalog, register_dispatcher, TypedDispatcher};
+use gen_platform::{TypedDispatcher, catalog, register_dispatcher};
 use serde::{Deserialize, Serialize};
 
 /// Local synthetic enum mirroring a real migration shape. The
@@ -13,9 +13,19 @@ use serde::{Deserialize, Serialize};
 #[serde(tag = "kind", rename_all = "kebab-case")]
 #[allow(dead_code)]
 enum DemoMigration {
-    AddColumn { table: String, column: String, ty: String },
-    DropColumn { table: String, column: String },
-    Backfill { table: String, sql: String },
+    AddColumn {
+        table: String,
+        column: String,
+        ty: String,
+    },
+    DropColumn {
+        table: String,
+        column: String,
+    },
+    Backfill {
+        table: String,
+        sql: String,
+    },
 }
 
 register_dispatcher!("gen-platform.demo.migration", DemoMigration);
@@ -32,8 +42,7 @@ fn catalog_contains_registered_demo() {
 
 #[test]
 fn by_label_resolves_registered_entry() {
-    let entry =
-        catalog::by_label("gen-platform.demo.migration").expect("entry must exist");
+    let entry = catalog::by_label("gen-platform.demo.migration").expect("entry must exist");
     assert_eq!(entry.label, "gen-platform.demo.migration");
     assert_eq!((entry.variant_count)(), 3);
 }

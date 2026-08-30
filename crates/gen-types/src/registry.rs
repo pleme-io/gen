@@ -34,10 +34,7 @@ pub enum Registry {
     Oci { registry_url: String },
     /// Operator-self-hosted private registry — adapters declare the
     /// URL + auth shape via shikumi config.
-    Private {
-        url: String,
-        protocol: String,
-    },
+    Private { url: String, protocol: String },
     /// Source-only — no registry; the package is consumed as a path
     /// or git ref, never published.
     None,

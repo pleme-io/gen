@@ -180,6 +180,23 @@ pub fn registry() -> Vec<(&'static str, Vec<CrateQuirk>)> {
             "vigy-rpc",
             vec![CrateQuirk::NativeBuildInputs { packages: vec!["protobuf".to_string()] }],
         ),
+        // magma-protocol (pleme-io/magma) compiles tfplugin5/6 with
+        // `tonic_build`, and hits the identical vendored-protoc defect
+        // described for `vigy-rpc` directly above — same cause, same
+        // remedy: give the build a real nixpkgs `protoc` on PATH.
+        //
+        // One difference worth recording, because it made the failure
+        // louder than vigy-rpc's: magma-protocol's build.rs called
+        // `protoc_bin_vendored::protoc_bin_path()` itself, and that
+        // function PANICS rather than returning `Err`, so the script's
+        // own `if let Ok(...)` guard could not contain it. Its build.rs
+        // now prefers a `protoc` on PATH (magma 24d476e), which is what
+        // makes this entry sufficient — the two changes are a pair, and
+        // neither one alone fixes the build.
+        (
+            "magma-protocol",
+            vec![CrateQuirk::NativeBuildInputs { packages: vec!["protobuf".to_string()] }],
+        ),
     ]
 }
 

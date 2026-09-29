@@ -78,6 +78,57 @@ pub enum NixValue {
         attr: Vec<String>,
     },
 
+    /// Indented string (`'' ... ''`) with `${...}` interpolation, one
+    /// inner `Vec` per line. Literal parts are escaped for the indented
+    /// form (`''` becomes `'''`, `${` becomes `''${`), unlike
+    /// [`Self::IndentedStr`], which is verbatim.
+    IndentedInterpolatedStr(Vec<Vec<StrPart>>),
+
+    /// Attribute selection over a path that may interpolate, with an
+    /// optional `or` default: `sources.${name}.meta.version`,
+    /// `sources.${system} or (throw "...")`. A non-atomic default is
+    /// parenthesized, so `x.a or (f y)` never parses as `(x.a or f) y`.
+    Select {
+        base: Box<NixValue>,
+        path: AttrPath,
+        default: Option<Box<NixValue>>,
+    },
+
+    /// Leading `#` comment lines on an expression: a file header, or a
+    /// note above a nested value. Each line renders as `# <line>` at the
+    /// current indent (`#` alone for an empty line).
+    Commented {
+        comments: Vec<String>,
+        value: Box<NixValue>,
+    },
+
+    // Layout siblings: the same semantics as the canonical constructs
+    // above, with the layout chosen by the caller instead of by the
+    // renderer's heuristic. The canonical variants keep their output.
+    /// Attrset with an explicit [`CollectionLayout`].
+    LaidOutAttrSet {
+        recursive: bool,
+        entries: Vec<AttrSetEntry>,
+        layout: CollectionLayout,
+    },
+    /// List with an explicit [`CollectionLayout`].
+    LaidOutList {
+        items: Vec<NixValue>,
+        layout: CollectionLayout,
+    },
+    /// `let ... in` with an explicit [`LetLayout`].
+    LaidOutLet {
+        bindings: Vec<LetBinding>,
+        body: Box<NixValue>,
+        layout: LetLayout,
+    },
+    /// Lambda with an explicit [`LambdaLayout`].
+    LaidOutLambda {
+        params: LambdaParams,
+        body: Box<NixValue>,
+        layout: LambdaLayout,
+    },
+
     /// Verbatim Nix. Every Raw call site is a debt against the AST —
     /// promote to a typed variant when the shape becomes recurrent.
     Raw(String),
@@ -93,6 +144,47 @@ pub enum AttrSetEntry {
         from: Option<NixValue>,
         names: Vec<String>,
     },
+    /// A `# <text>` line of its own. Inside an inline attrset it renders
+    /// as `/* <text> */`, so it can never swallow the rest of the line.
+    Comment(String),
+    /// An empty line between entries (no indentation). Dropped inline.
+    Blank,
+    /// Several entries on one line, with an optional trailing comment:
+    /// `owner = "x"; repo = "y"; # fork: ...`.
+    Line {
+        entries: Vec<AttrSetEntry>,
+        comment: Option<String>,
+    },
+}
+
+/// How a collection lays out when the caller overrides the canonical
+/// heuristic (lists inline when at most 6 atoms; attrsets block, `{ }`
+/// when empty).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CollectionLayout {
+    /// One line: `[ a b ]`, `{ a = 1; b = 2; }`. Empty: `[ ]`, `{ }`.
+    Inline,
+    /// One item per line, even when short. Empty: `[` newline `]`.
+    Block,
+}
+
+/// Where a `let` body goes relative to `in`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum LetLayout {
+    /// `in` on its own line, the body on the next (the canonical `Let`).
+    BodyOnNextLine,
+    /// `in body`: the body hangs off `in` on the same line.
+    BodyAfterIn,
+}
+
+/// Where a lambda body goes relative to its parameters.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum LambdaLayout {
+    /// `x: body` (the canonical `Lambda`).
+    BodyOnSameLine,
+    /// `{ pkgs }:` then the body on the next line at the same indent:
+    /// the file-header shape.
+    BodyOnNextLine,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -131,6 +223,10 @@ pub enum LetBinding {
         from: Option<NixValue>,
         names: Vec<String>,
     },
+    /// A `# <text>` line between bindings.
+    Comment(String),
+    /// An empty line between bindings (no indentation).
+    Blank,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -259,6 +355,79 @@ impl NixValue {
         }
     }
 
+    /// `base.a.b`, `base.${x}.c`: see [`Self::Select`].
+    pub fn select(base: NixValue, path: impl IntoIterator<Item = AttrKey>) -> Self {
+        Self::Select {
+            base: Box::new(base),
+            path: AttrPath(path.into_iter().collect()),
+            default: None,
+        }
+    }
+    /// `base.path or default`: see [`Self::Select`].
+    pub fn select_or(
+        base: NixValue,
+        path: impl IntoIterator<Item = AttrKey>,
+        default: NixValue,
+    ) -> Self {
+        Self::Select {
+            base: Box::new(base),
+            path: AttrPath(path.into_iter().collect()),
+            default: Some(Box::new(default)),
+        }
+    }
+    /// Leading comment lines on `value`: see [`Self::Commented`].
+    pub fn commented(
+        comments: impl IntoIterator<Item = impl Into<String>>,
+        value: NixValue,
+    ) -> Self {
+        Self::Commented {
+            comments: comments.into_iter().map(Into::into).collect(),
+            value: Box::new(value),
+        }
+    }
+    /// Attrset with an explicit layout.
+    pub fn attrset_laid_out(
+        layout: CollectionLayout,
+        entries: impl IntoIterator<Item = AttrSetEntry>,
+    ) -> Self {
+        Self::LaidOutAttrSet {
+            recursive: false,
+            entries: entries.into_iter().collect(),
+            layout,
+        }
+    }
+    /// List with an explicit layout.
+    pub fn list_laid_out(
+        layout: CollectionLayout,
+        items: impl IntoIterator<Item = NixValue>,
+    ) -> Self {
+        Self::LaidOutList {
+            items: items.into_iter().collect(),
+            layout,
+        }
+    }
+    /// `let ... in` with an explicit layout.
+    pub fn let_laid_out(
+        layout: LetLayout,
+        bindings: impl IntoIterator<Item = LetBinding>,
+        body: NixValue,
+    ) -> Self {
+        Self::LaidOutLet {
+            bindings: bindings.into_iter().collect(),
+            body: Box::new(body),
+            layout,
+        }
+    }
+    /// Lambda with an explicit layout.
+    #[must_use]
+    pub fn lambda_laid_out(layout: LambdaLayout, params: LambdaParams, body: NixValue) -> Self {
+        Self::LaidOutLambda {
+            params,
+            body: Box::new(body),
+            layout,
+        }
+    }
+
     /// Render to canonical Nix source. Convenience wrapper around
     /// [`crate::render::render`].
     pub fn render_to_string(&self) -> String {
@@ -284,5 +453,52 @@ pub fn dotted_entry(dotted: &str, value: NixValue) -> AttrSetEntry {
                 .collect(),
         ),
         value,
+    }
+}
+
+/// Convenience: `name = value;` let binding.
+pub fn bind(name: impl Into<String>, value: NixValue) -> LetBinding {
+    LetBinding::Bind {
+        name: name.into(),
+        value,
+    }
+}
+
+/// Convenience: `inherit (from) names;` attrset entry; `from = None`
+/// gives a bare `inherit names;`.
+pub fn inherit(
+    from: Option<NixValue>,
+    names: impl IntoIterator<Item = impl Into<String>>,
+) -> AttrSetEntry {
+    AttrSetEntry::Inherit {
+        from,
+        names: names.into_iter().map(Into::into).collect(),
+    }
+}
+
+/// Convenience: quoted-key entry, `"aarch64-darwin" = value;`.
+pub fn str_entry(key: impl Into<String>, value: NixValue) -> AttrSetEntry {
+    AttrSetEntry::KeyValue {
+        key: AttrPath(vec![AttrKey::Str(key.into())]),
+        value,
+    }
+}
+
+/// Convenience: destructured lambda parameters without defaults,
+/// `{ a, b }` (`ellipsis` appends `...`).
+pub fn destructured(
+    names: impl IntoIterator<Item = impl Into<String>>,
+    ellipsis: bool,
+) -> LambdaParams {
+    LambdaParams::Destructured {
+        fields: names
+            .into_iter()
+            .map(|n| ParamField {
+                name: n.into(),
+                default: None,
+            })
+            .collect(),
+        ellipsis,
+        binding: None,
     }
 }

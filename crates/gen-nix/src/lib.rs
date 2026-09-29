@@ -11,11 +11,12 @@ pub mod cargo_derivation;
 pub mod render;
 
 pub use ast::{
-    AttrKey, AttrPath, AttrSetEntry, LambdaParams, LetBinding, NixBinOp, NixUnaryOp, NixValue,
-    ParamField, StrPart, dotted_entry, entry,
+    AttrKey, AttrPath, AttrSetEntry, CollectionLayout, LambdaLayout, LambdaParams, LetBinding,
+    LetLayout, NixBinOp, NixUnaryOp, NixValue, ParamField, StrPart, bind, destructured,
+    dotted_entry, entry, inherit, str_entry,
 };
 pub use cargo_derivation::{render_workspace, render_workspace_to_cargo_nix};
-pub use render::render;
+pub use render::{render, render_file};
 
 #[cfg(test)]
 mod tests {

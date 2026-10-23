@@ -222,6 +222,13 @@ enum Cmd {
         /// which one it is judging.
         #[arg(long, value_name = "PATH")]
         out: Option<PathBuf>,
+        /// Write `Cargo.build-spec.json` even where `.gitignore` retires it.
+        ///
+        /// A repo whose `.gitignore` lists `Cargo.build-spec.json` is
+        /// delta-only: `Cargo.gen.lock` is its one committed artifact, and
+        /// the full spec is not written there unless asked for here.
+        #[arg(long)]
+        write_build_spec: bool,
     },
     /// Typed read-only freshness check of `Cargo.build-spec.json`.
     /// Returns the `Freshness` variants (Fresh / Drifted /
@@ -782,6 +789,7 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
             no_default_features,
             features,
             out,
+            write_build_spec,
         } => {
             let root = resolve_root(path, cfg);
             // Atomic: regenerate every sidecar the substrate consumer
@@ -811,6 +819,7 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                         );
                         return Ok(());
                     }
+                    let lock_before = std::fs::read(root.join("Cargo.lock")).ok();
                     let out = if let Some(triple) = filter_platform {
                         gen_cargo::build_spec::generate_for_target_and_write(&root, &triple)
                             .map_err(CliError::Cargo)?
@@ -821,14 +830,34 @@ fn run(cli: &Cli, cfg: &GenConfig) -> Result<(), CliError> {
                             no_default_features: *no_default_features,
                             features: features.clone(),
                         };
-                        gen_cargo::build_spec::generate_multi_target_and_write_to(
+                        let spec_file = if *write_build_spec {
+                            gen_cargo::build_spec::SpecFile::Write
+                        } else {
+                            gen_cargo::build_spec::SpecFile::for_root(&root)
+                        };
+                        if spec_file == gen_cargo::build_spec::SpecFile::Retired && out.is_none() {
+                            eprintln!(
+                                "gen build: {} is retired here (.gitignore); not written",
+                                gen_cargo::build_spec::SpecFile::NAME
+                            );
+                        }
+                        gen_cargo::build_spec::generate_multi_target_and_write_with(
                             &root,
                             &selection,
                             out.as_deref(),
+                            spec_file,
                         )
                         .map_err(CliError::Cargo)?
                     };
                     eprintln!("gen build: wrote {}", out.display());
+                    if lock_before.is_some()
+                        && std::fs::read(root.join("Cargo.lock")).ok() != lock_before
+                    {
+                        eprintln!(
+                            "gen build: cargo rewrote Cargo.lock; Cargo.gen.lock is tied to the NEW \
+                             Cargo.lock, so commit both together"
+                        );
+                    }
                     if *commit {
                         commit_spec_if_drifted(&root)?;
                     }
@@ -1988,7 +2017,7 @@ fn commit_spec_if_drifted(root: &std::path::Path) -> Result<(), CliError> {
     ensure_gitignored(root, "Cargo.build-spec.json")?;
 
     // Stage the delta + the .gitignore (+ the build-spec removal).
-    git(&["add", "--", "Cargo.gen.lock", ".gitignore"])?;
+    git(&["add", "--", "Cargo.gen.lock", "Cargo.lock", ".gitignore"])?;
 
     // Nothing staged → idempotent no-op (delta unchanged, build-spec already
     // retired + ignored).

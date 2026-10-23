@@ -2401,6 +2401,37 @@ pub fn generate_multi_target_and_write_to(
     selection: &FeatureSelection,
     out: Option<&Path>,
 ) -> Result<std::path::PathBuf> {
+    generate_multi_target_and_write_with(root, selection, out, SpecFile::Write)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SpecFile {
+    Write,
+    Retired,
+}
+
+impl SpecFile {
+    pub const NAME: &'static str = "Cargo.build-spec.json";
+
+    pub fn for_root(root: &Path) -> Self {
+        let ignored = std::fs::read_to_string(root.join(".gitignore"))
+            .map(|g| g.lines().any(|l| l.trim() == Self::NAME))
+            .unwrap_or(false);
+        if ignored { Self::Retired } else { Self::Write }
+    }
+}
+
+pub fn generate_multi_target_and_write_with(
+    root: &Path,
+    selection: &FeatureSelection,
+    out: Option<&Path>,
+    spec_file: SpecFile,
+) -> Result<std::path::PathBuf> {
+    let spec_file = if out.is_some() {
+        SpecFile::Write
+    } else {
+        spec_file
+    };
     let mut spec = generate_multi_target_with(root, selection)?;
     // Canonicalize BEFORE both the full-spec write AND the delta distill so
     // both artifacts are byte-identical across build platforms.
@@ -2441,14 +2472,16 @@ pub fn generate_multi_target_and_write_to(
             }
         },
     );
-    let body = serde_json::to_string_pretty(&spec).map_err(|e| CargoError::Io {
-        path: out.clone(),
-        source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
-    })?;
-    std::fs::write(&out, body).map_err(|source| CargoError::Io {
-        path: out.clone(),
-        source,
-    })?;
+    if spec_file == SpecFile::Write {
+        let body = serde_json::to_string_pretty(&spec).map_err(|e| CargoError::Io {
+            path: out.clone(),
+            source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+        })?;
+        std::fs::write(&out, body).map_err(|source| CargoError::Io {
+            path: out.clone(),
+            source,
+        })?;
+    }
     // Additive: emit the slim `Cargo.gen.lock` delta alongside the full
     // spec. Multi-target always carries `target_resolves`, so the delta is
     // always derivable here. A failed emit fails the build — never skipped.
@@ -2463,6 +2496,9 @@ pub fn generate_multi_target_and_write_to(
             source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
         })?;
         prune_and_log(root);
+    }
+    if spec_file == SpecFile::Retired {
+        return Ok(root.join("Cargo.gen.lock"));
     }
     Ok(out)
 }

@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "cargo_lock_sha256": "496cc958b465470bf0f2ebb4831253e5792dc74d36146554293bd2823685a8f4",
+  "cargo_lock_sha256": "2e9d129e331e2a23f2448c0b763c7c41472aa39d1e2162ed87621eb493cb7ccc",
   "manifest_sha256": {
-    "Cargo.toml": "d517edd6a94b233a05ab2f727ba41cdca105f03728c9e92687c3e4672f9ade7e",
+    "Cargo.toml": "780db4b11322c80ab338880c5a09ee4a95fb33011e9e09cb6521d11f2602f526",
     "crates/gen-adapter-forge/Cargo.toml": "1359ec9f06a1488542500be7550234a60c18190d5e8f3d82cf99555371d62096",
     "crates/gen-ansible/Cargo.toml": "e9c485308b93e1947ed16cf8001841f66de263cdc8fdfb33b7f487924559d6ca",
     "crates/gen-bazel/Cargo.toml": "a947cdbedb9f78ac0a2f693dfee1f39cbd933b5c14f228cd3db7f67029839e2f",
@@ -11,14 +11,14 @@
     "crates/gen-cache-attic/Cargo.toml": "bb8b9de74f6858d9b776086293918b7b97fb0631b7ccb458798b369624735271",
     "crates/gen-caixa-bridge/Cargo.toml": "7f4376465f66635b97b695b2adfce063da525d0a34689272d66b100ae2b47573",
     "crates/gen-cargo/Cargo.toml": "3f38d9b1c3629dfc69805abcca6ccc2d3bc597be0a239b59365157d7f086ce7d",
-    "crates/gen-cli/Cargo.toml": "775a96e1c619a99464676e7124fb5b4aaf99563b5afbff29cb93f9e1a5fb296e",
-    "crates/gen-config/Cargo.toml": "b2849f1592b692bd50023a83cbdd8269b5f8518be0f57eea933c3768f5b37609",
+    "crates/gen-cli/Cargo.toml": "4a0d5d656a36e410ed49840f62606fc6115d3ef6da10f48d7bb7818b3c132630",
+    "crates/gen-config/Cargo.toml": "3d151f8b707e09764aeb3d9e665bbc27dbdea95ac08ec7348189f2200eb470e4",
     "crates/gen-gomod/Cargo.toml": "eddb9947df15d1fd2b54daaef6d774fda455508154955aa711a23a72d94ca446",
     "crates/gen-helm/Cargo.toml": "9214aba26cf52e42271c96c35ba42bafc12fff15727773d253948438858f0233",
     "crates/gen-macros/Cargo.toml": "8242e6771de1aae800386a0f2bb41cf6afc34606eac5245a940543217a2e99b6",
     "crates/gen-nix-bulk/Cargo.toml": "58cc29b5e464cd39bcd5d491efc79e5334c489199bbd5832254ed64d1500907a",
     "crates/gen-nix/Cargo.toml": "9ad7980d7ab946d7c85964f7ce9ecdaa6c1a68f1a7af76c9de707d954f395a26",
-    "crates/gen-npm/Cargo.toml": "759383fcbad44e9ec44df992835932bc2e414e01306e89b3ef8d14257ad7e382",
+    "crates/gen-npm/Cargo.toml": "51cab0bab9c34c8c1b38993187e46e81a624b8bbcf1a798d9eb479e974f49bfc",
     "crates/gen-pdc/Cargo.toml": "b806df798ac4d3b92f2dccdfe25aa7faf25cd678953561094a5eab2e0fa150cc",
     "crates/gen-pip/Cargo.toml": "a5af25cb02f35c12837ddc38a5001ec596e4c81ed8a339aee1902a39453e9142",
     "crates/gen-platform/Cargo.toml": "2256b8d43e272d41c745961aa2d54d6d381ffcddde5451da3c0e6750c3ccf9c0",
@@ -834,16 +834,6 @@
             "tree": "target"
           },
           {
-            "name": "serde_yaml",
-            "package_key": "serde_yaml-0.9.34+deprecated",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          },
-          {
             "name": "toml",
             "package_key": "toml-0.8.23",
             "kind": "normal",
@@ -880,9 +870,7 @@
           "env",
           "parse-value",
           "pear",
-          "serde_yaml",
-          "toml",
-          "yaml"
+          "toml"
         ]
       },
       "find-msvc-tools-0.1.15": {
@@ -1782,8 +1770,8 @@
             "tree": "target"
           },
           {
-            "name": "serde_yaml",
-            "package_key": "serde_yaml-0.9.34+deprecated",
+            "name": "serde_norway",
+            "package_key": "serde_norway-0.9.42",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1793,7 +1781,7 @@
           },
           {
             "name": "shikumi",
-            "package_key": "shikumi-0.1.1083",
+            "package_key": "shikumi-0.1.1084",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1803,7 +1791,7 @@
           },
           {
             "name": "tatara_lisp",
-            "package_key": "tatara-lisp-0.3.4",
+            "package_key": "tatara-lisp-0.3.64",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1877,8 +1865,8 @@
             "tree": "target"
           },
           {
-            "name": "serde_yaml",
-            "package_key": "serde_yaml-0.9.34+deprecated",
+            "name": "serde_norway",
+            "package_key": "serde_norway-0.9.42",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -1888,7 +1876,7 @@
           },
           {
             "name": "shikumi",
-            "package_key": "shikumi-0.1.1083",
+            "package_key": "shikumi-0.1.1084",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -2302,8 +2290,8 @@
             "tree": "target"
           },
           {
-            "name": "serde_yaml",
-            "package_key": "serde_yaml-0.9.34+deprecated",
+            "name": "serde_norway",
+            "package_key": "serde_norway-0.9.42",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4663,45 +4651,7 @@
           "unbounded_depth"
         ]
       },
-      "serde_spanned-0.6.9": {
-        "runtime_dependencies": [
-          {
-            "name": "serde",
-            "package_key": "serde-1.0.229",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": true,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          }
-        ],
-        "build_dependencies": [],
-        "features": [
-          "serde"
-        ]
-      },
-      "serde_spanned-1.1.1": {
-        "runtime_dependencies": [
-          {
-            "name": "serde_core",
-            "package_key": "serde_core-1.0.229",
-            "kind": "normal",
-            "features": [],
-            "uses_default_features": false,
-            "optional": true,
-            "target": null,
-            "tree": "target"
-          }
-        ],
-        "build_dependencies": [],
-        "features": [
-          "alloc",
-          "serde",
-          "std"
-        ]
-      },
-      "serde_yaml-0.9.34+deprecated": {
+      "serde_norway-0.9.42": {
         "runtime_dependencies": [
           {
             "name": "indexmap",
@@ -4744,8 +4694,8 @@
             "tree": "target"
           },
           {
-            "name": "unsafe_libyaml",
-            "package_key": "unsafe-libyaml-0.2.11",
+            "name": "unsafe_libyaml_norway",
+            "package_key": "unsafe-libyaml-norway-0.2.15",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -4756,6 +4706,44 @@
         ],
         "build_dependencies": [],
         "features": []
+      },
+      "serde_spanned-0.6.9": {
+        "runtime_dependencies": [
+          {
+            "name": "serde",
+            "package_key": "serde-1.0.229",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": true,
+            "target": null,
+            "tree": "target"
+          }
+        ],
+        "build_dependencies": [],
+        "features": [
+          "serde"
+        ]
+      },
+      "serde_spanned-1.1.1": {
+        "runtime_dependencies": [
+          {
+            "name": "serde_core",
+            "package_key": "serde_core-1.0.229",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": false,
+            "optional": true,
+            "target": null,
+            "tree": "target"
+          }
+        ],
+        "build_dependencies": [],
+        "features": [
+          "alloc",
+          "serde",
+          "std"
+        ]
       },
       "sha2-0.10.9": {
         "runtime_dependencies": [
@@ -5261,7 +5249,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "shikumi-0.1.1083": {
+      "shikumi-0.1.1084": {
         "runtime_dependencies": [
           {
             "name": "arc_swap",
@@ -5289,8 +5277,7 @@
             "kind": "normal",
             "features": [
               "env",
-              "toml",
-              "yaml"
+              "toml"
             ],
             "uses_default_features": true,
             "optional": false,
@@ -5372,8 +5359,8 @@
             "tree": "target"
           },
           {
-            "name": "serde_yaml",
-            "package_key": "serde_yaml-0.9.34+deprecated",
+            "name": "serde_norway",
+            "package_key": "serde_norway-0.9.42",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -5538,7 +5525,61 @@
         "build_dependencies": [],
         "features": []
       },
-      "tatara-lisp-0.3.4": {
+      "tatara-closed-set-0.3.64": {
+        "runtime_dependencies": [
+          {
+            "name": "tatara_closed_set_derive",
+            "package_key": "tatara-closed-set-derive-0.3.64",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "host"
+          }
+        ],
+        "build_dependencies": [],
+        "features": []
+      },
+      "tatara-closed-set-derive-0.3.64": {
+        "runtime_dependencies": [
+          {
+            "name": "proc_macro2",
+            "package_key": "proc-macro2-1.0.107",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
+            "name": "quote",
+            "package_key": "quote-1.0.47",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
+            "name": "syn",
+            "package_key": "syn-2.0.119",
+            "kind": "normal",
+            "features": [
+              "full"
+            ],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          }
+        ],
+        "build_dependencies": [],
+        "features": []
+      },
+      "tatara-lisp-0.3.64": {
         "runtime_dependencies": [
           {
             "name": "blake3",
@@ -5573,8 +5614,18 @@
             "tree": "target"
           },
           {
+            "name": "tatara_closed_set",
+            "package_key": "tatara-closed-set-0.3.64",
+            "kind": "normal",
+            "features": [],
+            "uses_default_features": true,
+            "optional": false,
+            "target": null,
+            "tree": "target"
+          },
+          {
             "name": "tatara_lisp_derive",
-            "package_key": "tatara-lisp-derive-0.3.4",
+            "package_key": "tatara-lisp-derive-0.3.64",
             "kind": "normal",
             "features": [],
             "uses_default_features": true,
@@ -5598,7 +5649,7 @@
           "default"
         ]
       },
-      "tatara-lisp-derive-0.3.4": {
+      "tatara-lisp-derive-0.3.64": {
         "runtime_dependencies": [
           {
             "name": "proc_macro2",
@@ -6455,7 +6506,7 @@
         "build_dependencies": [],
         "features": []
       },
-      "unsafe-libyaml-0.2.11": {
+      "unsafe-libyaml-norway-0.2.15": {
         "runtime_dependencies": [],
         "build_dependencies": [],
         "features": []
@@ -9078,14 +9129,14 @@
       "edition": "2021",
       "build_script": "build.rs"
     },
+    "serde_norway-0.9.42": {
+      "edition": "2021"
+    },
     "serde_spanned-0.6.9": {
       "edition": "2021"
     },
     "serde_spanned-1.1.1": {
       "edition": "2024"
-    },
-    "serde_yaml-0.9.34+deprecated": {
-      "edition": "2021"
     },
     "sha2-0.10.9": {
       "edition": "2018"
@@ -9111,7 +9162,7 @@
     "shigoto-types-0.1.14": {
       "edition": "2024"
     },
-    "shikumi-0.1.1083": {
+    "shikumi-0.1.1084": {
       "edition": "2024"
     },
     "shlex-2.0.1": {
@@ -9136,10 +9187,17 @@
       "edition": "2021",
       "build_script": "build.rs"
     },
-    "tatara-lisp-0.3.4": {
+    "tatara-closed-set-0.3.64": {
       "edition": "2021"
     },
-    "tatara-lisp-derive-0.3.4": {
+    "tatara-closed-set-derive-0.3.64": {
+      "edition": "2021",
+      "proc_macro": true
+    },
+    "tatara-lisp-0.3.64": {
+      "edition": "2021"
+    },
+    "tatara-lisp-derive-0.3.64": {
       "edition": "2021",
       "proc_macro": true
     },
@@ -9222,7 +9280,7 @@
     "unicode-ident-1.0.27": {
       "edition": "2021"
     },
-    "unsafe-libyaml-0.2.11": {
+    "unsafe-libyaml-norway-0.2.15": {
       "edition": "2021",
       "binaries": [
         {

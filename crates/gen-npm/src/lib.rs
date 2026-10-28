@@ -106,7 +106,7 @@ fn read_lockfile(root: &Path) -> Result<Option<Lockfile>> {
             source,
         })?;
         let parsed: raw::PnpmLock =
-            serde_yaml::from_str(&text).map_err(|source| NpmError::Yaml {
+            serde_norway::from_str(&text).map_err(|source| NpmError::Yaml {
                 path: pnpm.clone(),
                 source,
             })?;

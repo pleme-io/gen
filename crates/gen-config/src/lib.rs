@@ -286,8 +286,8 @@ mod tests {
     #[test]
     fn round_trips_through_serde_yaml() {
         let c = GenConfig::prescribed_default();
-        let y = serde_yaml::to_string(&c).unwrap();
-        let parsed: GenConfig = serde_yaml::from_str(&y).unwrap();
+        let y = serde_norway::to_string(&c).unwrap();
+        let parsed: GenConfig = serde_norway::from_str(&y).unwrap();
         assert_eq!(c, parsed);
     }
 

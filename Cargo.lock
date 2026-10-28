@@ -408,7 +408,6 @@ dependencies = [
  "atomic",
  "pear",
  "serde",
- "serde_yaml",
  "toml 0.8.23",
  "uncased",
  "version_check",
@@ -603,7 +602,7 @@ dependencies = [
  "kanshou",
  "serde",
  "serde_json",
- "serde_yaml",
+ "serde_norway",
  "shikumi",
  "tatara-lisp",
  "tempfile",
@@ -618,7 +617,7 @@ dependencies = [
  "gen-types",
  "indexmap",
  "serde",
- "serde_yaml",
+ "serde_norway",
  "shikumi",
 ]
 
@@ -692,7 +691,7 @@ dependencies = [
  "inventory",
  "serde",
  "serde_json",
- "serde_yaml",
+ "serde_norway",
  "thiserror 2.0.18",
 ]
 
@@ -1526,6 +1525,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_norway"
+version = "0.9.42"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e408f29489b5fd500fab51ff1484fc859bb655f32c671f307dcd733b72e8168c"
+dependencies = [
+ "indexmap",
+ "itoa",
+ "ryu",
+ "serde",
+ "unsafe-libyaml-norway",
+]
+
+[[package]]
 name = "serde_spanned"
 version = "0.6.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1541,19 +1553,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6662b5879511e06e8999a8a235d848113e942c9124f211511b16466ee2995f26"
 dependencies = [
  "serde_core",
-]
-
-[[package]]
-name = "serde_yaml"
-version = "0.9.34+deprecated"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a8b1a1a2ebf674015cc02edccce75287f1a0130d394307b36743c2f5d504b47"
-dependencies = [
- "indexmap",
- "itoa",
- "ryu",
- "serde",
- "unsafe-libyaml",
 ]
 
 [[package]]
@@ -1665,9 +1664,9 @@ dependencies = [
 
 [[package]]
 name = "shikumi"
-version = "0.1.1083"
+version = "0.1.1084"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "253ee1f04558dcc476384a4be719428df4322816ad73c5e2e7731d3808cc5523"
+checksum = "d340f2caa2bc6c020e7223bc89cd330687a9dd2aacdcfe6686f46ba1339ea1c1"
 dependencies = [
  "arc-swap",
  "async-trait",
@@ -1678,7 +1677,7 @@ dependencies = [
  "schemars 1.2.3",
  "serde",
  "serde_json",
- "serde_yaml",
+ "serde_norway",
  "thiserror 2.0.18",
  "tracing",
 ]
@@ -1746,23 +1745,44 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "591ef38edfb78ca4771ee32cf494cb8771944bee237a9b91fc9c1424ac4b777b"
 
 [[package]]
-name = "tatara-lisp"
-version = "0.3.4"
+name = "tatara-closed-set"
+version = "0.3.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00a94c0c1d40aae6109b2450b8b2a15ccc79a01461836753351b4bfd3a50cec9"
+checksum = "ab5957a85fdf3bbabe58332b59b4d1eae91c6d8e12d6aebfcad85d044fb01fd7"
+dependencies = [
+ "tatara-closed-set-derive",
+]
+
+[[package]]
+name = "tatara-closed-set-derive"
+version = "0.3.64"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "553e05104250924bb943f4427051e4f52ca6eac63218a0e0a0c18651edd1c2d3"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "tatara-lisp"
+version = "0.3.64"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3c1ccb522ac57a35a9dbfdf3b7f2bca57391c807f95d4d4b2942d64bcecf18c"
 dependencies = [
  "blake3",
  "serde",
  "serde_json",
+ "tatara-closed-set",
  "tatara-lisp-derive",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "tatara-lisp-derive"
-version = "0.3.4"
+version = "0.3.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdb05368da33f122fde05fd3f67a827022ef65ac4efbca6e27e0ea6e4f8036a9"
+checksum = "e41fe8cff169dbab6425e042c9a9293e0e2a828fe433be527eb7d1d72e113cfe"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2017,10 +2037,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
 
 [[package]]
-name = "unsafe-libyaml"
-version = "0.2.11"
+name = "unsafe-libyaml-norway"
+version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "673aac59facbab8a9007c7f6108d11f63b603f7cabff99fabf650fea5c32b861"
+checksum = "b39abd59bf32521c7f2301b52d05a6a2c975b6003521cbd0c6dc1582f0a22104"
 
 [[package]]
 name = "utf8parse"

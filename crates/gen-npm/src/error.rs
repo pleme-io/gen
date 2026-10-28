@@ -21,7 +21,7 @@ pub enum NpmError {
     Yaml {
         path: PathBuf,
         #[source]
-        source: serde_yaml::Error,
+        source: serde_norway::Error,
     },
     #[error("workspace root at {root} declared member {member} that does not exist")]
     MissingWorkspaceMember { root: PathBuf, member: String },

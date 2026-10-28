@@ -19,6 +19,6 @@ workspace = true
 [dependencies]
 gen-types = { workspace = true }
 serde = { workspace = true }
-serde_yaml = { workspace = true }
+serde_norway = { workspace = true }
 indexmap = { workspace = true }
 shikumi = { workspace = true }

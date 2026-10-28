@@ -1517,7 +1517,7 @@ fn resolve_root(arg: &Option<PathBuf>, cfg: &GenConfig) -> PathBuf {
 fn emit<T: serde::Serialize>(value: &T, format: OutputFormat) -> Result<(), CliError> {
     let text = match format {
         OutputFormat::Json => serde_json::to_string_pretty(value).map_err(CliError::Json)?,
-        OutputFormat::Yaml => serde_yaml::to_string(value).map_err(CliError::Yaml)?,
+        OutputFormat::Yaml => serde_norway::to_string(value).map_err(CliError::Yaml)?,
     };
     println!("{text}");
     Ok(())
@@ -1536,7 +1536,7 @@ enum CliError {
     #[error(transparent)]
     Json(#[from] serde_json::Error),
     #[error(transparent)]
-    Yaml(#[from] serde_yaml::Error),
+    Yaml(#[from] serde_norway::Error),
     #[error(transparent)]
     Io(#[from] std::io::Error),
     #[error("no adapter found for workspace at {0} — checked: {1}")]

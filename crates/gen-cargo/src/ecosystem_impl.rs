@@ -1,6 +1,6 @@
 //! gen-cargo's binding to the universal `gen_types::ecosystem` trait
 //! surface. Three trait impls bring Cargo into the cross-ecosystem
-//! intake pattern (see `theory/ECOSYSTEM-INTAKE.md`).
+//! intake pattern.
 //!
 //! Same data, same code, no copying — these impls delegate to the
 //! existing `build_spec` / `quirks` / `invariants` modules. Adding

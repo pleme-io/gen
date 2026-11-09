@@ -3,8 +3,7 @@
 //! > A verdict is derived from the subject set it claims about, and carries
 //! > the witness of that derivation.
 //!
-//! Canonical statement: [`theory/UNREPRESENTABILITY.md`](https://github.com/pleme-io/theory/blob/main/UNREPRESENTABILITY.md)
-//! §II.4. This crate is that law's first fleet-wide implementation. It mints
+//! This crate is that law's first fleet-wide implementation. It mints
 //! no new name and no new vocabulary — `Subjects`, `Domain`, `Verdict`,
 //! `judge`, `Vacuous`, `Unreached` are the doctrine's own words.
 //!

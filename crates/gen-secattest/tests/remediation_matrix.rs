@@ -1,6 +1,5 @@
 //! The security-REMEDIATION verification MATRIX — CLOSED-LOOP MASS-SYNTHESIS
-//! rule 1 applied to the growable CVE→fix catalog (`theory/SECURITY-LAYER.md`
-//! §10).
+//! rule 1 applied to the growable CVE→fix catalog.
 //!
 //! ONE matrix with ONE row per known CVE finding, exercising:
 //!   - **present** — the finding resolves to a [`RemediationEntry`] whose

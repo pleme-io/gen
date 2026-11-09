@@ -1,6 +1,6 @@
 [package]
 name = "gen-pdc"
-description = "gen — the Per-Dependency Content-Addressed Cacheability (PDC) contract. The typed variant CATALOG of ecosystem adapters (cargo/gomod/npm/pip/…) + the universal PDC invariant checker + the verification MATRIX forcing-function. Codifies the per-dependency-caching law that gen-cargo (shipped) and gen-gomod (M1) already implement implicitly, so a new ecosystem cannot ship without a PDC conformance proof. See theory/PDC-CONTRACT.md."
+description = "gen — the Per-Dependency Content-Addressed Cacheability (PDC) contract. The typed variant CATALOG of ecosystem adapters (cargo/gomod/npm/pip/…) + the universal PDC invariant checker + the verification MATRIX forcing-function. Codifies the per-dependency-caching law that gen-cargo (shipped) and gen-gomod (M1) already implement implicitly, so a new ecosystem cannot ship without a PDC conformance proof."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

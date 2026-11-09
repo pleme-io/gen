@@ -1242,8 +1242,8 @@ pub fn generate_for_target_with(
 
     // Pass 0 — resolve every package's canonical, PROMOTION-AWARE
     // `CrateSource` ONCE, keyed by cargo's internal package id
-    // (`pkg.id.repr`). I4 of the GEN TYPED-SPEC CONTRACT
-    // (`theory/GEN-TYPED-SPEC-CONTRACT.md`): a dependency-key lookup
+    // (`pkg.id.repr`). I4 of the GEN TYPED-SPEC CONTRACT:
+    // a dependency-key lookup
     // must resolve through ONE canonical normalization function on
     // BOTH sides — a crate's own map key AND every dependency edge
     // that points at it. Without this shared pass, an external
@@ -1944,8 +1944,8 @@ pub fn generate_for_target_with(
     // Pure-Rust via `GitPrefetcher` trait (gix clone + nix-nar
     // streaming NAR-sha256 + SRI encode). No subprocess, no shell
     // script, no nix-prefetch-git/git/nix on the substrate IFD
-    // sandbox PATH. See `theory/RUST-NATIVE-PREFETCH.md` for the
-    // design + `git_prefetcher.rs` for the impl.
+    // sandbox PATH. See
+    // `git_prefetcher.rs` for the impl.
     //
     // Hard-fail on prefetch error. Earlier this was a swallowed
     // warning: when prefetch couldn't reach the remote (sandbox DNS,
@@ -2080,7 +2080,7 @@ fn parse_owner_repo(url: &str) -> Option<String> {
 
 // Legacy shell-out `prefetch_git_sha256` removed at 2026-05-29 —
 // replaced by the pure-Rust `git_prefetcher::GixPrefetcher` (gix +
-// nix-nar streaming NAR-sha256). See `theory/RUST-NATIVE-PREFETCH.md`.
+// nix-nar streaming NAR-sha256).
 
 pub fn generate_and_write(root: &Path) -> Result<std::path::PathBuf> {
     generate_for_target_and_write(root, host_target_triple())
@@ -2543,7 +2543,7 @@ pub fn generate_for_target_and_write(root: &Path, target: &str) -> Result<std::p
 // ─── DETERMINISM CANONICALIZATION ──────────────────────────────────────
 //
 // CONTRACT FOR EVERY gen ADAPTER (cargo today; bundler/gomod/npm/pip/ansible/
-// helm when they leave stub state — theory/ECOSYSTEM-INTAKE.md): a committed
+// helm when they leave stub state): a committed
 // build-spec MUST be byte-identical regardless of the build host. Any adapter
 // whose resolver emits maps/Vecs in dependency-resolution order owes the same
 // two-boundary canonicalization shipped here for cargo: (1) output-bearing
@@ -2678,7 +2678,7 @@ fn prune_and_log(root: &Path) {
     }
 }
 
-/// I4 of the GEN TYPED-SPEC CONTRACT (`theory/GEN-TYPED-SPEC-CONTRACT.md`):
+/// I4 of the GEN TYPED-SPEC CONTRACT:
 /// the ONE canonical, promotion-aware source resolution for a single
 /// package. Every caller — a crate's own `CrateSpec.source` field, and
 /// every dependency edge's `package_key` (via `canonical_pkg_key` below,

@@ -93,7 +93,7 @@ impl SecClause {
     }
 }
 
-/// The UNREPRESENTABILITY tier ladder (`theory/UNREPRESENTABILITY.md` §II),
+/// The UNREPRESENTABILITY tier ladder,
 /// a SUPERSET of `gen_pdc::UnrepTier` — it adds the external-world **C2**
 /// ceiling PDC did not need (crypto validity + CVE freshness are runtime
 /// facts of the world, distinct from C1's graph-reachability). Never round

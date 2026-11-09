@@ -3,8 +3,8 @@
 //! disjoint variant universes, produce a single dispatcher that
 //! handles any variant from any of them by serde-tag dispatch.
 //!
-//! Proves the algebraic law from `theory/QUIRK-APPLIER.md`
-//! §IV-bis.3.d: "the combinator is closed under composition;
+//! Proves the algebraic law:
+//! "the combinator is closed under composition;
 //! polyglot caixa packages (Rust+Python+Helm) compose multiple
 //! ecosystem appliers in sequence into a unified override stack."
 //!

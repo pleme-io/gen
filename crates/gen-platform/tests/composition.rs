@@ -1,7 +1,7 @@
 //! Closure-under-composition law on `ComposedDispatcher`.
 //!
-//! Proves the algebraic property from `theory/QUIRK-APPLIER.md`
-//! §IV-bis.3.d: composing N sealed dispatchers over disjoint
+//! Proves the algebraic property:
+//! composing N sealed dispatchers over disjoint
 //! variant universes is itself a dispatcher. Uses the production
 //! gen_cargo::quirks::CrateQuirk + gen_npm::quirks::NpmQuirk
 //! enums — a real polyglot caixa (Rust + JS) composition.

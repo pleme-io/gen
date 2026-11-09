@@ -10,7 +10,7 @@
 //! vulnerable layer can find and reuse it, instead of re-discovering and
 //! re-fixing it independently?**
 //!
-//! Sibling schema, same crate (per `theory/SECURITY-LAYER.md` §10: "augment,
+//! Sibling schema, same crate ("augment,
 //! don't fork" — this is `gen-secattest`'s own territory, not a new
 //! typescape). The remediation catalog is the *positive* counterpart to an
 //! `image-scan` ignore-file: not "this finding is accepted risk," but "this
@@ -28,7 +28,7 @@
 //!   assumption), and a [`RemediationMaturity`] (design → verified-once →
 //!   propagated-fleet-wide).
 //! - **The DELIVERY axis** — the closed [`CveFinding`] enum: every CVE a
-//!   build-time gate (`theory/SECURITY-LAYER.md` §9's `image-scan`) has
+//!   build-time gate (the `image-scan` gate) has
 //!   EVER hard-failed on, landed as ONE variant per finding, in the SAME
 //!   commit as its [`RemediationEntry`] (CLOSED-LOOP MASS-SYNTHESIS rule
 //!   1). Unlike [`crate::verdict::VerdictKind`] / [`crate::concern::Concern`]
@@ -182,7 +182,7 @@ pub struct RemediationEntry {
     pub package: &'static str,
     /// The affected version range (free text — mirrors `engine`/`purpose`'s
     /// free-text style elsewhere in this crate; only the FIX mechanism is
-    /// required to be typed, per `theory/SECURITY-LAYER.md` §10).
+    /// required to be typed).
     pub version_range: &'static str,
     /// The fix mechanism (typed, not prose).
     pub fix: Fix,
@@ -224,7 +224,7 @@ const fn entry(
 /// CVE-2026-39822 — Go stdlib. Found live via real trivy scan data as ONE
 /// shared root cause across several services in one downstream Nix image
 /// set, all built from a single shared Nix Go toolchain layer
-/// (`theory/SECURITY-LAYER.md` §10's worked example). This is the canonical
+/// (the worked example). This is the canonical
 /// shape the catalog exists for: N services, ONE vulnerable layer, so the
 /// fix is applied once and every consumer of that layer inherits it.
 ///

@@ -5,7 +5,7 @@
 //!   - Discriminant    (const fn discriminant() -> &'static str)
 //!   - IsVariant       (const fn is_<variant>() -> bool per variant)
 //!
-//! Per theory/PATTERN-EXTRACTION.md Pattern 6 (sibling), this is
+//! This is
 //! the canonical reflection shape for typed enums in pleme-io's
 //! substrate. The sweep mechanically asserts:
 //!

@@ -1,8 +1,8 @@
 //! Cross-adapter `TypedDispatcher` reflection sweep.
 //!
 //! Every adapter's Quirk enum carries `#[derive(TypedDispatcher)]`
-//! (P0/P1 of the substrate-wide quirk-applier normalization per
-//! `theory/QUIRK-APPLIER.md` §IV-bis). This test asserts the
+//! (P0/P1 of the substrate-wide quirk-applier normalization).
+//! This test asserts the
 //! reflection is shaped consistently across all 9 ecosystems:
 //!
 //! - every variant_kinds() entry is kebab-case (matches the serde

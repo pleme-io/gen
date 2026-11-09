@@ -21,8 +21,8 @@
 //!
 //! ## The subject set, stated
 //!
-//! A verdict must be derived from the subject set it claims about
-//! (`theory/UNREPRESENTABILITY.md` §II.4). The tie's subject set is the
+//! A verdict must be derived from the subject set it claims about.
+//! The tie's subject set is the
 //! **pair**:
 //!
 //! 1. `sha256(Cargo.lock)` — the resolution pin (membership + versions +

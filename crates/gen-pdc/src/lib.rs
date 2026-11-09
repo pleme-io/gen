@@ -42,7 +42,7 @@
 //! crate, so it is decoupled from any one adapter's churn (notably
 //! gen-gomod's M1 encoder, under active development).
 //!
-//! Canonical spec: `theory/PDC-CONTRACT.md`. Composes GEN-TYPED-SPEC-CONTRACT,
+//! Composes GEN-TYPED-SPEC-CONTRACT,
 //! CATALOG REFLECTION, CLOSED-LOOP MASS-SYNTHESIS (rule 1), UNREPRESENTABILITY,
 //! and SUPER-CACHE-CI.
 

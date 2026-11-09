@@ -1,9 +1,8 @@
 //! Cross-ecosystem trait surface.
 //!
 //! Three traits every package-manager adapter implements to fit the
-//! pleme-io substrate's universal intake pattern. The contract is
-//! documented in `theory/ECOSYSTEM-INTAKE.md`; this module IS the
-//! Rust binding of that contract.
+//! pleme-io substrate's universal intake pattern. This module IS
+//! the Rust binding of that contract.
 //!
 //! Stack:
 //! - [`Spec`] — the typed shape of an adapter's emitted build spec

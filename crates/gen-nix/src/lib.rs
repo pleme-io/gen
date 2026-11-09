@@ -1,7 +1,7 @@
 //! `gen-nix` — typed Nix AST + canonical pretty-printer + per-crate
 //! derivation renderer (crate2nix shape).
 //!
-//! Implements `theory/NIX-AST.md`: every Nix construct emitted by the
+//! Every Nix construct emitted by the
 //! gen engine is a typed [`NixValue`] rendered through one
 //! [`render::render`] function. `format!()` of nix syntax is forbidden
 //! in downstream consumers.

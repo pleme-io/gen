@@ -12,9 +12,6 @@
 //! Adding a new quirk is one entry in `REGISTRY`. Adding a new
 //! quirk class is one new `CrateQuirk` variant + one new dispatch
 //! arm in `substrate/lib/build/rust/pleme-crate-overrides.nix`.
-//!
-//! See `theory/CRATE-QUIRKS.md` for the contract + the class-helper
-//! dispatch table.
 use serde::{Deserialize, Serialize};
 
 /// Typed buildRustCrate quirks emitted into the spec per crate. The

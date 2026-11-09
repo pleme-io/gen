@@ -1,7 +1,7 @@
 # The `Cargo.lock` ⇄ gen-delta Contract
 
-**Status:** canonical. Extends the org-level **GEN TYPED-SPEC CONTRACT**
-(`theory/GEN-TYPED-SPEC-CONTRACT.md`). Owned by `gen-cargo` (producer) +
+**Status:** canonical. Extends the org-level **GEN TYPED-SPEC CONTRACT**.
+Owned by `gen-cargo` (producer) +
 `substrate/lib/build/rust/lockfile-builder.nix` (consumer).
 
 ## Intent (the relationship we commit to maintaining)

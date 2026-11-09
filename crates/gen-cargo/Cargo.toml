@@ -1,6 +1,6 @@
 [package]
 name = "gen-cargo"
-description = "gen — Cargo adapter. Parses Cargo.toml + Cargo.lock + workspace shape into gen_types::Manifest. The cargo half of the universal package-manager engine; one of N adapters (gen-npm, gen-bundler, gen-pip, gen-gomod, gen-helm, …) that share the typed core. See theory/GEN.md for the full design."
+description = "gen — Cargo adapter. Parses Cargo.toml + Cargo.lock + workspace shape into gen_types::Manifest. The cargo half of the universal package-manager engine; one of N adapters (gen-npm, gen-bundler, gen-pip, gen-gomod, gen-helm, …) that share the typed core."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -40,7 +40,6 @@ inventory = { workspace = true }
 # consumers). Both are substrate-side fixes deferred to a focused
 # follow-up. Today's compromise: one subprocess to one binary
 # (`git`), down from the previous shell-script transitive chain.
-# See theory/RUST-NATIVE-PREFETCH.md for the destination.
 nix-nar = "0.3"
 base64 = "0.22"
 tempfile = "3"

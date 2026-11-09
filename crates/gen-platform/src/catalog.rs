@@ -5,8 +5,8 @@
 //! macro; gen-platform iterates them all at runtime through
 //! `DispatcherCatalog::registered()`.
 //!
-//! This is the catalog reflection layer per `theory/QUIRK-APPLIER.md`
-//! §IV-bis.3.e — a single queryable surface for *every place in
+//! This is the catalog reflection layer —
+//! a single queryable surface for *every place in
 //! pleme-io that switches on a typed tag*. Operators query it via
 //! `gen dispatchers catalog`; substrate emitters consume it to
 //! produce Nix helpers skeletons + Lisp catalog entries

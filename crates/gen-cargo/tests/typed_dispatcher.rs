@@ -2,8 +2,7 @@
 //! production `CrateQuirk` enum. The reflection is what substrate
 //! emitters consume to produce Nix `helpers = { ... }` skeletons,
 //! Lisp catalog entries, and coverage tests mechanically — the
-//! P1 starter for the substrate-wide quirk-applier normalization
-//! per `theory/QUIRK-APPLIER.md` §IV-bis.3.
+//! P1 starter for the substrate-wide quirk-applier normalization.
 
 use gen_cargo::quirks::CrateQuirk;
 use gen_types::TypedDispatcher;

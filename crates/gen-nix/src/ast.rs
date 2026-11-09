@@ -1,4 +1,4 @@
-//! Typed Nix expression AST. Implements `theory/NIX-AST.md` — every
+//! Typed Nix expression AST — every
 //! Nix construct emitted by pleme-io renderers maps to one variant.
 //! `format!()` of nix syntax is the antipattern this AST replaces.
 

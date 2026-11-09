@@ -53,7 +53,7 @@
 //!    [`remediation::RemediationMaturity`] (design → verified-once →
 //!    propagated-fleet-wide). The sibling axis to `catalog`/`concern`:
 //!    "what's checked" + "what's addressed" + now "what's already fixed and
-//!    where that knowledge lives" (`theory/SECURITY-LAYER.md` §10).
+//!    where that knowledge lives".
 //!
 //! The verification MATRICES (one row per verdict kind / per concern / per
 //! known CVE finding, failing the build when one lands without a row) live

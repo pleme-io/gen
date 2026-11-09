@@ -4,7 +4,7 @@
 //! - is_idempotent catches non-replayable helpers (counters etc.)
 //!
 //! These are property-style checks. The substrate-wide invariants
-//! from `theory/QUIRK-APPLIER.md` §IV-bis.2 (saturation /
+//! (saturation /
 //! determinism / idempotence / commutativity) become opt-in proofs
 //! on any SealedDispatcher.
 

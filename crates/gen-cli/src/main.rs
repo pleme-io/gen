@@ -421,7 +421,7 @@ enum Cmd {
     },
     /// `gen scaffold-adapter` — stamp a new gen-<ecosystem> adapter
     /// crate skeleton inside the gen workspace. Materializes the
-    /// seven-artifact intake pattern (theory/ECOSYSTEM-INTAKE.md):
+    /// seven-artifact intake pattern:
     /// Cargo.toml + adapter.rs + build_spec.rs + quirks.rs +
     /// invariants.rs + error.rs + lib.rs, with the `Spec` +
     /// `QuirkRegistry` + `Invariants` derives wired and stub
@@ -1645,8 +1645,8 @@ fn _resolve_root_lint_silencer(p: &Path) -> PathBuf {
 }
 
 /// Stamp a new gen-<ecosystem> adapter crate skeleton at the given
-/// path. Materializes the seven-artifact intake pattern
-/// (theory/ECOSYSTEM-INTAKE.md) — Cargo.toml + lib.rs + adapter.rs +
+/// path. Materializes the seven-artifact intake pattern:
+/// Cargo.toml + lib.rs + adapter.rs +
 /// build_spec.rs + quirks.rs + invariants.rs + error.rs, with the
 /// `Spec` + `QuirkRegistry` + `Invariants` derives pre-wired.
 ///
@@ -1697,8 +1697,7 @@ indexmap = {{ workspace = true }}
         r#"//! `gen-{name}` — {name} adapter for the gen ecosystem.
 //!
 //! Parses `{manifest}` into a typed `BuildSpec` and emits it as
-//! Cargo-equivalent typed JSON. See
-//! `theory/ECOSYSTEM-INTAKE.md` for the seven-artifact contract.
+//! Cargo-equivalent typed JSON.
 
 pub mod adapter;
 pub mod build_spec;

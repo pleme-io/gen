@@ -12,9 +12,8 @@
 //!
 //! The `mk-typed-dispatcher.nix` primitive proves the value at the
 //! Nix dispatch layer. The same shape recurs across pleme-io
-//! wherever a closed variant set drives an action (see
-//! [`theory/QUIRK-APPLIER.md`](https://github.com/pleme-io/theory/blob/main/QUIRK-APPLIER.md)
-//! §IV-bis.1 for the catalog). `gen-platform` is the canonical
+//! wherever a closed variant set drives an action.
+//! `gen-platform` is the canonical
 //! Rust-side handle so consumers in pangea-operator, engenho
 //! controllers, magma plan walkers, anomalia remediations, shinka
 //! migrations etc. reach for the same primitive instead of hand-

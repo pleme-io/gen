@@ -1,7 +1,7 @@
 //! **The non-vacuous proof for the D2 freshness tie.**
 //!
 //! This file exists because a gate that has never been observed to fail may
-//! be checking nothing (`theory/UNREPRESENTABILITY.md` §II.3). The D2 tie was
+//! be checking nothing. The D2 tie was
 //! green for years over a class of change it structurally could not see, and
 //! reading its source found nothing (it read correct) and running it found
 //! nothing (it was green). The only thing that catches that is **deliberately

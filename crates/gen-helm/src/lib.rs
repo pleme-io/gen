@@ -1,8 +1,7 @@
 //! `gen-helm` — helm adapter for the gen ecosystem.
 //!
 //! Parses `Chart.yaml` into a typed `BuildSpec` and emits it as
-//! Cargo-equivalent typed JSON. See
-//! `theory/ECOSYSTEM-INTAKE.md` for the seven-artifact contract.
+//! Cargo-equivalent typed JSON.
 
 pub mod adapter;
 pub mod build_spec;

@@ -3,7 +3,7 @@
 //! Reads a Cargo workspace (or single-crate repo) + its lockfile and
 //! emits a typed [`gen_types::Manifest`]. The cargo half of the
 //! universal package-manager engine — one of N adapters that share a
-//! single typed IR. See `theory/GEN.md` for the design.
+//! single typed IR.
 //!
 //! ```no_run
 //! use std::path::Path;

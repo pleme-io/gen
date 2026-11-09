@@ -14,7 +14,7 @@
 //! substrate build-script env-var bug) or `curl-sys`/`libgit2-sys`
 //! (substrate `propagatedBuildInputs` not bubbled through
 //! `buildRustCrate` to consumers). Both are focused substrate-side
-//! fixes scheduled in a follow-up; see `theory/RUST-NATIVE-PREFETCH.md`.
+//! fixes scheduled in a follow-up.
 //!
 //! Architecture: typed trait + Mock for hermetic testing + production
 //! `GitCliPrefetcher` impl. The build-spec generator depends on the
@@ -103,7 +103,7 @@ pub enum PrefetchError {
 ///
 /// **Destination**: pure-Rust via `gix` (zero subprocess). Deferred
 /// behind a substrate-side fix for *-sys propagation in
-/// `buildRustCrate`. See `theory/RUST-NATIVE-PREFETCH.md`.
+/// `buildRustCrate`.
 pub struct GitCliPrefetcher;
 
 impl GitCliPrefetcher {

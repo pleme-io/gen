@@ -248,8 +248,8 @@ where
 {
     /// Determinism law — assert that applying the same variants
     /// twice (against a clone of the context) produces the same
-    /// output vector. The substrate-wide invariant from
-    /// `theory/QUIRK-APPLIER.md` §IV-bis.2: "determinism — same
+    /// output vector. The substrate-wide invariant:
+    /// "determinism — same
     /// input → same output, property-test."
     ///
     /// Returns `true` if the law holds for this input; `false` if

@@ -7,9 +7,6 @@
 //! every cache backend (gen-cache-attic, gen-cache-cachix, …) keys
 //! on it.
 //!
-//! See `theory/GEN.md` for the full design — why universal lifting,
-//! the 80/20 split, the trait architecture, the milestone plan.
-//!
 //! ## Shape
 //!
 //! ```text

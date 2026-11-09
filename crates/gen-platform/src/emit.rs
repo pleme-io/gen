@@ -10,7 +10,7 @@
 //! has typed stub bodies (`{}`) per variant; the operator fills in
 //! the apply functions per ecosystem.
 //!
-//! See `theory/TYPED-ABSORPTION.md` §IV.2 — this is the
+//! This is the
 //! "mechanical absorption" step: adding a new ecosystem becomes
 //! "declare the Rust enum, emit the Nix skeleton, fill in
 //! helpers." No dispatch fold reimplementation. No Nix parser

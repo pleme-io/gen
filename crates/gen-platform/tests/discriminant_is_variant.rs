@@ -6,8 +6,6 @@
 //! enum gets a typed reflection (variant_kinds + variant_fields)
 //! + a stable wire-format discriminant + per-variant predicates,
 //! in three lines of derive.
-//!
-//! See `theory/PATTERN-EXTRACTION.md` Pattern 6 (sibling).
 
 use gen_platform::{Discriminant, IsVariant, TypedDispatcher, TypedDispatcherTrait};
 use serde::{Deserialize, Serialize};

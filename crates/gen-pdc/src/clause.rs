@@ -5,8 +5,6 @@
 //! today each does so with its own `Violation` enum (six independent
 //! `check()` fns). This module names the law once so the duplication is
 //! recognized as one thing with variant-local extensions.
-//!
-//! Canonical statement: `theory/PDC-CONTRACT.md` §2.
 
 use serde::{Deserialize, Serialize};
 
@@ -59,7 +57,7 @@ impl PdcClause {
     ];
 
     /// The honest UNREPRESENTABILITY tier the clause CAN reach when a
-    /// variant seals it at the destination (`theory/PDC-CONTRACT.md` §5).
+    /// variant seals it at the destination.
     /// This is the *achievable* tier, not a claim any given variant is
     /// already there — a variant's per-clause status lives in the catalog.
     #[must_use]
@@ -84,7 +82,7 @@ impl PdcClause {
     }
 }
 
-/// The tier ladder from `theory/UNREPRESENTABILITY.md` §II, plus the C1
+/// The UNREPRESENTABILITY tier ladder, plus the C1
 /// ceiling. Never round up: a `Result::Err` is mitigation, a compile error
 /// / absent path is unrepresentability.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]

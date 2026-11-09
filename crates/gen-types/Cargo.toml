@@ -1,6 +1,6 @@
 [package]
 name = "gen-types"
-description = "gen — typed IR for the universal package-manager → build-system engine. One typed Manifest / Package / Dependency / Feature / Constraint / Lockfile / Workspace / BuildStep / Derivation shape that every ecosystem reduces to. Foundation crate; the only thing every adapter + renderer + cache backend depends on. See theory/GEN.md for the full design."
+description = "gen — typed IR for the universal package-manager → build-system engine. One typed Manifest / Package / Dependency / Feature / Constraint / Lockfile / Workspace / BuildStep / Derivation shape that every ecosystem reduces to. Foundation crate; the only thing every adapter + renderer + cache backend depends on."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

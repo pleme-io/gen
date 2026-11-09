@@ -7,9 +7,6 @@ that supersedes the per-language `→ Nix` tool cohort (`crate2nix`,
 typed core, leaving each ecosystem to contribute only its 20%
 language-specific adapter.
 
-See [`pleme-io/theory/GEN.md`](https://github.com/pleme-io/theory/blob/main/GEN.md)
-for the full destination + architecture + milestone plan.
-
 ## Status
 
 M0.0b — `gen-types` shipped. Typed IR (Manifest / Package /

@@ -4,7 +4,7 @@
 //! `gen-buck`) emits these. Cache backends key on
 //! `Derivation.cache_key`. Build systems consume `Derivation.build`.
 //!
-//! Per `theory/NIX-AST.md`: the Nix renderer never `format!()`s nix
+//! The Nix renderer never `format!()`s nix
 //! syntax — it emits a typed AST that pretty-prints deterministically.
 //! Other build systems get their own typed AST module under their
 //! renderer crate.

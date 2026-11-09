@@ -6,8 +6,6 @@
 //! macros emit the `Spec` / `QuirkRegistry` impls. The author writes
 //! N lines of typed data; the trait surface is mechanical.
 //!
-//! See `theory/ECOSYSTEM-INTAKE.md` § "The macros" for the contract.
-//!
 //! ```ignore
 //! #[derive(SpecShape, serde::Serialize, serde::Deserialize)]
 //! #[spec(args = "BuildRustCrateArgs", quirk = "CrateQuirk")]

@@ -85,8 +85,8 @@ pub enum Violation {
     /// SCHEMA_VERSION. Means the spec was emitted by an older gen
     /// and is missing fields downstream consumers rely on.
     StaleSchemaVersion { found: u32, expected: u32 },
-    /// I1 of the GEN TYPED-SPEC CONTRACT (org-level directive
-    /// `theory/GEN-TYPED-SPEC-CONTRACT.md`): a workspace member must
+    /// I1 of the GEN TYPED-SPEC CONTRACT:
+    /// a workspace member must
     /// emit `lib_target = Some(_)` whenever the package has a
     /// library target, even at the cargo default name/path. Without
     /// it, substrate's lockfile-builder (which uses `src =

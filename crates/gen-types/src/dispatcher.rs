@@ -18,8 +18,7 @@
 //! ## Naming
 //!
 //! "Dispatcher" emphasises the catamorphism the trait participates
-//! in. See `theory/QUIRK-APPLIER.md` §IV-bis for the full leverage
-//! scope — every typed variant universe at a language boundary is a
+//! in. Every typed variant universe at a language boundary is a
 //! candidate `TypedDispatcher`.
 
 /// Reflection over a typed variant universe — typically a Rust enum

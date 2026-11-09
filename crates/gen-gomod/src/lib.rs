@@ -2,8 +2,8 @@
 //!
 //! Parses `go.mod` + a vendored tree (via `go list -deps -json`) into a
 //! typed per-package [`build_spec::BuildSpec`] (v2 incremental) and emits
-//! it as `Go.build-spec.json`. See `theory/ECOSYSTEM-INTAKE.md` for the
-//! seven-artifact contract and the M1 build doc for the per-package
+//! it as `Go.build-spec.json`. See the M1
+//! build doc for the per-package
 //! (rustc-per-crate-in-Go) delta.
 //!
 //! The TYPED-SPEC + INTERPRETER TRIPLET:

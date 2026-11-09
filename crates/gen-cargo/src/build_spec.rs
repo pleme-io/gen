@@ -1799,7 +1799,7 @@ pub fn generate_for_target_with(
         // DISTINCT entries instead of being deduped into one (the dedup below
         // is for genuine `name-version` collisions: a workspace member vs a
         // registry/path copy). Registry/path crates keep `name-version`.
-        // TOOLCHAIN-FRESHNESS §X.4b.b. I4: `canonical_pkg_key` is the SAME
+        // I4: `canonical_pkg_key` is the SAME
         // function every dependency edge that points at this crate uses
         // to compute its `package_key` (above, and inside
         // `synthesize_crate_renames`) — one normalization, three call sites.
@@ -2818,7 +2818,7 @@ fn resolve_pkg_source(
 /// I4: the ONE canonical crate-map key derivation, given a package and
 /// its ALREADY-RESOLVED (`resolve_pkg_source`) `CrateSource`. Two
 /// distinct git revs of the same `name-version` key as DISTINCT entries
-/// (`name-version-rev`, TOOLCHAIN-FRESHNESS §X.4b.b); every other source
+/// (`name-version-rev`); every other source
 /// kind — including a `CrateSource::Path` that never got promoted, and a
 /// `CrateSource::Git` with no rev — keys by the bare `name-version`.
 /// Every place that needs "the key this package is stored/referenced

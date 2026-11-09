@@ -1570,7 +1570,7 @@ fn enrich_manifest_with_build_spec(root: &std::path::Path, manifest: &mut gen_ty
     // Build links lookup: package_key → links string. Only crates
     // that DECLARE links get an entry.
     // Index by BOTH the build-spec key `k` (which is `name-version-rev` for
-    // git crates post-migration — TOOLCHAIN-FRESHNESS §X.4b.b) AND a
+    // git crates post-migration) AND a
     // `name-version` alias, so the lockfile lookup below (which has only
     // name+version) still resolves a git crate's links.
     let links_by_key: std::collections::HashMap<String, String> = crates_obj

@@ -2,7 +2,7 @@
 //!
 //! Same typed Manifest as gen-nix / gen-nix-bulk; emits a typed
 //! Starlark AST → canonical pretty-printer → BUILD.bazel +
-//! MODULE.bazel files. The destination per the GEN.md plan:
+//! MODULE.bazel files. The destination per the gen plan:
 //! one source-of-truth Manifest, N typed renderers (Nix / Bazel /
 //! Buck / Bazel-rust-rules), operators pick the backend via shikumi.
 //!

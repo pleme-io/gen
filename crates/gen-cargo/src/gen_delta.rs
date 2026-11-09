@@ -330,7 +330,7 @@ pub enum DeltaFreshness {
     /// `manifests_verified` is the **witness of the derivation** — the size
     /// of the subject set this verdict is actually about. A verdict that
     /// cannot say what it checked is indistinguishable from an assertion
-    /// (`UNREPRESENTABILITY.md` §II.3); this field is what tells them apart,
+    /// (the vacuous-guard class); this field is what tells them apart,
     /// and it is never 0 (zero recorded manifests yields
     /// [`DeltaFreshness::UntiedManifests`], never `Fresh`).
     Fresh {

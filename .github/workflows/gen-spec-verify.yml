@@ -14,8 +14,8 @@
 # gitignored path accordingly. `git diff` over an untracked file reports
 # nothing and exits 0, so the gate could not fail: verified 2026-07-27 by
 # replacing the spec with literal garbage and watching the gate report
-# GREEN. It was a Tier-⊥ vacuous guard (UNREPRESENTABILITY §II.3 subclass
-# A — a check over an empty subject set). Both the claim and the gate
+# GREEN. It was a Tier-⊥ vacuous guard (a check over an empty subject
+# set). Both the claim and the gate
 # named the wrong artifact; both now name `Cargo.gen.lock`.
 #
 # Two complementary gates, and the ORDER is load-bearing:

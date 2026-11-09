@@ -1,6 +1,6 @@
 [package]
 name = "gen-macros"
-description = "Proc-macros for the gen ecosystem intake pattern. Today: #[derive(SpecShape)] and #[derive(QuirkRegistry)] — auto-implement the universal gen_types traits from typed Rust structs/enums. Per the ECOSYSTEM-INTAKE.md contract (Pillar 12: generation over composition)."
+description = "Proc-macros for the gen ecosystem intake pattern. Today: #[derive(SpecShape)] and #[derive(QuirkRegistry)] — auto-implement the universal gen_types traits from typed Rust structs/enums. Pillar 12: generation over composition."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

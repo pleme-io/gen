@@ -495,7 +495,7 @@ pub fn convert_lockfile(raw: &CargoLock, lock_path: &Path) -> Result<Lockfile> {
         // downstream as a spurious `registry-without-sha256` once the git copy
         // is disambiguated in BuildSpec.crates). Registry/path keep the
         // canonical `name/version` (the common case — stable content hash,
-        // unchanged by-key lookups). TOOLCHAIN-FRESHNESS §X.4b.b.
+        // unchanged by-key lookups).
         let key = match &source {
             PackageSource::Git { rev, .. } => {
                 format!("{}/{}/git/{}", p.name, p.version, rev)

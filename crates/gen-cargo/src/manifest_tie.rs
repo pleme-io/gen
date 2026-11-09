@@ -108,9 +108,8 @@ pub struct ManifestDrift {
 pub enum ManifestTie {
     /// Every recorded manifest re-hashes to its recorded digest. Carries the
     /// **witness of the derivation**: how many manifests the verdict is
-    /// actually about. A `Match` is meaningless without it — see
-    /// `UNREPRESENTABILITY.md` §II.3 (a guard over an empty subject set is an
-    /// assertion wearing a check's clothes), which is why [`verify`] returns
+    /// actually about. A `Match` is meaningless without it (a guard over an
+    /// empty subject set is an assertion wearing a check's clothes), which is why [`verify`] returns
     /// [`ManifestTie::Unrecorded`] rather than `Match { verified: 0 }`.
     Match { verified: usize },
     /// At least one recorded manifest changed or vanished. Itemized.

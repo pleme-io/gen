@@ -299,7 +299,7 @@ pub fn derive_typed_dispatcher(input: TokenStream) -> TokenStream {
 // ── Discriminant + IsVariant — typed-reflection derive surface ───
 //
 // These two derives are the substrate-wide derive surface for typed
-// enums (PATTERN-EXTRACTION.md Patterns 6 + sibling). They live in
+// enums. They live in
 // gen-macros (next to TypedDispatcher) so consumers in any pleme-io
 // crate that already depends on gen-platform can reach for them
 // without adding a fresh derive crate.

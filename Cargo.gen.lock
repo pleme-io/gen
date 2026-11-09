@@ -15,7 +15,7 @@
     "crates/gen-config/Cargo.toml": "3d151f8b707e09764aeb3d9e665bbc27dbdea95ac08ec7348189f2200eb470e4",
     "crates/gen-gomod/Cargo.toml": "eddb9947df15d1fd2b54daaef6d774fda455508154955aa711a23a72d94ca446",
     "crates/gen-helm/Cargo.toml": "9214aba26cf52e42271c96c35ba42bafc12fff15727773d253948438858f0233",
-    "crates/gen-macros/Cargo.toml": "8242e6771de1aae800386a0f2bb41cf6afc34606eac5245a940543217a2e99b6",
+    "crates/gen-macros/Cargo.toml": "980d4cdae85716e94ac72520c98606dd617c57a6ec1a3a0c4ceafc2f0e4acf97",
     "crates/gen-nix-bulk/Cargo.toml": "58cc29b5e464cd39bcd5d491efc79e5334c489199bbd5832254ed64d1500907a",
     "crates/gen-nix/Cargo.toml": "769d268514e179366315879222471efb212eec5ebe86b463d97b3ee199cd94f3",
     "crates/gen-npm/Cargo.toml": "51cab0bab9c34c8c1b38993187e46e81a624b8bbcf1a798d9eb479e974f49bfc",

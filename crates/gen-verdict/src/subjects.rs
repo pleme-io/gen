@@ -1,9 +1,9 @@
 //! The witness: a non-empty collection whose emptiness is a *compile*
 //! error, and the sum that gives emptiness a name.
 //!
-//! [`NonEmpty<T>`] is the structural primitive `UNREPRESENTABILITY.md`
-//! §III.7's hardening #2 prescribes verbatim — `{ head: T, tail: Vec<T> }`
-//! — and which §III.7's own verdict records as shipping **nowhere** in the
+//! [`NonEmpty<T>`] is the structural primitive the vacuous-guard hardening
+//! prescribes verbatim — `{ head: T, tail: Vec<T> }` — and which had been
+//! recorded as shipping **nowhere** in the
 //! fleet. This is the first one. [`Subjects<S>`] and [`Findings<F>`] are
 //! role aliases over it, so §II.4's sketch reads verbatim at the use site
 //! while the fleet gets one implementation rather than three.

@@ -149,3 +149,16 @@ fn registered_names_are_unique() {
         original
     );
 }
+
+#[test]
+fn nym_network_defaults_build_script_returns_before_it_reads_the_workspace() {
+    let quirks = gen_cargo::quirks::for_crate("nym-network-defaults");
+    assert!(
+        quirks.iter().any(|q| matches!(
+            q,
+            CrateQuirk::SubstituteSource { file, from, to }
+                if file == "build.rs" && from == "fn main() {" && to.starts_with(from) && to.contains("return;")
+        )),
+        "nym-network-defaults has no build.rs early return: {quirks:?}"
+    );
+}

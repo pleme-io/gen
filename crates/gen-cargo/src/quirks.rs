@@ -194,6 +194,14 @@ pub fn registry() -> Vec<(&'static str, Vec<CrateQuirk>)> {
             "magma-protocol",
             vec![CrateQuirk::NativeBuildInputs { packages: vec!["protobuf".to_string()] }],
         ),
+        (
+            "nym-network-defaults",
+            vec![CrateQuirk::SubstituteSource {
+                file: "build.rs".to_string(),
+                from: "fn main() {".to_string(),
+                to: "fn main() { return;".to_string(),
+            }],
+        ),
     ]
 }
 

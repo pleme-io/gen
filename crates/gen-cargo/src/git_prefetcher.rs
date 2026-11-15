@@ -341,7 +341,43 @@ impl GitPrefetcher for MockPrefetcher {
 /// trait-dispatched, swap-friendly for the eventual gix migration.
 #[must_use]
 pub fn default_prefetcher() -> Box<dyn GitPrefetcher> {
-    Box::new(GitCliPrefetcher::new())
+    Box::new(Memoized::new(GitCliPrefetcher::new()))
+}
+
+pub struct Memoized<P> {
+    inner: P,
+    seen: Mutex<BTreeMap<(String, String), PrefetchedHash>>,
+}
+
+impl<P: GitPrefetcher> Memoized<P> {
+    #[must_use]
+    pub fn new(inner: P) -> Self {
+        Self {
+            inner,
+            seen: Mutex::new(BTreeMap::new()),
+        }
+    }
+}
+
+impl<P: GitPrefetcher> GitPrefetcher for Memoized<P> {
+    fn prefetch(&self, url: &str, rev: &str) -> Result<PrefetchedHash, PrefetchError> {
+        let clean_url = url.split('?').next().unwrap_or(url);
+        let key = (clean_url.to_string(), rev.to_string());
+        if let Some(hit) = self
+            .seen
+            .lock()
+            .expect("Memoized prefetcher mutex poisoned")
+            .get(&key)
+        {
+            return Ok(hit.clone());
+        }
+        let fetched = self.inner.prefetch(url, rev)?;
+        self.seen
+            .lock()
+            .expect("Memoized prefetcher mutex poisoned")
+            .insert(key, fetched.clone());
+        Ok(fetched)
+    }
 }
 
 // ── Tests ──────────────────────────────────────────────────────────
@@ -454,5 +490,58 @@ mod tests {
         // Smoke test: the factory boxes a GitCliPrefetcher without
         // panicking. Real network calls live in integration tests.
         let _: Box<dyn GitPrefetcher> = default_prefetcher();
+    }
+
+    struct Counting {
+        calls: std::sync::atomic::AtomicUsize,
+    }
+
+    impl GitPrefetcher for Counting {
+        fn prefetch(&self, _url: &str, rev: &str) -> Result<PrefetchedHash, PrefetchError> {
+            self.calls.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            let mut digest = [0u8; 32];
+            digest[0] = rev.len() as u8;
+            Ok(PrefetchedHash::from_digest(digest))
+        }
+    }
+
+    #[test]
+    fn one_repo_at_one_rev_is_fetched_once_however_many_crates_name_it() {
+        let memo = Memoized::new(Counting {
+            calls: std::sync::atomic::AtomicUsize::new(0),
+        });
+        let url = "https://example.invalid/mono";
+        let first = memo.prefetch(&format!("{url}?tag=v1"), "aaaa").unwrap();
+        for _ in 0..79 {
+            assert_eq!(memo.prefetch(&format!("{url}?tag=v1"), "aaaa").unwrap(), first);
+        }
+        assert_eq!(memo.prefetch(url, "aaaa").unwrap(), first);
+        assert_eq!(memo.inner.calls.load(std::sync::atomic::Ordering::SeqCst), 1);
+        memo.prefetch(url, "bbbbbb").unwrap();
+        assert_eq!(memo.inner.calls.load(std::sync::atomic::Ordering::SeqCst), 2);
+    }
+
+    #[test]
+    fn a_failed_fetch_is_not_remembered() {
+        struct FailOnce {
+            calls: std::sync::atomic::AtomicUsize,
+        }
+        impl GitPrefetcher for FailOnce {
+            fn prefetch(&self, url: &str, rev: &str) -> Result<PrefetchedHash, PrefetchError> {
+                if self.calls.fetch_add(1, std::sync::atomic::Ordering::SeqCst) == 0 {
+                    return Err(PrefetchError::Fetch {
+                        url: url.into(),
+                        rev: rev.into(),
+                        reason: "stall".into(),
+                    });
+                }
+                Ok(PrefetchedHash::from_digest([7u8; 32]))
+            }
+        }
+        let memo = Memoized::new(FailOnce {
+            calls: std::sync::atomic::AtomicUsize::new(0),
+        });
+        assert!(memo.prefetch("https://example.invalid/r", "c").is_err());
+        assert!(memo.prefetch("https://example.invalid/r", "c").is_ok());
     }
 }
